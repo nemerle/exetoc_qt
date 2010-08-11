@@ -1,0 +1,6 @@
+bld
+build
+BIN/*lib
+BIN/*dll
+*.user
+*kdev4*

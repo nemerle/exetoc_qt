@@ -1,0 +1,70 @@
+include_directories(include)
+set(exe2c_SOURCES
+  src/analysis.cpp
+  src/CApiManage.cpp
+  src/CCbuf.cpp
+  src/CClassManage.cpp
+  src/CCodeList.cpp
+  src/CEnumMng.cpp
+  src/Cexe2c.cpp
+  src/CExprManage.cpp
+  src/CFunc.cpp
+  src/CFunc_CreateInstrList.cpp
+  src/CFuncOptim.cpp
+  src/CFuncPrt.cpp
+  src/CFuncStep1.cpp
+  src/CFuncType.cpp
+  src/CMyString.cpp
+  src/CNameID.cpp
+  src/ComplexInstr.cpp
+  src/CStrategy.cpp
+  src/CXmlList.cpp
+  src/CXmlPrt.cpp
+  src/DataType.cpp
+  src/Deasm_Init.cpp
+  src/Disasm.cpp
+  src/DLL32DEF.cpp
+  src/exe2c.cpp
+  src/FileLoad.cpp
+  src/hpp.cpp
+  src/INSTR.cpp
+  src/main.cpp
+  src/optim.cpp
+  src/PEload.cpp
+  src/PUB.cpp
+  src/standard.cpp
+  src/strparse.cpp
+  src/SVarType.cpp
+  src/XmlType.cpp
+  src/CLibScanner.cpp
+)
+set(exe2c_HEADERS
+include/CApiManage.h
+include/CCbuf.h
+include/CClassManage.h
+include/CCodeList.h
+include/CEnumMng.h
+include/Cexe2c.h
+include/CISC.h
+include/CExprManage.h
+include/CFunc.h
+include/CLibScanner.h
+include/CMyString.h
+include/CStrategy.h
+include/CNameID.h
+include/ComplexInstr.h
+include/CXmlPrt.h
+include/DataType.h
+include/dasm.h
+include/enum.h
+include/EXPR.h
+include/FileLoad.h
+include/INSTR.h
+include/mylist.h
+include/ParseHead.h
+include/proto.h
+include/standard.h
+include/strparse.h
+include/types.h
+)
+ADD_LIBRARY(exe2c_lib STATIC ${exe2c_SOURCES} ${exe2c_HEADERS})
