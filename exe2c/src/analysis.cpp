@@ -4,16 +4,16 @@
 ////#include "stdafx.h"
 
 #include "CISC.h"
-#include "CStrategy.h"
+#include "Strategy.h"
 #include <QDebug>
 extern bool g_f_Step_by_Step;
 extern bool g_any1_return_TRUE;
 bool Step_by_Step();
 
-bool	CFunc::analysis_step_by_step()
+bool	Func::analysis_step_by_step()
 {
     // Let us show points of information
-    static CFunc* lastfunc = 0;
+    static Func* lastfunc = 0;
     static int n = 0;
     if (this != lastfunc)
     {
@@ -35,17 +35,17 @@ bool	CFunc::analysis_step_by_step()
 }
 
 typedef bool (CFuncOptim::*OPTIMFUNC)();
-typedef bool (CFunc::*PROGFUNC)();
+typedef bool (Func::*PROGFUNC)();
 
 PROGFUNC tbl_Progress[] =
 {
-    &CFunc::Step_1,
-    &CFunc::Step2_GetRetPurge,
-    &CFunc::AddRemoveSomeInstr,
-    &CFunc::Step3_FillStackInfo,
-    &CFunc::Step_Label_Analysis,
-    &CFunc::Step4_1,
-    &CFunc::Var_analysis,
+    &Func::Step_1,
+    &Func::Step2_GetRetPurge,
+    &Func::AddRemoveSomeInstr,
+    &Func::Step3_FillStackInfo,
+    &Func::Step_Label_Analysis,
+    &Func::Step4_1,
+    &Func::Var_analysis,
     0
 };
 
@@ -64,7 +64,7 @@ OPTIMFUNC tbl_Ana[] =
     0
 };
 
-bool	CFunc::analysis_once_1()
+bool	Func::analysis_once_1()
 {
     m_prepareTrue_analysisFalse = false;
     if (this->m_nStep < STEP_100)
@@ -97,7 +97,7 @@ bool	CFunc::analysis_once_1()
 
     return false;
 }
-bool	CFunc::analysis_once()
+bool	Func::analysis_once()
 {
     bool f = analysis_once_1();
     if (f)
@@ -111,7 +111,7 @@ bool	CFunc::analysis_once()
     }
     return f;
 }
-void CFunc::analysis()
+void Func::analysis()
 {
     for (;;)
     {
@@ -123,7 +123,7 @@ void CFunc::analysis()
 }
 
 
-void	CFunc::ana_RetType()
+void	Func::ana_RetType()
 {	//	检查函数的返回值
     VAR v;
     v.type = v_Reg;
@@ -156,7 +156,7 @@ void	CFunc::ana_RetType()
     }
 }
 //Prepare is to add new functions, but does not call the new function prepare
-void CFunc::PrepareFunc()
+void Func::PrepareFunc()
 {
     m_prepareTrue_analysisFalse = true;
     while (this->m_nStep < 3)

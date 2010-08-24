@@ -1,8 +1,8 @@
 #include <QtGui>
 #include "exe2c_mainwindow.h"
 #include "ui_exe2c_gui.h"
+#include "exe2c_interface.h"
 #include "exe2c.h"
-#include "Cexe2c.h"
 #include "functionviewwidget.h"
 #include "functionlistdockwidget.h"
 I_EXE2C* g_EXE2C = NULL;

@@ -19,9 +19,9 @@
 #include "00000.h"
 #include "hpp.h"
 
-#include "CClassManage.h"
-#include "CEnumMng.h"
-#include "CCbuf.h"
+#include "ClassManage.h"
+#include "EnumMng.h"
+#include "Cbuf.h"
 #include "strparse.h"
 #include "SVarType.h"
 
@@ -87,7 +87,7 @@ bool hpp_init()
         g_Hpp = new CHpp;
 
         g_DefineList = new DefineList;
-        g_ClassManage = new CClassManage;
+        g_ClassManage = new ClassManage;
         g_enum_mng = new Enum_mng;
         path current_dir=GetMyExePath();
         current_dir = current_dir/"inc";

@@ -7,7 +7,7 @@
 #define HPP_H
 #include <list>
 #include <string>
-#include "CFuncType.h"
+#include "FuncType.h"
 //	--------------------------------------------------------
 class define_t
 {	//#define src dst

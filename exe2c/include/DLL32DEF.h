@@ -4,7 +4,7 @@
 #define	DLL32DEF_H
 
 #include <string>
-#include "CCbuf.h"
+#include "Cbuf.h"
 #include "types.h"
 CCbuf* ReadDefFile(const std::string & fname);
 void onExit_DLL32DEF();

@@ -11,8 +11,8 @@
 typedef uint32_t	VarTypeID;
 typedef	uint32_t	SIZEOF;
 
-#include	"CClassManage.h"
-#include	"CEnumMng.h"
+#include	"ClassManage.h"
+#include	"EnumMng.h"
 
 
 enum

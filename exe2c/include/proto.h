@@ -3,13 +3,13 @@
 #ifndef proto___H
 #define proto___H
 #include <list>
-#include "../exe2c.h"
+//#include "../exe2c.h"
 #include "enum.h"
 
 typedef	std::list<ea_t>	EALIST;
 //---------------------------------------------
 //	unit1.cpp
-void	Set_Cur_CFunc(CFunc* pfunc);
+void	Set_Cur_CFunc(Func* pfunc);
 void	Redraw_CurFunc();
 void	Redraw();
 //---------------------------------------------
@@ -34,7 +34,7 @@ void _warn(char * __cond, char * __file, int __line);
 //	main.cpp
 
 
-extern	CFunc	*g_Cur_Func;		// 全局保存当前 CFunc
+extern	Func	*g_Cur_Func;		// 全局保存当前 CFunc
 
 //extern	EXPR_LIST	*g_expr_list;	// 全局变量表
 
@@ -66,7 +66,7 @@ uint32_t	Peek_D(ea_t pos);
 //---------------------------------------------
 // CFunc.cpp
 
-void	fill_func_info( ea_t pos,CFunc* pfnc);
+void	fill_func_info( ea_t pos,Func* pfnc);
 bool	IfValideFuncName(const char * pname);
 
 

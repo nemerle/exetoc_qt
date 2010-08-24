@@ -6,7 +6,7 @@
 #include <list>
 #include "enum.h"
 #include "EXPR.h"
-class	CFunc;
+class	Func;
 
 class INSTR;
 typedef	INSTR*	PINSTR;
@@ -85,8 +85,8 @@ public:
 
 		struct
 		{
-			CFunc*  call_func;		// for i_Call
-			CApi*	papi;			// for i_CallApi
+			Func*  call_func;		// for i_Call
+			Api*	papi;			// for i_CallApi
 			signed int		esp_level;
 			PINSTR      p_callpara;
 			PINSTR      p_callret;
@@ -134,7 +134,7 @@ public:
 };
 
 typedef	std::list<PINSTR> INSTR_LIST;
-class CInstrList
+class InstrList
 {
     typedef INSTR_LIST::iterator POSITION;
     bool	if_Ly_In(PINSTR p, POSITION firstpos, POSITION endpos);
@@ -150,7 +150,7 @@ class CInstrList
 
     INSTR_LIST &m_list; //要尽量把它private
 public:
-    CInstrList(INSTR_LIST& p) : m_list (p)
+    InstrList(INSTR_LIST& p) : m_list (p)
     {
 
     }
@@ -158,14 +158,14 @@ public:
     bool	Flow_a(PINSTR pNode);
 };
 
-class CInstrList_Finger
+class InstrList_Finger
 {
     void	prt_partern(PINSTR phead, char * partern_buf);
     static int search_and_add(uint32_t* buf,uint32_t val,int* pn);
     static bool	finger_compare(char * f1,const char* f2);
 public:
     INSTR_LIST & m_list; //要尽量把它private
-    CInstrList_Finger(INSTR_LIST &list) : m_list(list)
+    InstrList_Finger(INSTR_LIST &list) : m_list(list)
     {
     }
     bool	Finger_check_partern(PINSTR p);

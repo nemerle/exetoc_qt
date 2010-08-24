@@ -2,7 +2,7 @@
 #define FUNCTIONVIEWWIDGET_H
 
 #include <QWidget>
-#include <CXmlPrt.h>
+#include "XmlPrt.h"
 namespace Ui {
     class FunctionViewWidget;
 }

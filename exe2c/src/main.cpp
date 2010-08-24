@@ -2,10 +2,10 @@
 
 #include <cassert>
 #include <algorithm>
-#include "Cexe2c.h"
+#include "exe2c.h"
 #include "CISC.h"
 
-CFunc* g_Cur_Func = NULL;
+Func* g_Cur_Func = NULL;
 
 //EXPR_LIST	*g_expr_list = NULL;	// Global variable table
 
@@ -31,7 +31,7 @@ FUNC_LIST::iterator Cexe2c::GetCurFuncHandle()
 
 void Cexe2c::SetCurFunc_by_Name(const char * funcname)
 {
-        CFunc *p = this->FindFuncByName(funcname);
+        Func *p = this->FindFuncByName(funcname);
     if (p == NULL)
         return;
     g_Cur_Func = p;
@@ -41,7 +41,7 @@ void Cexe2c::GetFuncInfo( FUNC_LIST::iterator h, st_FuncInfo* info )
     if (h == m_func_list.end())
         return;
 
-    CFunc* p = *h;
+    Func* p = *h;
 
     strcpy(info->name, p->m_funcname.c_str());
     info->nStep = p->m_nStep;
@@ -65,7 +65,7 @@ FUNC_LIST::iterator Cexe2c::GetNextFuncHandle( FUNC_LIST::iterator h )
 
 bool Cexe2c::RenameCurFuncName(const char * name)
 {
-    CFunc *p = g_Cur_Func;
+    Func *p = g_Cur_Func;
     if (p == NULL)
         return false;
     if (!IfValideFuncName(name))

@@ -6,7 +6,7 @@
 #include "CISC.h"
 
 
-bool CFunc::expr_only_use_in_this(VAR* pvar, PINSTR phead)
+bool Func::expr_only_use_in_this(VAR* pvar, PINSTR phead)
 {
 	assert( phead->type == i_Begin || phead->type == i_CplxBegin);
 

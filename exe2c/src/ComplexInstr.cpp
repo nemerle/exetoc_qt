@@ -22,7 +22,7 @@ const char finger_dowhile_2[] = "from1_0_jxx1_from2_";
 //	4
 // }
 
-int CInstrList_Finger::search_and_add(uint32_t* buf,uint32_t val,int* pn)
+int InstrList_Finger::search_and_add(uint32_t* buf,uint32_t val,int* pn)
 {//static function
     int n = *pn;
     for (int i=0;i<n;i++)
@@ -34,7 +34,7 @@ int CInstrList_Finger::search_and_add(uint32_t* buf,uint32_t val,int* pn)
     *pn = n+1;
     return n+1;
 }
-bool	CInstrList_Finger::finger_compare(char * f1,const char* f2)
+bool	InstrList_Finger::finger_compare(char * f1,const char* f2)
 {//static function
         for (;;)
         {
@@ -54,7 +54,7 @@ bool	CInstrList_Finger::finger_compare(char * f1,const char* f2)
                 return false;
         }
 }
-bool	CInstrList::if_Ly_In(PINSTR p, POSITION firstpos, POSITION endpos)
+bool	InstrList::if_Ly_In(PINSTR p, POSITION firstpos, POSITION endpos)
 {
     //If the 'last' is the 'label', it also counts
     assert(endpos!=m_list.end());
@@ -78,7 +78,7 @@ bool	CInstrList::if_Ly_In(PINSTR p, POSITION firstpos, POSITION endpos)
     }
     return false;
 }
-bool	CInstrList::ifOneStatement(PINSTR pNode, POSITION firstpos, POSITION endpos)
+bool	InstrList::ifOneStatement(PINSTR pNode, POSITION firstpos, POSITION endpos)
 {	//	do not include 'end'
     //	if the first is a label，allow call
     //	if the last is a label，allow call
@@ -152,7 +152,7 @@ PINSTR	instr_prev(const INSTR_LIST& list, const INSTR * p)
         return NULL;
     return *pos;
 }
-void	CInstrList_Finger::prt_partern(PINSTR phead,char * partern_buf)
+void	InstrList_Finger::prt_partern(PINSTR phead,char * partern_buf)
 {
 
     if (phead->type != i_CplxBegin)
@@ -203,7 +203,7 @@ void	CInstrList_Finger::prt_partern(PINSTR phead,char * partern_buf)
     }
 }
 
-bool	CInstrList_Finger::Finger_check_partern_for1(PINSTR p)
+bool	InstrList_Finger::Finger_check_partern_for1(PINSTR p)
 {
     CFunc_InstrList instrl(this->m_list);
 
@@ -288,7 +288,7 @@ bool	CInstrList_Finger::Finger_check_partern_for1(PINSTR p)
 
     return true;
 }
-bool	CInstrList_Finger::Finger_check_partern(PINSTR p)
+bool	InstrList_Finger::Finger_check_partern(PINSTR p)
 {
     // check the pattern p
     char buf[140];
@@ -350,9 +350,9 @@ bool	CInstrList_Finger::Finger_check_partern(PINSTR p)
         return false;
     return true;
 }
-void	CFunc::Finger_it()
+void	Func::Finger_it()
 {
-    CInstrList_Finger the(m_instr_list);
+    InstrList_Finger the(m_instr_list);
     POSITION pos = m_instr_list.begin();
     for (;pos!=m_instr_list.end();++pos)
     {
@@ -363,7 +363,7 @@ void	CFunc::Finger_it()
         }
     }
 }
-bool	CInstrList::Flow_c(PINSTR phead)
+bool	InstrList::Flow_c(PINSTR phead)
 {
     //	Statement to try to find out the child, including live and then call Flow_a
     assert(phead->type == i_CplxBegin);
@@ -429,7 +429,7 @@ bool	CInstrList::Flow_c(PINSTR phead)
     return Flow_cc(phead,s_pos,e_pos);
 }
 
-bool	CInstrList::Flow_cc(PINSTR pNode, POSITION firstpos, POSITION endpos)
+bool	InstrList::Flow_cc(PINSTR pNode, POSITION firstpos, POSITION endpos)
 {	//This is used to cplx in another trying to find a few small begin_end to
 
 
@@ -503,7 +503,7 @@ bool	CInstrList::Flow_cc(PINSTR pNode, POSITION firstpos, POSITION endpos)
 
     return Flow_cc(pNode, okpos, endpos);	//next part
 }
-void CInstrList::Add_Begin_End(POSITION firstpos, POSITION &endpos, PINSTR begin, PINSTR end)
+void InstrList::Add_Begin_End(POSITION firstpos, POSITION &endpos, PINSTR begin, PINSTR end)
 {
     this->Add_Begin_End_1(firstpos,endpos,begin,end);
     POSITION pos = m_list.begin();
@@ -522,7 +522,7 @@ void CInstrList::Add_Begin_End(POSITION firstpos, POSITION &endpos, PINSTR begin
         }
     }
 }
-void CInstrList::Add_Begin_End_1(POSITION firstpos, POSITION endpos, PINSTR begin, PINSTR end)
+void InstrList::Add_Begin_End_1(POSITION firstpos, POSITION endpos, PINSTR begin, PINSTR end)
 {
     // If first == i_Label, to allow others to call
     // If last == i_Label, to allow others to call
@@ -615,7 +615,7 @@ void CInstrList::Add_Begin_End_1(POSITION firstpos, POSITION endpos, PINSTR begi
     }
 }
 
-bool CInstrList::IsSwitchCase_multcomp(PINSTR begin)
+bool InstrList::IsSwitchCase_multcomp(PINSTR begin)
 {
     //	Comparison is not the kind switch_case multiple comparisons
 
@@ -665,7 +665,7 @@ bool CInstrList::IsSwitchCase_multcomp(PINSTR begin)
     }
     return false;
 }
-bool CInstrList::IsSwitchCase(PINSTR begin)
+bool InstrList::IsSwitchCase(PINSTR begin)
 {
         assert(begin->type == i_CplxBegin);
         POSITION pos = std::find(m_list.begin(),m_list.end(),begin);
@@ -692,7 +692,7 @@ bool CInstrList::IsSwitchCase(PINSTR begin)
         }
         return false;
 }
-void	CInstrList::Flow_b(PINSTR pParentNode, POSITION firstpos, POSITION endpos)
+void	InstrList::Flow_b(PINSTR pParentNode, POSITION firstpos, POSITION endpos)
 {	//	compact analysis
 
 
@@ -787,7 +787,7 @@ void	CInstrList::Flow_b(PINSTR pParentNode, POSITION firstpos, POSITION endpos)
         Flow_c(begin);	//	对这个i_CplxBegin再作些处理
 }
 
-bool	CInstrList::Flow_a(PINSTR pNode)
+bool	InstrList::Flow_a(PINSTR pNode)
         //	流程分析第一步
         //	对这个区间进行分析。以后可以递归
 {
@@ -815,7 +815,7 @@ bool Step_by_Step()
         g_any1_return_TRUE = true;
         return false;
 }
-bool	CInstrList::Flow_aa(PINSTR pBlockHeadNode, POSITION firstpos, POSITION endpos)
+bool	InstrList::Flow_aa(PINSTR pBlockHeadNode, POSITION firstpos, POSITION endpos)
 {
     // Loose analysis
     // Return true that there has been progress analysis
@@ -853,7 +853,7 @@ bool	CInstrList::Flow_aa(PINSTR pBlockHeadNode, POSITION firstpos, POSITION endp
 
         if (p->begin.type == COMP_unknown)
         {	//	at this time it should attempt to identify
-            CInstrList_Finger the(m_list);
+            InstrList_Finger the(m_list);
             if (the.Finger_check_partern(p))
             {
                 //alert("return true");

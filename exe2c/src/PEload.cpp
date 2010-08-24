@@ -10,7 +10,7 @@
 #include <cstring>
 #include "00000.h"
 #include "FileLoad.h"
-#include "CApiManage.h"
+#include "ApiManage.h"
 
 void	Disassembler_Init_offset(BYTE * code_buf, ea_t code_offset);
 BYTE *	ea2ptr(ea_t pos);
