@@ -4,7 +4,6 @@
 typedef uint32_t ea_t;
 typedef	uint32_t	SIZEOF;
 typedef uint32_t	VarTypeID;
-#include "mylist.h"
 
 //char *	new_str(const char * p);
 

@@ -8,7 +8,6 @@
 #include	<cstdlib>
 #include	<cstring>
 #include	"dasm.h"
-#include	"mylist.h"
 #include	"standard.h"
 #include	"enum.h"
 #include	"ApiManage.h"
