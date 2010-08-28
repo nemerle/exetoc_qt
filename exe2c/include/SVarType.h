@@ -60,7 +60,7 @@ struct SVarType
     {
         struct
         {
-            CFuncType*		pFuncType;		//	for vtt_funcpoint, if this is a func pointer
+            FuncType*		pFuncType;		//	for vtt_funcpoint, if this is a func pointer
         } m_funcpoint;						//	= 1 means unknown funcpoint
         struct
         {
@@ -129,7 +129,7 @@ public:
         Class_st*	is_classpoint(VarTypeID id);
         Class_st*	is_class(VarTypeID id);
     bool    is_simple(VarTypeID id);
-        CFuncType* get_funcptr(VarTypeID id);
+        FuncType* get_funcptr(VarTypeID id);
 
         VarTypeID GetAddressOfID(VarTypeID id);
         VarTypeID GetConstOfID(VarTypeID id);
@@ -147,7 +147,7 @@ public:
         VarTypeID Enum2VarID(enum_st* pnew);
         VarTypeID Get_unsigned_id(VarTypeID id);
         VarTypeID Get_signed_id(VarTypeID id);
-        VarTypeID FuncType2VarID(CFuncType* ft);
+        VarTypeID FuncType2VarID(FuncType* ft);
 
         SVarType*	id2_VarType(VarTypeID id);
         VarTypeID GetPointTo(VarTypeID id);
@@ -168,7 +168,7 @@ SVarType* GG_id2_VarType(VarTypeID id);
 std::string	GG_VarType_ID2Name(VarTypeID id);
 SIZEOF	GG_VarType_ID2Size(VarTypeID id);
 bool	GG_is_funcpoint(VarTypeID id);
-CFuncType* GG_get_funcpoint(VarTypeID id);
+FuncType* GG_get_funcpoint(VarTypeID id);
 Class_st*	GG_id2_Class(VarTypeID id);
 
 #endif	//	SVarType_H

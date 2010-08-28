@@ -223,7 +223,7 @@ bool	CFuncOptim::MakeSure_NotRef_in_Range(VAR* pvar, PINSTR p1, PINSTR p2)
 
 bool CFuncOptim::ClassSubFuncProcess()
 {//return false 继续下一步的分析
-    CFuncType* pfctype = this->Q->m_functype;
+    FuncType* pfctype = this->Q->m_functype;
     if (pfctype == NULL || pfctype->m_class == NULL)
         return false;
 

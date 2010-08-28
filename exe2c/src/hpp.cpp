@@ -45,10 +45,10 @@ public:
 
         CHpp();
         ~CHpp();
-        void newfunc_addlist(CFuncType* pnewfunc);
+        void newfunc_addlist(FuncType* pnewfunc);
         void func_define(const char * lbuf, CCInfo *p);
-        CFuncType* Get_FuncDefine_from_internal_name_(const std::string & pmyinternalname);
-        CFuncType* Get_FuncDefine_from_name_(const std::string &pmyname);
+        FuncType* Get_FuncDefine_from_internal_name_(const std::string & pmyinternalname);
+        FuncType* Get_FuncDefine_from_name_(const std::string &pmyname);
 };
 
 CHpp* g_Hpp = NULL;
@@ -637,7 +637,7 @@ void CCInfo::OneLine(const char * lbuf, const char * &pnext)
                         skip_eos(pf);
                         if (*pf == '(')		//	这下，肯定是func define 了
                         {
-                                CFuncType* pnewfunc = new CFuncType;
+                                FuncType* pnewfunc = new FuncType;
                                 if (this->extern_c)
                                         pnewfunc->m_extern_c = true;
                                 pnewfunc->m_callc = cc;
@@ -778,7 +778,7 @@ void CCInfo::do_typedef_(VarTypeID baseid, const char * &p)
                 skip_space(p);
                 assert(*p == '(');
 
-                CFuncType* pnewfunc = new CFuncType;
+                FuncType* pnewfunc = new FuncType;
                 if (this->extern_c)
                 {
                         pnewfunc->m_extern_c = true;
@@ -832,10 +832,10 @@ void CCInfo::do_typedef_(VarTypeID baseid, const char * &p)
                 alert_prtf("expect , or ; in typedef: %s",savp);
         }
 }
-CFuncType* CCInfo::do_func_proto_void(const char * lbuf)
+FuncType* CCInfo::do_func_proto_void(const char * lbuf)
 {	//	就是没有函数返回值的情况，比如class的构造函数
     //Function return value is not the case, such as class constructor
-        CFuncType* pnewfunc = new CFuncType;
+        FuncType* pnewfunc = new FuncType;
         if (this->extern_c)
         {
                 pnewfunc->m_extern_c = true;
@@ -864,9 +864,9 @@ CFuncType* CCInfo::do_func_proto_void(const char * lbuf)
 
         return pnewfunc;
 }
-CFuncType* CCInfo::do_func_proto(const char * lbuf)
+FuncType* CCInfo::do_func_proto(const char * lbuf)
 {
-        CFuncType* pnewfunc = new CFuncType;
+        FuncType* pnewfunc = new FuncType;
         if (this->extern_c)
         {
                 pnewfunc->m_extern_c = true;
@@ -896,10 +896,10 @@ CFuncType* CCInfo::do_func_proto(const char * lbuf)
 }
 void CHpp::func_define(const char * lbuf, CCInfo* pCCInfo)
 {
-        CFuncType* pnewfunc = pCCInfo->do_func_proto(lbuf);
+        FuncType* pnewfunc = pCCInfo->do_func_proto(lbuf);
         newfunc_addlist(pnewfunc);
 }
-void CHpp::newfunc_addlist(CFuncType* pnewfunc)
+void CHpp::newfunc_addlist(FuncType* pnewfunc)
 {
 
         pnewfunc->create_internal_funcname();
@@ -909,7 +909,7 @@ void CHpp::newfunc_addlist(CFuncType* pnewfunc)
             FuncTypeList::iterator pos=m_FuncTypeList->begin();
             while (pos!=m_FuncTypeList->end())
             {   //Start looking to see if it already is in the list
-                    CFuncType* pft = *pos;;
+                    FuncType* pft = *pos;;
                     ++pos;
                     if (pft->m_internal_name.size()==0)
                         continue;
@@ -959,7 +959,7 @@ VarTypeID Get_Var_Declare(const char * &p, char * name)
         }
         return id;
 }
-void func_define_2(CFuncType* pfunc,const char * &p)
+void func_define_2(FuncType* pfunc,const char * &p)
 {
     //Processing parameters of the definition of func "(int argc, char * argv [])"
     // Finally, point to ')' after ';'
@@ -1014,7 +1014,7 @@ void func_define_2(CFuncType* pfunc,const char * &p)
 }
 
 
-void func_1(CFuncType* pft,const char * p)
+void func_1(FuncType* pft,const char * p)
 {
     //    p point is the definition of the function, including function name, but does not include parameters
     //    p may be "int ","__ cdecl", "uint32_t ",....
@@ -1096,25 +1096,25 @@ std::string get_define(char * partern)
             return (*iter)->dst;
         return "";
 }
-CFuncType* Get_FuncDefine_from_internal_name(const std::string & pmyinternalname)
+FuncType* Get_FuncDefine_from_internal_name(const std::string & pmyinternalname)
 {
         return g_Hpp->Get_FuncDefine_from_internal_name_(pmyinternalname);
 }
-CFuncType* CHpp::Get_FuncDefine_from_internal_name_(const std::string & pmyinternalname)
+FuncType* CHpp::Get_FuncDefine_from_internal_name_(const std::string & pmyinternalname)
 {
         assert(m_FuncTypeList);
 //        POSITION pos = m_FuncTypeList->begin();
 
         FuncTypeList::iterator iter;
         iter = std::find_if(m_FuncTypeList->begin(), m_FuncTypeList->end(),
-                    bind<const string &>(&CFuncType::m_internal_name,_1)==pmyinternalname);
+                    bind<const string &>(&FuncType::m_internal_name,_1)==pmyinternalname);
 
         if(iter==m_FuncTypeList->end())
             return NULL;
         return *iter;
 
 }
-CFuncType* Get_FuncDefine_from_name(const std::string &pmyname)
+FuncType* Get_FuncDefine_from_name(const std::string &pmyname)
 {
         return g_Hpp->Get_FuncDefine_from_name_(pmyname);
 }
@@ -1125,7 +1125,7 @@ struct _name_search
     {}
     _name_search(const std::string &n_to_find) : m_search_for(n_to_find.c_str())
     {}
-    bool operator()(CFuncType *p)
+    bool operator()(FuncType *p)
     {
         if (p->m_pname.size()==0)
             return false;
@@ -1134,7 +1134,7 @@ struct _name_search
         return false;
     }
 };
-CFuncType* CHpp::Get_FuncDefine_from_name_(const std::string & pmyname)
+FuncType* CHpp::Get_FuncDefine_from_name_(const std::string & pmyname)
 {
     //	?AfxWinMain@@YGHPAUHINSTANCE__@@0PADH@Z
     std::string name;
@@ -1252,8 +1252,8 @@ void CCInfo::do_class(const char * p, const char * &pnext)
         SIZEOF size = 0;
 
         int nfunc = 0;
-        CFuncType* funcs[50];
-        memset(funcs,0,50 * sizeof(CFuncType*));
+        FuncType* funcs[50];
+        memset(funcs,0,50 * sizeof(FuncType*));
 
         while (*p && *p != '}')
         {
@@ -1274,7 +1274,7 @@ void CCInfo::do_class(const char * p, const char * &pnext)
                 }
                 if (strchr(p,'('))	//	是函数
                 {
-                        CFuncType* pft = NULL;
+                        FuncType* pft = NULL;
                         int sz = strlen(theclass.m_name);
                         if (memcmp(p,theclass.m_name, sz) == 0
                                 && if_split_char(p[sz]))	//	是构造函数
@@ -1316,8 +1316,8 @@ void CCInfo::do_class(const char * p, const char * &pnext)
         memcpy(theclass.m_DataItems, items, n * sizeof(st_Var_Declare));
 
         theclass.m_nSubFuncs = nfunc;
-        theclass.m_SubFuncs = new CFuncType *[nfunc];
-        memcpy(theclass.m_SubFuncs, funcs, nfunc * sizeof(CFuncType *));
+        theclass.m_SubFuncs = new FuncType *[nfunc];
+        memcpy(theclass.m_SubFuncs, funcs, nfunc * sizeof(FuncType *));
 
         Class_st* pnew = new Class_st;
         *pnew = theclass;

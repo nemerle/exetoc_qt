@@ -15,8 +15,8 @@ Exe2C_MainWindow::Exe2C_MainWindow(QWidget *parent) :
     ui->statusbar->addPermanentWidget(new QLabel("Test"));
     bool init_result=exe2c_Init();
     assert(init_result);
-    g_EXE2C = new Cexe2c();
-    ((Cexe2c *)g_EXE2C)->BaseInit();
+    g_EXE2C = new Exe2c();
+    ((Exe2c *)g_EXE2C)->BaseInit();
     g_EXE2C->Init(this);
     m_last_diplay=g_EXE2C->GetFirstFuncHandle();
     m_functionlist_widget=new FunctionListDockWidget(this);

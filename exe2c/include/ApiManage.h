@@ -16,7 +16,7 @@ public:
 	ea_t	address;
 	char name[80];
 
-	CFuncType* m_functype;
+	FuncType* m_functype;
 
     Api()
     {

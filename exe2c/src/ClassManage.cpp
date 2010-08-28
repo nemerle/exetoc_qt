@@ -32,7 +32,7 @@ void Class_st::set_subfuncs()
 {
 	for (int i=0; i<m_nSubFuncs; i++)
 	{
-		CFuncType *p = m_SubFuncs[i];
+		FuncType *p = m_SubFuncs[i];
 		p->m_class = this;
 	}
 }
@@ -75,7 +75,7 @@ Class_st* ClassManage::LoopUp_class_by_name(const char * name)
     }
     return NULL;
 }
-CFuncType* ClassManage::Get_SubFuncDefine_from_name(const char * classname, const char * funcname)
+FuncType* ClassManage::Get_SubFuncDefine_from_name(const char * classname, const char * funcname)
 {
 	Class_st* pclass = this->LoopUp_class_by_name(classname);
 	if (pclass == NULL)
@@ -85,9 +85,9 @@ CFuncType* ClassManage::Get_SubFuncDefine_from_name(const char * classname, cons
 }
 
 
-CFuncType* Class_st::LookUp_SubFunc(const char * name)
+FuncType* Class_st::LookUp_SubFunc(const char * name)
 {
-	CFuncType* p;
+	FuncType* p;
 	for (int i=0; i<this->m_nSubFuncs; i++)
 	{
 		p = this->m_SubFuncs[i];
@@ -96,15 +96,15 @@ CFuncType* Class_st::LookUp_SubFunc(const char * name)
 	}
 	return NULL;
 }
-bool	Class_st::is_GouZ(CFuncType* pft) //is a constructor
+bool	Class_st::is_GouZ(FuncType* pft) //is a constructor
 {
 	return pft->m_pname.compare(this->m_name)==0;
 }
-bool	Class_st::is_GouX(CFuncType* pft) //destructor
+bool	Class_st::is_GouX(FuncType* pft) //destructor
 {
 	return (pft->m_pname[0] == '~');
 }
-bool	Class_st::is_GouZX(CFuncType* pft)
+bool	Class_st::is_GouZX(FuncType* pft)
 {//constructor or destructor
 	return is_GouZ(pft) || is_GouX(pft);
 }

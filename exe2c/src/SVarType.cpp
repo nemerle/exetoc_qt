@@ -53,7 +53,7 @@ CVarTypeMng::CVarTypeMng()
     NewSignedVarType(id_DWORD, "int" );
     NewSignedVarType(id_DWORD, "long" );
 
-    FuncType2VarID((CFuncType*)1);
+    FuncType2VarID((FuncType*)1);
     //New_p(1, "void *");	//	id = 8
 
     nextfreeid = 50;	//	from 50
@@ -67,7 +67,7 @@ struct _var_deleter
         switch (p->type)
         {
         case vtt_funcpoint:
-            //???? if (p->m_funcpoint.pFuncType != (CFuncType*)1)	//	1 means unknown func:
+            //???? if (p->m_funcpoint.pFuncType != (FuncType*)1)	//	1 means unknown func:
             //	delete p->m_funcpoint.pFuncType;
             break;
         case vtt_simple:
@@ -102,7 +102,7 @@ VarTypeID	CVarTypeMng::New_p(VarTypeID id0)
 
     return id;
 }
-VarTypeID	CVarTypeMng::FuncType2VarID(CFuncType* ft)
+VarTypeID	CVarTypeMng::FuncType2VarID(FuncType* ft)
 {
     VarTypeID id = nextfreeid++;
 
@@ -332,7 +332,7 @@ SVarType*	CVarTypeMng::id2_VarType(VarTypeID id)
     return NULL;	//	why here
 }
 
-CFuncType* CVarTypeMng::get_funcptr(VarTypeID id)
+FuncType* CVarTypeMng::get_funcptr(VarTypeID id)
 {
     assert(id);
     SVarType* p = id2_VarType(id);
@@ -910,7 +910,7 @@ bool	GG_is_funcpoint(VarTypeID id)
 {
     return g_VarTypeManage->is_funcptr(id);
 }
-CFuncType* GG_get_funcpoint(VarTypeID id)
+FuncType* GG_get_funcpoint(VarTypeID id)
 {
     return g_VarTypeManage->get_funcptr(id);
 }

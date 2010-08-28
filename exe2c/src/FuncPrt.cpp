@@ -640,7 +640,7 @@ void	CFunc_Prt::prt_sub(const INSTR *p, const char * s, XmlOutPro* out)
 const char * CallConvToName(enum_CallC ec);
 void	CFunc_Prt::prt_func_head(XmlOutPro* out)
 {
-    CFuncType* pfctype = this->Q->m_functype;
+    FuncType* pfctype = this->Q->m_functype;
     if (pfctype != NULL)
     {
         if (pfctype->m_class != NULL && pfctype->m_class->is_GouZX(pfctype))

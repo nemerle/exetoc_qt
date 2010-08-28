@@ -58,7 +58,7 @@ void ApiManage::New_ImportAPI(const std::string &pstr, uint32_t apiaddr)
         log_prtl("New_ImportAPI %s 0x%x", pstr.c_str(), apiaddr);
 
 
-    CFuncType* pf = Get_FuncDefine_from_name(pstr);
+    FuncType* pf = Get_FuncDefine_from_name(pstr);
     if (pf == NULL)
         return;
     Api *p = new Api;     //new_CApi

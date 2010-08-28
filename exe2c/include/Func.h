@@ -159,7 +159,7 @@ public:
     void DeleteUnusedVar();
 
     bool m_IfLibFunc;
-    CFuncType* m_functype;
+    FuncType* m_functype;
 
     int   m_EBP_base;
     signed int m_VarRange_L;
@@ -353,7 +353,7 @@ public:
     void Prt_Var_Flow(const char * varname);
     bool VarDataType_analysis_mydefine();
     bool VarDataType_analysis();
-    bool DataType_Check(VAR_ADDON* pvar, CFuncType* pftype);
+    bool DataType_Check(VAR_ADDON* pvar, FuncType* pftype);
 };
 
 enum em_PRT_COLOR

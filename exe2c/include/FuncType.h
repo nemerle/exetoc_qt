@@ -16,7 +16,7 @@ enum enum_CallC
 
 enum_CallC if_CallC(const char* p);
 
-class CFuncType
+class FuncType
 {
 public:
 	enum_CallC	m_callc;
@@ -36,11 +36,11 @@ public:
 	std::string	m_internal_name;	//can be "_printf", "printf$CRS"
 	class Class_st*	m_class;			//	if not null, means this func is a subfunc of this class
 
-	CFuncType();
-	~CFuncType();
+	FuncType();
+	~FuncType();
 
 	void create_internal_funcname();
-	CFuncType* ft_clone();
+	FuncType* ft_clone();
 
     unsigned char get_stack_purge();
     SIZEOF para_total_size();
@@ -48,17 +48,17 @@ public:
 };
 
 
-typedef std::list<CFuncType*> FuncTypeList;
+typedef std::list<FuncType*> FuncTypeList;
 
 
-void func_1(CFuncType* pfunc,const char* p);
-void func_define_2(CFuncType* pfunc,const char* &p);
+void func_1(FuncType* pfunc,const char* p);
+void func_define_2(FuncType* pfunc,const char* &p);
 
 
 //	--------------------------------------------------------
 
-CFuncType* Get_FuncDefine_from_internal_name(const std::string &pmyinternalname);
-CFuncType* Get_FuncDefine_from_name(const std::string &pmyinternalname);
+FuncType* Get_FuncDefine_from_internal_name(const std::string &pmyinternalname);
+FuncType* Get_FuncDefine_from_name(const std::string &pmyinternalname);
 //	对库函数，是用internal_name，对api，则是用func_name
 
 

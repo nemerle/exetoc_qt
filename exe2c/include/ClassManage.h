@@ -53,16 +53,16 @@ public:
 
         ea_t	m_Vftbl;		//	虚表的地址，如果有的话 //Virtual table addresses, if any,
         int		m_nSubFuncs;		//	子函数的个数 //number of subroutines
-        CFuncType**		m_SubFuncs;	//	各个子函数 //subroutine array
+        FuncType**		m_SubFuncs;	//	各个子函数 //subroutine array
 
 public:
         Class_st();
         ~Class_st();
 
-        CFuncType* LookUp_SubFunc(const char * name);
-        bool	is_GouZ(CFuncType* pft);        //是构造 // Is to construct
-        bool	is_GouX(CFuncType* pft);        //是构析 //Is a structure analysis
-        bool	is_GouZX(CFuncType* pft);       //是构造或构析 //Is to construct or conformation analysis
+        FuncType* LookUp_SubFunc(const char * name);
+        bool	is_GouZ(FuncType* pft);        //是构造 // Is to construct
+        bool	is_GouX(FuncType* pft);        //是构析 //Is a structure analysis
+        bool	is_GouZX(FuncType* pft);       //是构造或构析 //Is to construct or conformation analysis
         const char *	getclassitemname(uint32_t off);
         st_Var_Declare* GetClassItem(uint32_t off);
 //	void	prtout(CXmlPrt* prt);
@@ -81,7 +81,7 @@ public:
         ClassManage();
         ~ClassManage();
 
-        CFuncType* Get_SubFuncDefine_from_name(const char * classname, const char * funcname);
+        FuncType* Get_SubFuncDefine_from_name(const char * classname, const char * funcname);
         void add_class(Class_st* pnew);
         Class_st* LoopUp_class_by_name(const char * name);
 

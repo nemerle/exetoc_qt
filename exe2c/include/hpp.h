@@ -46,8 +46,8 @@ public:
 	void OneLine(const char * lbuf, const char * &pnext);
 	void do_typedef(const char * &p);
 	void do_typedef_(VarTypeID baseid, const char * &p);
-	CFuncType* do_func_proto(const char * pstr);
-	CFuncType* do_func_proto_void(const char * pstr);
+	FuncType* do_func_proto(const char * pstr);
+	FuncType* do_func_proto_void(const char * pstr);
 	void do_class(const char * pleft, const char * &pnext);
 };
 

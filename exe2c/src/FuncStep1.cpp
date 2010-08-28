@@ -545,7 +545,7 @@ void CFuncLL::AddRemoveSomeInstr()
                 continue;
             if (pfunc->m_IfLibFunc && pfunc->m_functype != NULL)
             {
-                CFuncType* fctype = pfunc->m_functype;
+                FuncType* fctype = pfunc->m_functype;
                 if (!fctype->m_internal_name.compare("_EH_prolog"))
                 {
                     // ??strcmp(fctype->m_internal_name, "_EH_prolog");

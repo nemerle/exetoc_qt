@@ -15,11 +15,11 @@
 #include "CISC.h"
 #include "proto.h"
 #include "FuncStep1.h"
-class Cexe2c : public I_EXE2C
+class Exe2c : public I_EXE2C
 {
 public:
-	Cexe2c(){}
-	~Cexe2c();
+	Exe2c(){}
+	~Exe2c();
 
 public:
 ///////////// DO NOT EDIT THIS //////////////
@@ -110,5 +110,5 @@ private:
     void	do_exe2c(ea_t entry);
 };
 
-extern Cexe2c* g_Cexe2c;
+extern Exe2c* g_Cexe2c;
 #endif	// _CEXE2C_H_

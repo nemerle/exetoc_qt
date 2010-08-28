@@ -10,20 +10,20 @@
 #include "FuncType.h"
 #include "SVarType.h"
 
-CFuncType::CFuncType() : m_callc(),m_retdatatype_id(0),m_extern_c(false),m_varpar(0),m_args(0),
+FuncType::FuncType() : m_callc(),m_retdatatype_id(0),m_extern_c(false),m_varpar(0),m_args(0),
     m_partypes(0),m_class(0)
 {
 }
-CFuncType::~CFuncType()
+FuncType::~FuncType()
 {
     this->m_partypes.clear();
     this->m_parnames.clear();
 }
 
-CFuncType* CFuncType::ft_clone()
+FuncType* FuncType::ft_clone()
 {
     //Copy the current information
-    CFuncType* pnew = new CFuncType;
+    FuncType* pnew = new FuncType;
     *pnew = *this;
 
     pnew->m_pname = m_pname;
@@ -41,7 +41,7 @@ CFuncType* CFuncType::ft_clone()
     return pnew;
 }
 
-void CFuncType::create_internal_funcname()
+void FuncType::create_internal_funcname()
 {
         if (this->m_internal_name.size()!=0)
                 return;
@@ -64,7 +64,7 @@ void CFuncType::create_internal_funcname()
 }
 
 
-VarTypeID CFuncType::SearchPara(SIZEOF off)
+VarTypeID FuncType::SearchPara(SIZEOF off)
 {
     size_t retn = 0;
     for (int i=0; i<m_args; i++)
@@ -76,7 +76,7 @@ VarTypeID CFuncType::SearchPara(SIZEOF off)
     }
     return 0;
 }
-SIZEOF CFuncType::para_total_size()
+SIZEOF FuncType::para_total_size()
 {
     SIZEOF retn = 0;
     for (int i=0; i<m_args; i++)
@@ -86,7 +86,7 @@ SIZEOF CFuncType::para_total_size()
     return retn;
 }
 
-unsigned char CFuncType::get_stack_purge()
+unsigned char FuncType::get_stack_purge()
 {
     //	根据m_ftype，算出 m_stack_purge
     if (m_varpar)

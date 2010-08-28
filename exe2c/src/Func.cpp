@@ -65,7 +65,7 @@ bool	Func::Func_FillCallParas()
         ++pos;
         if (pinstr->type == i_Call)
         {
-            CFuncType* pfctype = pinstr->call.call_func->m_functype;
+            FuncType* pfctype = pinstr->call.call_func->m_functype;
             if (pfctype != NULL && pfctype->m_class != NULL)
             {//这是一个ecx->func
                 PINSTR p = new INSTR;   //new_INSTR
@@ -584,7 +584,7 @@ std::string Func::Instr_prt_simple(PINSTR p)
     return s;
 }
 
-bool CFuncOptim::DataType_Check(VAR_ADDON* pva, CFuncType* pftype)
+bool CFuncOptim::DataType_Check(VAR_ADDON* pva, FuncType* pftype)
 {
     M_t* pvar = pva->pv->thevar;
     if (pvar->m_DataTypeID == 0)
@@ -714,7 +714,7 @@ bool CFuncOptim::VarDataType_analysis_mydefine()
 {//I already have a function definition, parameter names and types from which to take
     if (this->Q->m_functype == NULL)
         return false;
-    CFuncType* pftype = this->Q->m_functype;
+    FuncType* pftype = this->Q->m_functype;
 
     UINT sizepara = pftype->para_total_size();
     int offset = 0;
@@ -740,7 +740,7 @@ bool CFuncOptim::VarDataType_analysis()
             assert(pcall);
             if (pcall->type == i_Call)
             {
-                CFuncType* pft = pcall->call.call_func->m_functype;
+                FuncType* pft = pcall->call.call_func->m_functype;
                 assert(pft != NULL);
                 assert(pft->m_class != NULL);
 
@@ -774,14 +774,14 @@ bool CFuncOptim::VarDataType_analysis()
             assert(pcall);
             if (pcall->type == i_CallApi)
             {
-                CFuncType* pft = pcall->call.papi->m_functype;
+                FuncType* pft = pcall->call.papi->m_functype;
                 if (pft != NULL)
                     if (this->DataType_Check(&p->va_r1, pft))
                         return true;
             }
             if (pcall->type == i_Call)
             {
-                CFuncType* pft = pcall->call.call_func->m_functype;
+                FuncType* pft = pcall->call.call_func->m_functype;
                 if (pft != NULL)
                     if (this->DataType_Check(&p->va_r1, pft))
                         return true;
@@ -793,7 +793,7 @@ bool CFuncOptim::VarDataType_analysis()
             assert(pcall);
             if (pcall->type == i_Call)
             {
-                CFuncType* pdf = pcall->call.call_func->m_functype;
+                FuncType* pdf = pcall->call.call_func->m_functype;
                 if (pdf != NULL
                         && p->var_w.thevar != NULL
                         && g_VarTypeManage->is_simple(p->var_w.thevar->m_DataTypeID)

@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////
 //
-// Cexe2c.cpp
+// Exe2c.cpp
 // Copyright(C) 1999-2005 LiuTaoTao，bookaa@rorsoft.com
 // Created at 2005.2.1
 // Description:	The main cpp file of the component
@@ -11,6 +11,10 @@
 ////#include "stdafx.h"
 #include <QString>
 #include <boost/filesystem/path.hpp>
+#include <boost/lambda/lambda.hpp>
+#include <boost/lambda/construct.hpp>
+#include <boost/lambda/bind.hpp>
+
 #include "exe2c.h"
 #include "FuncStep1.h"
 #include "DataType.h"
@@ -21,7 +25,7 @@
 //KS_DECLARE_COMPONENT(exe2c, EXE2C)
 
 
-Cexe2c* g_Cexe2c = NULL;
+Exe2c* g_Cexe2c = NULL;
 
 I_LIBSCANNER* g_LIBSCANNER = NULL;
 
@@ -58,15 +62,12 @@ void exe2c_Exit()
 //CSelfInit self;
 
 
-bool Cexe2c::BaseInit()
+bool Exe2c::BaseInit()
 {
-    //KICK_MFC();
     m_E2COut = NULL;
+    //TODO: Convert Exe2c to singleton
     g_Cexe2c = this;
-
     //this->m_api_name_manager = new CNameMng;    //new_CNameMng
-
-	// 作一些全局初始化
 	// Make some global initializations
 
 	m_FileLoader = NULL;
@@ -80,12 +81,12 @@ struct remover
     }
 };
 
-Cexe2c::~Cexe2c()
+Exe2c::~Exe2c()
 {
     //KICK_MFC();
     g_Cexe2c = NULL;
-    delete this->m_api_name_manager;
-    this->m_api_name_manager = NULL;
+    delete m_api_name_manager;
+    m_api_name_manager = NULL;
 //    for_each(m_func_list.begin(),m_func_list.end(),remover);
     m_func_list.clear();
 
@@ -94,45 +95,42 @@ Cexe2c::~Cexe2c()
 }
 
 
-bool Cexe2c::test()
+bool Exe2c::test()
 {
 	//KICK_MFC();
 	return true;
 }
 
 
-void	Cexe2c::Recurse_Analysis()
+void	Exe2c::Recurse_Analysis()
 {
+    Func* p;
     FUNC_LIST::iterator pos = m_func_list.begin();
-    while (pos != m_func_list.end())
+    FUNC_LIST::iterator end = m_func_list.end();
+    for( ; pos != end; ++pos)
     {
-        Func* p = *pos;
-        ++pos;
-
+        p = *pos;
         log_prtl("Recurse_analysis %x",p->m_head_off);
-
 		if (p->m_nStep != STEP_100)
 			continue;
-
         p->analysis();
     }
 }
 
-void	Cexe2c::Recurse_Optim()
+void	Exe2c::Recurse_Optim()
 {
+    Func* p;
     FUNC_LIST::iterator pos = m_func_list.begin();
-    while (pos != m_func_list.end())
+    FUNC_LIST::iterator end = m_func_list.end();
+    for( ; pos != end; ++pos)
     {
-        Func* p = *pos;
-        ++pos;
-
+        p = *pos;
         log_prtl("Recurse_Optim %x",p->m_head_off);
-
 		if (p->m_nStep < STEP_6)
 			continue;
 	}
 }
-void Cexe2c::exe2c_main(const std::string & fname)
+void Exe2c::exe2c_main(const std::string & fname)
 {
 	lib_init();
 	//MessageBox(0,fname,"file open",0);
@@ -166,15 +164,16 @@ void Cexe2c::exe2c_main(const std::string & fname)
 }
 
 
-Func*	Cexe2c::FindFuncByName(const char * pname)
+Func*	Exe2c::FindFuncByName(const char * pname)
 {
     if (m_func_list.size() == 0)
         return NULL;
+    Func* p;
     FUNC_LIST::iterator pos = m_func_list.begin();
-    while (pos != m_func_list.end())
+    FUNC_LIST::iterator end = m_func_list.end();
+    for( ; pos != end; ++pos)
     {
-        Func* p = *pos;
-        ++pos;
+        p = *pos;
         QString fc(p->m_funcname.c_str());
         if (fc.compare(pname,Qt::CaseInsensitive) == 0)
             return p;
@@ -183,7 +182,7 @@ Func*	Cexe2c::FindFuncByName(const char * pname)
 }
 
     //start Analysis
-void	Cexe2c::do_exe2c(ea_t start)
+void	Exe2c::do_exe2c(ea_t start)
 {
 	ea_t pmain = Find_Main(start);
 
@@ -203,18 +202,13 @@ void	Cexe2c::do_exe2c(ea_t start)
 
 #include "FuncType.h"
 
-
-Func* Cexe2c::GetFunc(ea_t start)
+Func* Exe2c::GetFunc(ea_t start)
 {
-    FUNC_LIST::iterator pos = m_func_list.begin();
-    while (pos != m_func_list.end())
-    {
-        Func* p = *pos;
-        ++pos;
-        if (p->m_head_off == start)
-            return p;
-    }
-    return NULL;
+    FUNC_LIST::iterator iter=std::find_if(m_func_list.begin(),m_func_list.end(),
+        boost::bind<ea_t>(&Func::m_head_off,_1)==start);
+    if(iter==m_func_list.end())
+        return NULL;
+    return *iter;
 }
 
 //#include "..\..\LibScanner\LibScanner.H"
@@ -243,7 +237,7 @@ static std::string CheckIf_libfunc(PCBYTE phead)
 // According to start, create an empty CFunc
 // And join the m_func_list
 // If the address CFunc already exists, then return it directly
-Func* Cexe2c::func_new(ea_t start)
+Func* Exe2c::func_new(ea_t start)
 {
     {
         // 检查本func是否已经在func链中了
@@ -303,7 +297,7 @@ static uint32_t str_to_dword(const char * cmd)
 }
 #include "hpp.h"
 const char * my_itoa(int i);
-void Cexe2c::DoCommandLine(const char * cmd)
+void Exe2c::DoCommandLine(const char * cmd)
 {
     //if (g_Cur_Func == NULL)
         //return;
@@ -322,7 +316,7 @@ void Cexe2c::DoCommandLine(const char * cmd)
         //Current function of the predefined
         cmd += 10;
         CCInfo * pnew = new CCInfo;
-        CFuncType* pfunctype = pnew->do_func_proto(cmd);
+        FuncType* pfunctype = pnew->do_func_proto(cmd);
         g_Cur_Func->m_functype = pfunctype;
         g_Cur_Func->m_funcname = pfunctype->m_pname;
     }
@@ -331,7 +325,7 @@ void Cexe2c::DoCommandLine(const char * cmd)
         cmd += 8;
         VarTypeID id = g_VarTypeManage->VarType_Name2ID(cmd);
         Class_st* pclass = g_VarTypeManage->id2_Class(id);
-        CFuncType* pfunctype = g_Cur_Func->m_functype;
+        FuncType* pfunctype = g_Cur_Func->m_functype;
         if (pfunctype != NULL && pclass != NULL)
         {
             pfunctype->m_class = pclass;
@@ -379,7 +373,7 @@ void Cexe2c::DoCommandLine(const char * cmd)
     }
 }
 
-void Cexe2c::Change_Array(int colorindex, void* handle, int newarray)
+void Exe2c::Change_Array(int colorindex, void* handle, int newarray)
 {
     if (handle == NULL)
         return;
@@ -398,7 +392,7 @@ void Cexe2c::Change_Array(int colorindex, void* handle, int newarray)
         //g_Cur_Func->m_exprs->Change_Array(p, newarray);
     }
 }
-void Cexe2c::LineHotKey(void* hline, char key)
+void Exe2c::LineHotKey(void* hline, char key)
 {
     if (key == 'i' || key == 'I')
     {//i for internal
@@ -421,7 +415,7 @@ void Cexe2c::LineHotKey(void* hline, char key)
         g_Cur_Func->MakeDownInstr(hline);
     }
 }
-void Cexe2c::HotKey(int colorindex, void* handle, char key)
+void Exe2c::HotKey(int colorindex, void* handle, char key)
 {
     if (handle == NULL)
         return;
@@ -438,7 +432,7 @@ void Cexe2c::HotKey(int colorindex, void* handle, char key)
     }
 }
 
-void Cexe2c::ReType(int colorindex, void* handle, const char * newtype)
+void Exe2c::ReType(int colorindex, void* handle, const char * newtype)
 {
     if (handle == NULL)
         return;
@@ -448,7 +442,7 @@ void Cexe2c::ReType(int colorindex, void* handle, const char * newtype)
         g_Cur_Func->ReType(p, newtype);
     }
 }
-bool Cexe2c::Rename(int arg, void* handle, const char * newname)
+bool Exe2c::Rename(int arg, void* handle, const char * newname)
 {
     XMLTYPE xmltype=(XMLTYPE )arg;
     if (handle == NULL)

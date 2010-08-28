@@ -59,7 +59,6 @@ include/enum.h
 include/EXPR.h
 include/FileLoad.h
 include/INSTR.h
-include/mylist.h
 include/ParseHead.h
 include/proto.h
 include/standard.h
