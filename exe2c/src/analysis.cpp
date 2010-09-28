@@ -144,11 +144,11 @@ void	Func::ana_RetType()
     while (pos!=m_instr_list.end())
     {
         INSTR_LIST::iterator savpos = pos;
-        PINSTR p = *pos;
+        INSTR * p = *pos;
         ++pos;
         if (p->type == i_Return)
         {
-            PINSTR pnew = new INSTR;    //new_INSTR
+            INSTR * pnew = new INSTR;    //new_INSTR
             pnew->type = i_RetPar;	// For the time being that each is ret uint32_t func
             pnew->var_r1 = v;
             m_instr_list.insert(savpos,pnew);

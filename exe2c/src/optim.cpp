@@ -6,14 +6,14 @@
 #include "CISC.h"
 
 
-bool Func::expr_only_use_in_this(VAR* pvar, PINSTR phead)
+bool Func::expr_only_use_in_this(VAR* pvar, INSTR * phead)
 {
 	assert( phead->type == i_Begin || phead->type == i_CplxBegin);
 
 	INSTR_LIST::iterator pos = m_instr_list.begin();
 	for (;pos!=m_instr_list.end();++pos)
 	{
-		PINSTR p = *pos;
+		INSTR * p = *pos;
 		if (p == phead)
 		{
 			p = p->begin.m_end;

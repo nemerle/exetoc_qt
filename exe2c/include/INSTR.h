@@ -9,8 +9,6 @@
 class	Func;
 
 class INSTR;
-typedef	INSTR*	PINSTR;
-
 enum em_InstrAddOn
 {
     IA_Nothing = 0,
@@ -72,13 +70,13 @@ public:
         {
             JxxType	jmp_type;	//JMP_???
             uint32_t   jmpto_off;
-            PINSTR the_label;
-            PINSTR next_ref_of_this_label;	//这里组成个链，用来保存对一个label的所有ref
+            INSTR * the_label;
+            INSTR * next_ref_of_this_label;	//这里组成个链，用来保存对一个label的所有ref
         } jmp;					//for type = i_Jump only
 
 		struct
 		{
-			PINSTR  ref_instr;	//for type = i_Label only
+			INSTR *  ref_instr;	//for type = i_Label only
 			ea_t	label_off;
 			bool	f_conti;
 		} label;
@@ -88,22 +86,22 @@ public:
 			Func*  call_func;		// for i_Call
 			Api*	papi;			// for i_CallApi
 			signed int		esp_level;
-			PINSTR      p_callpara;
-			PINSTR      p_callret;
+			INSTR *      p_callpara;
+			INSTR *      p_callret;
 		} call;
 
         struct
         {
-            PINSTR      p_thecall;
+            INSTR *      p_thecall;
         } call_addon;   //for i_CallPara and i_CallRet
 
 		struct
 		{
-			PINSTR		m_end;		// for i_Begin
+			INSTR *		m_end;		// for i_Begin
 			enum_COMP	type;		// COMP_if
-			PINSTR		m_break;	// 如果允许 break 的话，这是break到的label
-			PINSTR		m_conti;	// 如果允许 continue 的话，这是continue到的label
-			PINSTR		m_not_conti;	//	尽管这个jmp指向m_conti，它仍然不是continue.
+			INSTR *		m_break;	// 如果允许 break 的话，这是break到的label
+			INSTR *		m_conti;	// 如果允许 continue 的话，这是continue到的label
+			INSTR *		m_not_conti;	//	尽管这个jmp指向m_conti，它仍然不是continue.
 		} begin;						//	这个特例是为了照顾while
 
         struct
@@ -128,25 +126,25 @@ public:
 	bool	optim_1_();
 	bool	optim_4_();
 	bool	optim_3_();
-	bool	optim_3_1(PINSTR p);
-	void	optim_3_2(PINSTR p);
+	bool	optim_3_1(INSTR * p);
+	void	optim_3_2(INSTR * p);
 	//-----------------
 };
 
-typedef	std::list<PINSTR> INSTR_LIST;
+typedef	std::list<INSTR *> INSTR_LIST;
 class InstrList
 {
     typedef INSTR_LIST::iterator POSITION;
-    bool	if_Ly_In(PINSTR p, POSITION firstpos, POSITION endpos);
-    bool    IsSwitchCase_multcomp(PINSTR begin);
-    bool    IsSwitchCase(PINSTR begin);
-    bool	ifOneStatement(PINSTR pNode, POSITION firstpos, POSITION endpos);
-    bool	Flow_c(PINSTR pNode);
-    void	Flow_b(PINSTR pParentNode, POSITION firstpos, POSITION endpos);
-    bool	Flow_aa(PINSTR pNode, POSITION firstpos, POSITION endpos);
-    bool	Flow_cc(PINSTR pNode, POSITION firstpos, POSITION endpos);
-    void	Add_Begin_End(POSITION firstpos, POSITION &endpos, PINSTR begin, PINSTR end);
-    void	Add_Begin_End_1(POSITION firstpos, POSITION endpos, PINSTR begin, PINSTR end);
+    bool	if_Ly_In(INSTR * p, POSITION firstpos, POSITION endpos);
+    bool    IsSwitchCase_multcomp(INSTR * begin);
+    bool    IsSwitchCase(INSTR * begin);
+    bool	ifOneStatement(INSTR * pNode, POSITION firstpos, POSITION endpos);
+    bool	Flow_c(INSTR * pNode);
+    void	Flow_b(INSTR * pParentNode, POSITION firstpos, POSITION endpos);
+    bool	Flow_aa(INSTR * pNode, POSITION firstpos, POSITION endpos);
+    bool	Flow_cc(INSTR * pNode, POSITION firstpos, POSITION endpos);
+    void	Add_Begin_End(POSITION firstpos, POSITION &endpos, INSTR * begin, INSTR * end);
+    void	Add_Begin_End_1(POSITION firstpos, POSITION endpos, INSTR * begin, INSTR * end);
 
     INSTR_LIST &m_list; //要尽量把它private
 public:
@@ -155,12 +153,12 @@ public:
 
     }
 
-    bool	Flow_a(PINSTR pNode);
+    bool	Flow_a(INSTR * pNode);
 };
 
 class InstrList_Finger
 {
-    void	prt_partern(PINSTR phead, char * partern_buf);
+    void	prt_partern(INSTR * phead, char * partern_buf);
     static int search_and_add(uint32_t* buf,uint32_t val,int* pn);
     static bool	finger_compare(char * f1,const char* f2);
 public:
@@ -168,7 +166,7 @@ public:
     InstrList_Finger(INSTR_LIST &list) : m_list(list)
     {
     }
-    bool	Finger_check_partern(PINSTR p);
-    bool	Finger_check_partern_for1(PINSTR p);
+    bool	Finger_check_partern(INSTR * p);
+    bool	Finger_check_partern_for1(INSTR * p);
 };
 #endif // INSTR__H

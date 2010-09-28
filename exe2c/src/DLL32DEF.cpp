@@ -105,7 +105,7 @@ ORD_LIST* DefName_2_list(char * fname)
     lDefFile::iterator iter;
     iter = std::find_if(g_FirstDef.begin(),
                         g_FirstDef.end(),
-                        bind(&deffile_st::m_fname,_1)==search_for);
+                        boost::lambda::bind(&deffile_st::m_fname,_1)==search_for);
 
     if(iter!=g_FirstDef.end())
         return (*iter).m_list;

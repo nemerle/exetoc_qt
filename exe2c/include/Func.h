@@ -128,7 +128,7 @@ class VarLL
 {
     VarLL_LIST m_varll_list;
 
-
+    std::string size_to_ptr_name(int size);
 public:
     signed int m_VarRange_L;
     signed int m_VarRange_H;
@@ -188,7 +188,7 @@ public:
     ~Func();
 
 
-    // 分析系列
+    // Analysis methods
     bool    Step_1();
     bool    Step_Label_Analysis();
     bool	Step2_GetRetPurge();
@@ -199,18 +199,18 @@ public:
     bool    AddRemoveSomeInstr();
 
     void	Finger_it();
-    // 分析系列 end
+    // Analysis methods end
 
 
-    // create 系列
+    // create methods
     bool Step4_1();
     void Step4_CreateInstrList();
     void CreateInstrList_welldone_call();
 
-    void Create_Labels_backend();   // 标号后端处理
-    // create 系列 end
+    void Create_Labels_backend();   // label back-end processing
+    // create methods end
 
-    bool expr_only_use_in_this(VAR* pvar, PINSTR phead);
+    bool expr_only_use_in_this(VAR* pvar, INSTR *phead);
 
     void    PrepareFunc();
     void    analysis();
@@ -218,25 +218,25 @@ public:
     bool	analysis_once_1();
     bool	analysis_step_by_step();
 
-    //	一步步的分析系列
+    //	Step by step analysis methods
     void	ana_RetType();
 
     void Fill_this_ECX(VarTypeID id);
-    //	一步步的分析系列 end
+    //	Step by step analysis methods end
 
     int  nParas();
 
-    //	输出系列
+    //	Output methods
 
-        void	prtout_internal(XmlOutPro* out);		//	把CFunc按internal打印
-        PINSTR	Get_no_Statement(PINSTR phead,int no);
-    void report_info();
-        //	输出系列 end
+    void	prtout_internal(XmlOutPro* out);		//	把CFunc按internal打印
+    INSTR *	Get_no_Statement(INSTR * phead,int no);
+    void    report_info();
+    //	Output methods end
 
     void MakeDownInstr(void* hline);
     void ReType(M_t* p, const char * newtype);
 
-    std::string Instr_prt_simple(PINSTR p);
+    std::string Instr_prt_simple(INSTR * p);
 };
 
 typedef std::list<Func*>	FUNC_LIST;
@@ -261,12 +261,12 @@ class CFunc_Prt
     void         	prt_va(const VAR_ADDON& va, XmlOutPro* out);
     void            prt_va_1(const st_InstrAddOn* pa,const VAR* pv, XmlOutPro* out);
     void            out_PointTo(st_InstrAddOn* pa,const VAR* pv, XmlOutPro* out);
-    void            prt_jxx_compare_false(PINSTR &pjxx, XmlOutPro* out);
+    void            prt_jxx_compare_false(INSTR * &pjxx, XmlOutPro* out);
     void            prt_one_statement(const INSTR *phead, XmlOutPro* out);
     void            prt_switch_case(CasePrt_List* list, const INSTR* phead, XmlOutPro* out);
     void            prt_var_declares(XmlOutPro* out);
-    void            prt_statement_in_1_line(PINSTR &p, XmlOutPro* out);
-    void            prt_jxx_compare_true(PINSTR &spjxx, XmlOutPro* out);
+    void            prt_statement_in_1_line(INSTR * &p, XmlOutPro* out);
+    void            prt_jxx_compare_true(INSTR * &spjxx, XmlOutPro* out);
     void            prt_compare(const INSTR *phead, XmlOutPro* out);
     void            prt_one_statement_mainbody(const INSTR *phead, XmlOutPro* out);
     void            prt_sub(const INSTR *p, const char * s, XmlOutPro* out);
@@ -274,8 +274,8 @@ class CFunc_Prt
     const char *	prt_iAddress(const INSTR *p);
     void            prt_iAddress_out(const INSTR *p, XmlOutPro* out);
 
-static void     add_default_entry(CasePrt_List* list, PINSTR thelabel);
-static void	Add_case_entry(CasePrt_List* list, int case_n, PINSTR thelabel);
+static void     add_default_entry(CasePrt_List* list, INSTR * thelabel);
+static void	Add_case_entry(CasePrt_List* list, int case_n, INSTR * thelabel);
     void	prt_the_instr_1(const INSTR *p, XmlOutPro* out);
 public:
 
@@ -290,20 +290,20 @@ public:
 
 struct st_VarOptm
 {
-    PINSTR pinstr;
+    INSTR * pInstr;
     BYTE rw;
     bool bJxx;
-    int varstep_r;	//可能读是一个变量，而把写变为另一个变量
+    int varstep_r;	//May read a variable, and then write into another variable
     int varstep_w;
 
-    bool tem_1; //临时局部使用，不必多虑
+    bool tem_1; //Temporary local use, not to worry
 
-    st_VarOptm() : pinstr(0),rw(0),bJxx(false),varstep_r(0),varstep_w(0)
+    st_VarOptm() : pInstr(0),rw(0),bJxx(false),varstep_r(0),varstep_w(0)
     {
     }
     bool IsJump()
     {
-        return (bJxx && pinstr->type == i_Jump);
+        return (bJxx && pInstr->type == i_Jump);
     }
 };
 typedef std::list<st_VarOptm*> VAROPTM_LIST;
@@ -313,8 +313,8 @@ class CFuncOptim
 {
     typedef INSTR_LIST::iterator POSITION;
     Func* Q;
-    bool MakeSure_NotRef_in_Range(VAR* pvar, PINSTR p1, PINSTR p2);
-    bool expr_never_use_after_this(VAR* pvar, PINSTR pend, INSTR_LIST* oldroad);
+    bool MakeSure_NotRef_in_Range(VAR* pvar, INSTR * p1, INSTR * p2);
+    bool expr_never_use_after_this(VAR* pvar, INSTR * pend, INSTR_LIST* oldroad);
 
     void prt_var_uselist(VAROPTM_LIST& used_list);
     bool Optim_Var_Flow(VAROPTM_LIST& used_list);
@@ -361,7 +361,7 @@ enum em_PRT_COLOR
     COLOR_0 = 0,    //default color
     COLOR_Func = 1,
     COLOR_Var,
-    COLOR_VarH,     //高级的，cpp用的
+    COLOR_VarH,     //Advanced, used in cpp
     COLOR_Immed,
     COLOR_ea,
     COLOR_type,
@@ -378,7 +378,7 @@ class CPrtOut
     bool b_Indent;
     bool b_Endl;
     bool b_OneLine;
-    const void* hline;    //this is PINSTR
+    const void* hline;    //this is INSTR *
     st_OutBuf m_buf;
 public:
     CPrtOut();
@@ -425,9 +425,9 @@ public:
     {
 
     }
-    PINSTR instr_next_in_func(const INSTR * p);
-    PINSTR instr_prev_in_func(const INSTR * p);
-    PINSTR skip_compl(const INSTR * p);
+    INSTR * instr_next_in_func(const INSTR * p);
+    INSTR * instr_prev_in_func(const INSTR * p);
+    INSTR * skip_compl(const INSTR * p);
 };
 
 

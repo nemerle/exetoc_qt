@@ -700,7 +700,7 @@ void Replace_Var(INSTR_LIST& instr_list, M_t* pvar, M_t* thevar)
     INSTR_LIST::iterator pos = instr_list.begin();
     for (;pos!=instr_list.end();++pos)
     {
-        PINSTR p = *pos;
+        INSTR * p = *pos;
         Replace_Var_1(&p->var_w,pvar,thevar);
         Replace_Var_1(&p->var_r1,pvar,thevar);
         Replace_Var_1(&p->var_r2,pvar,thevar);

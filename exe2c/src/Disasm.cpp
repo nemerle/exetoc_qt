@@ -12,24 +12,24 @@
 
 typedef union MODRM
 {
-        BYTE	v;
-        struct
-        {
-                BYTE	rm:3;
-                BYTE	reg:3;
-                BYTE	mod:2;
-        };
+    BYTE	v;
+    struct
+    {
+        BYTE	rm:3;
+        BYTE	reg:3;
+        BYTE	mod:2;
+    };
 } *PMODRM;
 
 typedef union SIB
 {
-        BYTE	v;
-        struct
-        {
-                BYTE	base:3;
-                BYTE	index:3;
-                BYTE	ss:2;
-        };
+    BYTE	v;
+    struct
+    {
+        BYTE	base:3;
+        BYTE	index:3;
+        BYTE	ss:2;
+    };
 } *PSIB;
 
 #define	SIZE_B		1
@@ -60,21 +60,16 @@ const char * RegDWord[8]={
 
 uint32_t	U_Size	= BIT32;
 //	So default disassembler is bit16
-
-
 //****************
-
 uint32_t	SegPrefix;
 //index of segment register (prefix)
 //default is !!!_NOSEG_!!!
-
 uint32_t	LockPrefix;
 const char *	LockName;
 uint32_t	RepPrefix;
 const char *	RepName;
 
 //****************
-
 //**************************************
 
 static XCPUCODE	xcpu;
@@ -85,7 +80,6 @@ XCPUCODE* CDisasm::get_xcpu()
 }
 
 //**************************************
-
 // The list of the types of Opdata1, Opdata2, Opdata3
 typedef enum
 {
@@ -756,58 +750,27 @@ INSTRUCTION	instruction[] =
 //******************************************************
 
 
-void st_IDA_OUT::output(char * buf)
+void st_IDA_OUT::output(std::ostringstream & buf)
 {
-    std::string retn;
     if (!this->LockName.empty())
-    {
-        retn += this->LockName;
-        retn += " ";
-    }
+        buf << this->LockName << " ";
     if (!this->RepName.empty())
-    {
-        retn += this->RepName;
-        retn += " ";
-    }
+        buf << this->RepName << " ";
     if (!this->CmdStr.empty())
     {
-        retn += this->CmdStr;
-        retn += " ";
+        buf << this->CmdStr << " ";
 
-        while (retn.size() < 7)
-            retn += " ";
+        while (buf.str().size() < 7)
+            buf << " ";
     }
 
     //par1
-    {
-        std::string tem = this->Par1Ptr;
-        tem += this->Par1SegPrefix;
-        tem += this->Par1Str;
-        if (!tem.empty())
-            retn += tem;
-    }
+    buf << this->Par1Ptr << this->Par1SegPrefix << this->Par1Str;
     //par2
-    {
-        std::string tem = this->Par2Ptr;
-        tem += this->Par2SegPrefix;
-        tem += this->Par2Str;
-        if (!tem.empty())
-        {
-            retn += ',';
-            retn += tem;
-        }
-    }
-    //par3
-    {
-        std::string tem = this->Par3Str;
-        if (!tem.empty())
-        {
-            retn += ',';
-            retn += tem;
-        }
-    }
-
-    strcpy(buf, retn.c_str());
+    if(has_param2())
+        buf << "," << this->Par2Ptr << this->Par2SegPrefix << this->Par2Str;
+    if(has_param3())
+        buf << ',' << this->Par3Str;
 }
 uint32_t   CDisasm::Disassembler_X(BYTE * codebuf, uint32_t eip, st_IDA_OUT* idaout)
 {

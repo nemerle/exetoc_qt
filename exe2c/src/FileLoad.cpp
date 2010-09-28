@@ -20,35 +20,29 @@ FileLoader* g_FileLoader = NULL;
 
 FileLoader::FileLoader(void)
 {
-        //securityatt.nLength=sizeof(SECURITY_ATTRIBUTES);
-        //securityatt.lpSecurityDescriptor=NULL;
-        //securityatt.bInheritHandle=FALSE;
-        efile=0;
-        exetype=0;
-        fbuff=NULL;
+    efile=0;
+    exetype=0;
+    fbuff=NULL;
 }
 
 FileLoader::~FileLoader(void)
 {
-        if ( fbuff!=NULL )
-                delete fbuff;
-        fclose(efile);
-        //TODO: free the buffer here
-        //VirtualFree(image_buf,image_len,0);
+    delete fbuff;
+    fclose(efile);
 }
 
 bool	if_valid_ea(ea_t ea)
 {
-        switch (g_EXEType)
-        {
-        case enum_PE_sys:
-                return TRUE;
-        case enum_PE_exe:
-                if (ea < 0x400000)
-                        return FALSE;
-                return TRUE;
-        }
+    switch (g_EXEType)
+    {
+    case enum_PE_sys:
         return TRUE;
+    case enum_PE_exe:
+        if (ea < 0x400000)
+            return FALSE;
+        return TRUE;
+    }
+    return TRUE;
 }
 void FileLoader::get_exetype()
 {
@@ -83,74 +77,73 @@ void FileLoader::get_exetype()
 //selects info routine for file.
 bool FileLoader::load(const char * fname)
 {
-        uint32_t pe_offset;
-        uint32_t num;
-        uint32_t fsize;
-        if ( efile!=0 )return FALSE;
+    uint32_t pe_offset;
+    uint32_t fsize;
+    if ( efile!=0 )return FALSE;
 
-        efile=fopen(fname,"rb");
-        if ( efile==0 )
-                return FALSE;
+    efile=fopen(fname,"rb");
+    if ( efile==0 )
+        return FALSE;
 
-        get_exetype();
+    get_exetype();
 
     if (exetype != PE_EXE)	//only support PE now
         return FALSE;
     fseek(efile,0,SEEK_END);
     fsize=ftell(efile);
-        fbuff=new BYTE[fsize];
-        fseek(efile,0,SEEK_SET);
-        fread(fbuff,1,fsize,efile);
+    fbuff=new BYTE[fsize];
+    fseek(efile,0,SEEK_SET);
+    fread(fbuff,1,fsize,efile);
 
-        pe_offset = *(uint32_t *)(fbuff+0x3c);
-        //DialogBox(hInst,MAKEINTRESOURCE(D_checktype),mainwindow,(DLGPROC)checktypebox);
-        //if(!SEG0)
-        //{
-        //SEG0=0x1000;
-        // MessageBox(mainwindow,"Sorry - Can't use a zero segment base.\nSegment Base has been set to 0x1000"
-        //  ,"Borg Message",MB_OK);
-        //}
-        //dsm.dissettable();
-        switch ( exetype )
-        {
-        case BIN_EXE:
-                readbinfile(fsize);
-                break;
-        case PE_EXE:
-                //readpefile(pe_offset);
-                LoadPE(pe_offset);
-                break;
-        case MZ_EXE:
-                readmzfile(fsize);
-                break;
-        case OS2_EXE:
-                reados2file();
-                fclose(efile);
-                efile=0;
-                exetype=0;
-                return FALSE; // at the moment;
-        case COM_EXE:
-                readcomfile(fsize);
-                break;
-        case SYS_EXE:
-                readsysfile(fsize);
-                break;
-        case LE_EXE:
-                readlefile();
-                fclose(efile);
-                efile=0;
-                exetype=0;
-                return FALSE; // at the moment;
-        case NE_EXE:
-                readnefile(pe_offset);
-                break;
-        default:
-                fclose(efile);
-                efile=0;
-                exetype=0;
-                return FALSE;
-        }
-        return TRUE;
+    pe_offset = *(uint32_t *)(fbuff+0x3c);
+    //DialogBox(hInst,MAKEINTRESOURCE(D_checktype),mainwindow,(DLGPROC)checktypebox);
+    //if(!SEG0)
+    //{
+    //SEG0=0x1000;
+    // MessageBox(mainwindow,"Sorry - Can't use a zero segment base.\nSegment Base has been set to 0x1000"
+    //  ,"Borg Message",MB_OK);
+    //}
+    //dsm.dissettable();
+    switch ( exetype )
+    {
+    case BIN_EXE:
+        readbinfile(fsize);
+        break;
+    case PE_EXE:
+        //readpefile(pe_offset);
+        LoadPE(pe_offset);
+        break;
+    case MZ_EXE:
+        readmzfile(fsize);
+        break;
+    case OS2_EXE:
+        reados2file();
+        fclose(efile);
+        efile=0;
+        exetype=0;
+        return FALSE; // at the moment;
+    case COM_EXE:
+        readcomfile(fsize);
+        break;
+    case SYS_EXE:
+        readsysfile(fsize);
+        break;
+    case LE_EXE:
+        readlefile();
+        fclose(efile);
+        efile=0;
+        exetype=0;
+        return FALSE; // at the moment;
+    case NE_EXE:
+        readnefile(pe_offset);
+        break;
+    default:
+        fclose(efile);
+        efile=0;
+        exetype=0;
+        return FALSE;
+    }
+    return TRUE;
 }
 void FileLoader::readcomfile(uint32_t fsize)
 {
@@ -176,8 +169,9 @@ void FileLoader::readbinfile(uint32_t fsize)
 
 
 bool	IfInWorkSpace(ea_t off)
-{	//	check if off lye in our work space
-        if (off > 0x400000 && off < 0x600000)	//	暂且这样简单处理一下吧
+{	//	check if off lie in our work space
+    //Do something about it later, for the time being simple check
+        if (off > 0x400000 && off < 0x600000)
                 return TRUE;
         return FALSE;
 }

@@ -9,7 +9,7 @@ class	CodeList
 	friend class CodeList_Maker;
 private:
 	//CFunc*	m_owner;
-	void InstrAddTail(PINSTR p);
+	void InstrAddTail(INSTR * p);
 
     AsmCodeList* m_asmlist;
     int m_EBP_base;
@@ -37,11 +37,11 @@ class CodeList_Maker
     uint32_t		m_tem_var_no;
 
 	void	Code_Jxx(JxxType t);
-	PINSTR	Code_general(int type, HLType t);
+	INSTR *	Code_general(int type, HLType t);
 	void	TransVar(VAR* pvar,int no);
 	void	TransVar_(VAR* pvar,int no);
 	void	VarRead(VAR_ADDON& va);
-	void	WriteToAddress(PINSTR p);
+	void	WriteToAddress(INSTR * p);
 	void	new_temp(VAR* pvar);
 public:
     CodeList_Maker(CodeList* p_owner, AsmCode* p_cur)

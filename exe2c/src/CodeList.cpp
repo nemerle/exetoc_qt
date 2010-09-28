@@ -11,9 +11,9 @@ void CodeList::CreateInstrList_raw(AsmCodeList* asmlist, int EBP_base)
     this->m_asmlist = asmlist;
     this->m_EBP_base = EBP_base;
 
-	PINSTR p_begin = new INSTR;     //new_INSTR
+	INSTR * p_begin = new INSTR;     //new_INSTR
 	p_begin->type = i_Begin;
-	PINSTR p_end = new INSTR;		//new_INSTR	总是同时new //new_INSTR	 is always the same time, new
+	INSTR * p_end = new INSTR;		//new_INSTR	总是同时new //new_INSTR	 is always the same time, new
 	p_end->type = i_End;
 	p_begin->begin.m_end = p_end;			//	指向它 //Point to it
 
@@ -31,7 +31,7 @@ void CodeList::CreateInstrList_raw(AsmCodeList* asmlist, int EBP_base)
 
 		if (cur->xcpu.opcode != C_JCASE)
 		{	//	唯一的例外，C_JCASE前不加label //The only exception, C_JCASE not label the former
-			PINSTR p = new INSTR;   //new_INSTR
+			INSTR * p = new INSTR;   //new_INSTR
 			p->type = i_Label;
 			p->label.label_off = cur->linear;
 
@@ -44,7 +44,7 @@ void CodeList::CreateInstrList_raw(AsmCodeList* asmlist, int EBP_base)
         {//这是一个pop
       //This is a pop
             cur->xcpu.opcode;
-            PINSTR	p = new INSTR;  //new_INSTR
+            INSTR *	p = new INSTR;  //new_INSTR
             p->type = i_EspReport;
             p->espreport.esp_level = cur->esp_level;
             p->espreport.howlen = cur->esp_level - esp_level;
@@ -59,7 +59,7 @@ void CodeList::CreateInstrList_raw(AsmCodeList* asmlist, int EBP_base)
     InstrAddTail(p_end);	//	在后面加一条i_End //In the back plus a i_End
 }
 
-void CodeList::InstrAddTail(PINSTR p)
+void CodeList::InstrAddTail(INSTR * p)
 {
     if (p->var_w.type)
         if (p->var_w.opsize == 0)
@@ -74,7 +74,7 @@ void CodeList::InstrAddTail(PINSTR p)
     m_instr_list.push_back(p);
 }
 
-void	set_address(OPERITEM* op,PINSTR p)
+void	set_address(OPERITEM* op,INSTR * p)
 {
 	if (op->addr.base_reg_index != _NOREG_)
 	{
@@ -144,12 +144,12 @@ void	CodeList_Maker::AddTail_Cur_Opcode()
     case C_JCASE:
         {
             //alert("C_JCASE find ");
-            PINSTR p = new INSTR;   //new_INSTR
+            INSTR * p = new INSTR;   //new_INSTR
             p->type = i_Jump;
             p->jmp.jmp_type = JMP_case;
             p->jmp.jmpto_off = pxcpu->op[0].nearptr.offset;
             //We take a look at what it is before a
-            PINSTR plast = *m_instr_list.rbegin();	//	我们看看它前一条是什么
+            INSTR * plast = *m_instr_list.rbegin();	//	我们看看它前一条是什么
             if (plast->type == i_JmpAddr)
             {	//	means this is case 0
                 p->var_r1 = plast->var_r2;	// index reg
@@ -203,7 +203,7 @@ void	CodeList_Maker::AddTail_Cur_Opcode()
     case C_AND: Code_general(enum_AR, i_And);    break;
     case C_XOR:
         {
-            PINSTR p = Code_general(enum_AR, i_Xor);
+            INSTR * p = Code_general(enum_AR, i_Xor);
             if (VAR::IsSame(&p->var_r1,&p->var_r2))
             {	//	xor eax,eax means mov eax,0
                 p->type = i_Assign;
@@ -217,7 +217,7 @@ void	CodeList_Maker::AddTail_Cur_Opcode()
 
 	case C_TEST:
 		{
-			PINSTR p = Code_general(enum_RR, i_Test);
+			INSTR * p = Code_general(enum_RR, i_Test);
 			if (VAR::IsSame(&p->var_r1,&p->var_r2))
 			{	//	test eax,eax means cmp eax,0
 				p->type = i_Cmp;
@@ -232,7 +232,7 @@ void	CodeList_Maker::AddTail_Cur_Opcode()
 		break;
 	case C_PUSH:
 		{
-			PINSTR	p = new INSTR;  //new_INSTR
+			INSTR *	p = new INSTR;  //new_INSTR
 			p->type = i_Assign;
 
 			p->var_w.type = v_Var;
@@ -245,7 +245,7 @@ void	CodeList_Maker::AddTail_Cur_Opcode()
 		break;
 	case C_POP:
 		{
-			PINSTR	p = new INSTR;  //new_INSTR
+			INSTR *	p = new INSTR;  //new_INSTR
 			p->type = i_Assign;
 
 			p->var_r1.type = v_Var;
@@ -283,13 +283,13 @@ void	CodeList_Maker::AddTail_Cur_Opcode()
 		{
 			if (pxcpu->op[0].mode == OP_Address)
 			{
-				PINSTR p = new INSTR;   //new_INSTR
+				INSTR * p = new INSTR;   //new_INSTR
 				//That said, I should first of this jmp [edx * 4 +402000] write it down
 				 //And look forward to the back of C_JCASE
 				p->type = i_JmpAddr;	//	就是说，我先把这个jmp [edx*4+402000]记下来
 										//	并期望后面有 C_JCASE
 
-void	set_address(OPERITEM* op,PINSTR p);
+void	set_address(OPERITEM* op,INSTR * p);
 
 				set_address(&pxcpu->op[0], p);
 
@@ -300,7 +300,7 @@ void	set_address(OPERITEM* op,PINSTR p);
 	case C_CALL:
 		if (pxcpu->op[0].mode == OP_Near)
 		{
-			PINSTR p = new INSTR;  //new_INSTR
+			INSTR * p = new INSTR;  //new_INSTR
 			p->type = i_Call;
 			p->call.esp_level = cur->esp_level;
 			p->call.call_func = g_Cexe2c->GetFunc(pxcpu->op[0].nearptr.offset);
@@ -317,7 +317,7 @@ void	set_address(OPERITEM* op,PINSTR p);
 				Api* papi = g_ApiManage->get_api(address);	//find it
 				if (papi)
 				{
-					PINSTR	p = new INSTR;  //new_INSTR
+					INSTR *	p = new INSTR;  //new_INSTR
 					p->type = i_CallApi;
 					p->call.papi = papi;
 					p->call.esp_level = cur->esp_level;
@@ -337,7 +337,7 @@ void	set_address(OPERITEM* op,PINSTR p);
 			Api* papi = g_ApiManage->get_api(address);	//find it
 			if (papi)
 			{
-				PINSTR	p = new INSTR;  //new_INSTR
+				INSTR *	p = new INSTR;  //new_INSTR
 				p->type = i_CallApi;
 				p->call.papi = papi;
 				p->call.esp_level = cur->esp_level;
@@ -359,21 +359,21 @@ void	set_address(OPERITEM* op,PINSTR p);
 
 void	CodeList_Maker::Code_Jxx(JxxType t)
 {
-	PINSTR p = new INSTR;   //new_INSTR
+	INSTR * p = new INSTR;   //new_INSTR
 	p->type = i_Jump;
 	p->jmp.jmp_type = t;
 	p->jmp.jmpto_off = cur->xcpu.op[0].nearptr.offset;
 	InstrAddTail(p);
 }
 
-PINSTR	CodeList_Maker::Code_general(int type, HLType t)
+INSTR *	CodeList_Maker::Code_general(int type, HLType t)
 {	//	只有type == enum_RR时，返回值才有用
   //Only type == enum_RR, the return value to be useful
     if (t == i_Unknown)
     {
         t=i_Unknown;
     }
-    PINSTR	p = new INSTR;  //new_INSTR
+    INSTR *	p = new INSTR;  //new_INSTR
     p->type = t;
     switch (type)
     {
@@ -523,7 +523,7 @@ void	CodeList_Maker::TransVar_(VAR* pvar,int no)
 			VAR v;
 			new_temp(&v);
 
-			PINSTR p = new INSTR;   //new_INSTR
+			INSTR * p = new INSTR;   //new_INSTR
 			p->type = i_Address;
 
 			p->var_w = v;
@@ -559,7 +559,7 @@ void	CodeList_Maker::VarRead(VAR_ADDON& va)
 }
 //	这个函数的意思是，如果是向一个address写，则加一条 i_Writepointto
 //This function means that, if it is to an address to write, then add a i_Writepointto
-void	CodeList_Maker::WriteToAddress(PINSTR p)
+void	CodeList_Maker::WriteToAddress(INSTR * p)
 {
 // For the add [ebx +4], 6, becomes
 // 		Tem_1 = i_addr (ebx, 4);
@@ -604,7 +604,7 @@ void	CodeList_Maker::WriteToAddress(PINSTR p)
 	p->var_w = tem2;
 	InstrAddTail(p);	//	add this
 
-	PINSTR pnew = new INSTR;    //new_INSTR
+	INSTR * pnew = new INSTR;    //new_INSTR
 	pnew->type = i_Writepointto;
 	pnew->var_r1 = tem1;				// the pointer
 	pnew->var_r2 = tem2;					// the value

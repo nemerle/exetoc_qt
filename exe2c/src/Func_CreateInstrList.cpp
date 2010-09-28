@@ -39,13 +39,13 @@ void Func::Step4_CreateInstrList()
 //	CreateInstrList_welldone_call();   	// find call, and fill its args
 
 }
-PINSTR findlabel(INSTR_LIST& list, ea_t off)
+INSTR * findlabel(INSTR_LIST& list, ea_t off)
 {
     assert(off);	//	一般情况下，这是不为零的
     INSTR_LIST::iterator pos = list.begin();
     while (pos!=list.end())
     {
-        PINSTR p = *pos;
+        INSTR * p = *pos;
         ++pos;
         if (p->type == i_Label && p->label.label_off == off)
             return p;
@@ -58,11 +58,11 @@ void Func::Create_Labels_backend()	// 标号后端
 	POSITION pos = m_instr_list.begin();
 	while (pos!=m_instr_list.end())
 	{
-		PINSTR p = *pos;
+		INSTR * p = *pos;
 		++pos;
 		if (p->type == i_Jump)
 		{
-			PINSTR thelabel = findlabel(m_instr_list,p->jmp.jmpto_off);
+			INSTR * thelabel = findlabel(m_instr_list,p->jmp.jmpto_off);
 			if (thelabel->label.ref_instr)
 				p->jmp.next_ref_of_this_label = thelabel->label.ref_instr;	// save old ref list
 			thelabel->label.ref_instr = p;	// tell the label it was referred
@@ -73,7 +73,7 @@ void Func::Create_Labels_backend()	// 标号后端
 	pos = m_instr_list.begin();
 	while (pos!=m_instr_list.end())
 	{// remove all label not referred
-		PINSTR p = *pos;
+		INSTR * p = *pos;
 		if (p->type == i_Label && p->label.ref_instr == 0)
 			pos=m_instr_list.erase(pos);
 		else

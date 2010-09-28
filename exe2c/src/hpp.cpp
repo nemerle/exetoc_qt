@@ -72,7 +72,7 @@ CHpp::~CHpp()
 {
         if (m_FuncTypeList)
         {
-            for_each(m_FuncTypeList->begin(),m_FuncTypeList->end(), bind(delete_ptr(), _1));
+            for_each(m_FuncTypeList->begin(),m_FuncTypeList->end(), boost::lambda::bind(delete_ptr(), _1));
             delete m_FuncTypeList;
             m_FuncTypeList = NULL;
         }
@@ -109,7 +109,7 @@ bool hpp_onexit()
     delete g_enum_mng;
     if (g_DefineList)
     {
-        for_each(g_DefineList->begin(),g_DefineList->end(),bind(delete_ptr(), _1));
+        for_each(g_DefineList->begin(),g_DefineList->end(),boost::lambda::bind(delete_ptr(), _1));
         delete g_DefineList;
         g_DefineList = NULL;
     }
@@ -1091,7 +1091,7 @@ std::string get_define(char * partern)
         DefineList::iterator iter;
         iter = std::find_if(g_DefineList->begin(),
                             g_DefineList->end(),
-                            bind<const string &>(&define_t::src,_1)==compared_with);
+                            boost::lambda::bind<const string &>(&define_t::src,_1)==compared_with);
         if(iter!=g_DefineList->end())
             return (*iter)->dst;
         return "";
@@ -1107,7 +1107,7 @@ FuncType* CHpp::Get_FuncDefine_from_internal_name_(const std::string & pmyintern
 
         FuncTypeList::iterator iter;
         iter = std::find_if(m_FuncTypeList->begin(), m_FuncTypeList->end(),
-                    bind<const string &>(&FuncType::m_internal_name,_1)==pmyinternalname);
+                    boost::lambda::bind<const string &>(&FuncType::m_internal_name,_1)==pmyinternalname);
 
         if(iter==m_FuncTypeList->end())
             return NULL;

@@ -25,14 +25,14 @@ class Strategy
         struct
         {
             M_t* pvar;  //which variables
-            PINSTR pinstr;  //Used when we need to delete a statement
+            INSTR * pinstr;  //Used when we need to delete a statement
             char reason[80];
         }can_delete;    //for m_es == ES_Instr_can_Delete
         struct
         {
             M_t* pvar;  //which variable
-            PINSTR p1;  //previous to my assignment
-            PINSTR p2;  //1 after my use
+            INSTR * p1;  //previous to my assignment
+            INSTR * p2;  //1 after my use
             char reason[80];
         }m_can_elim;    //for m_es == ES_Instr_can_Elim
     };
@@ -45,11 +45,11 @@ public:
     {
         m_es = ES_Error;
     }
-    void AddOne_CanDelete(M_t* pvar, PINSTR pinstr, const char * reason);
-    void AddOne_CanEliminate_25E(M_t* pvar, PINSTR p1, PINSTR p2, const char * reason);
-    void AddOne_CanEliminate_31E(M_t* pvar, PINSTR p1, PINSTR p2, const char * reason);
-    void AddOne_CanEliminate_21E(M_t* pvar, PINSTR p1, PINSTR p2, const char * reason);
-    void AddOne_CanEliminate_63(M_t* pvar, PINSTR p1, PINSTR p2, const char * reason);
+    void AddOne_CanDelete(M_t* pvar, INSTR * pinstr, const char * reason);
+    void AddOne_CanEliminate_25E(M_t* pvar, INSTR * p1, INSTR * p2, const char * reason);
+    void AddOne_CanEliminate_31E(M_t* pvar, INSTR * p1, INSTR * p2, const char * reason);
+    void AddOne_CanEliminate_21E(M_t* pvar, INSTR * p1, INSTR * p2, const char * reason);
+    void AddOne_CanEliminate_63(M_t* pvar, INSTR * p1, INSTR * p2, const char * reason);
     void PrintIt(const INSTR_LIST& list, Func* pFunc);
     void DoIt(INSTR_LIST& list, ExprManage* expr);
     bool DoIt_Addon(INSTR_LIST& list, ExprManage* expr);

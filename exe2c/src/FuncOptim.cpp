@@ -9,7 +9,7 @@ bool CFuncOptim::Simplify_Instr()
 //看看简单指令能不能变成i_Assign
 {
     INSTR_LIST& list = this->Q->m_instr_list;
-    PINSTR p;
+    INSTR * p;
     for(POSITION pos = list.begin(); pos!=list.end(); ++pos )
     {
         p=*pos;
@@ -62,7 +62,7 @@ bool CFuncOptim::Address_to_Add()
 //看看i_Address能不能变成i_Add
 {
     INSTR_LIST& list = this->Q->m_instr_list;
-    PINSTR p;
+    INSTR * p;
     for(POSITION pos = list.begin(); pos!=list.end(); ++pos )
     {
         p=*pos;
@@ -130,12 +130,12 @@ bool	CFuncOptim::pcode_1()
     {
         POSITION nextpos=pos;
 
-        PINSTR pcmp = *pos;
+        INSTR * pcmp = *pos;
         if (pcmp->type != i_Cmp)
             continue;
         ++nextpos;
         assert(nextpos!=list.end());
-        PINSTR pjxx = *nextpos;
+        INSTR * pjxx = *nextpos;
         if (pjxx->type == i_Jump && pjxx->jmp.jmp_type != JMP_jmp)
         {
             pjxx->var_r1 = pcmp->var_r1;
@@ -156,7 +156,7 @@ bool	CFuncOptim::pcode_1()
 
 bool	CFuncOptim::ana_Flow()
 {	//	流程分析
-    PINSTR first = *Q->m_instr_list.begin();
+    INSTR * first = *Q->m_instr_list.begin();
 
     //	对这个i_Begin到i_End之间的进行分析,标出所有的i_Begin和i_End
 
@@ -164,12 +164,12 @@ bool	CFuncOptim::ana_Flow()
     return the.Flow_a(first);
 }
 
-bool CFuncOptim::expr_never_use_after_this(VAR* pvar, PINSTR p0, INSTR_LIST* oldroad)
+bool CFuncOptim::expr_never_use_after_this(VAR* pvar, INSTR * p0, INSTR_LIST* oldroad)
 {	//	我必须知道，必须知道！
     POSITION pos = std::find(Q->m_instr_list.begin(),Q->m_instr_list.begin(),p0);
     for(;pos!=this->Q->m_instr_list.end();++pos)
     {
-        PINSTR p = *pos;
+        INSTR * p = *pos;
         if (p->type == i_Label)
         {	//	根本不用考虑
             oldroad->push_front(p);
@@ -199,7 +199,7 @@ bool CFuncOptim::expr_never_use_after_this(VAR* pvar, PINSTR p0, INSTR_LIST* old
     return true;
 }
 
-bool	CFuncOptim::MakeSure_NotRef_in_Range(VAR* pvar, PINSTR p1, PINSTR p2)
+bool	CFuncOptim::MakeSure_NotRef_in_Range(VAR* pvar, INSTR * p1, INSTR * p2)
 {	//	确认从p1到p2没人用过pvar
     //	不包括p1在内,也不包括p2
 
@@ -207,7 +207,7 @@ bool	CFuncOptim::MakeSure_NotRef_in_Range(VAR* pvar, PINSTR p1, PINSTR p2)
     ++pos;		//	skip p1
     for(;pos!=Q->m_instr_list.end();++pos)
     {
-        PINSTR p = *pos;
+        INSTR * p = *pos;
         if (p == p2)
             return true;
         if (VAR::IsSame(pvar, &p->var_w))
@@ -262,7 +262,7 @@ bool CFuncOptim::DataType_Flow()
     POSITION pos = Q->m_instr_list.begin();
     while (pos!=Q->m_instr_list.end())
     {
-        PINSTR p = *pos;
+        INSTR * p = *pos;
         ++pos;
         if (p->type == i_GetAddr
             && p->var_w.thevar != NULL
@@ -326,19 +326,19 @@ bool CFuncOptim::optim_once_new()
     return false;
 }
 
-static st_VarOptm* used_list_Find(PINSTR pinstr, VAROPTM_LIST& used_list)
+static st_VarOptm* used_list_Find(INSTR * pinstr, VAROPTM_LIST& used_list)
 {
     VAROPTM_LIST::iterator pos = used_list.begin();
 
     for(;pos!=used_list.end();++pos)
     {
-        if ((*pos)->pinstr == pinstr)
+        if ((*pos)->pInstr == pinstr)
             return *pos;
     }
     return NULL;
 }
 
-BYTE GetVarFinger_INSTR(M_t* pvar, PINSTR p)
+BYTE GetVarFinger_INSTR(M_t* pvar, INSTR * p)
                 //00: nothing with
                 //01: read
                 //02: write
@@ -374,7 +374,7 @@ void CFuncOptim::prt_var_uselist(VAROPTM_LIST& used_list)
     for (;pos!=used_list.end(); ++pos)
     {
         st_VarOptm* the = *pos;
-        PINSTR p = the->pinstr;
+        INSTR * p = the->pInstr;
         if (p->type == i_Jump)
         {
             if (p->jmp.jmp_type == JMP_jmp)
@@ -397,12 +397,12 @@ void CFuncOptim::prt_var_uselist(VAROPTM_LIST& used_list)
 }
 
 
-bool RemoveOneInstr_1(VAROPTM_LIST& used_list, PINSTR p)
+bool RemoveOneInstr_1(VAROPTM_LIST& used_list, INSTR * p)
 {
     assert(p->type == i_Jump);
     for(VAROPTM_LIST::iterator pos = used_list.begin(); pos!=used_list.end(); ++pos)
     {
-        if (p == (*pos)->pinstr && (*pos)->bJxx)
+        if (p == (*pos)->pInstr && (*pos)->bJxx)
         {
             used_list.erase(pos);
             return true;
@@ -411,7 +411,7 @@ bool RemoveOneInstr_1(VAROPTM_LIST& used_list, PINSTR p)
     //std::remove_if()
     return false;
 }
-bool RemoveOneInstr(VAROPTM_LIST& used_list, PINSTR p)
+bool RemoveOneInstr(VAROPTM_LIST& used_list, INSTR * p)
 {
     bool rtn = false;
     rtn |= RemoveOneInstr_1(used_list, p);
@@ -430,7 +430,7 @@ bool CFuncOptim::Optim_Var_Flow_3(VAROPTM_LIST& used_list)
     for(VAROPTM_LIST::iterator pos = used_list.begin(); pos!=used_list.end(); ++pos)
     {
         st_VarOptm* the = *pos;
-        if (the->pinstr->type == i_End || the->pinstr->type == i_Return)
+        if (the->pInstr->type == i_End || the->pInstr->type == i_Return)
         {
             if (the->rw == 0)
             {
@@ -451,14 +451,14 @@ bool CFuncOptim::Optim_Var_Flow_2(VAROPTM_LIST& used_list)
 {
     //如果有一个LE，则删掉这个指向LE的jmp
     //如果有一个L6，则删掉这个指向L6的jmp
-    PINSTR lastlabelinstr = NULL;
+    INSTR * lastlabelinstr = NULL;
     for (VAROPTM_LIST::iterator pos = used_list.begin(); pos!=used_list.end(); ++pos)
     {
         st_VarOptm* the = *pos;
         if (lastlabelinstr != NULL)
         {
             bool f = false;
-            if (the->pinstr->type == i_End || the->pinstr->type == i_Return)
+            if (the->pInstr->type == i_End || the->pInstr->type == i_Return)
             {
                 if (the->rw == 0)
                 {//找到一个LE
@@ -471,15 +471,15 @@ bool CFuncOptim::Optim_Var_Flow_2(VAROPTM_LIST& used_list)
             }
             if (f)
             {
-                PINSTR p = lastlabelinstr->label.ref_instr;
+                INSTR * p = lastlabelinstr->label.ref_instr;
                 if (RemoveOneInstr(used_list, p))   //删掉这个指向LE的jmp
                     return true;
             }
         }
 
         lastlabelinstr = NULL;
-        if (the->pinstr->type == i_Label)
-            lastlabelinstr = the->pinstr;
+        if (the->pInstr->type == i_Label)
+            lastlabelinstr = the->pInstr;
     }
 
     return false;
@@ -489,11 +489,11 @@ bool CFuncOptim::Optim_Var_Flow_1(VAROPTM_LIST& used_list)
     //第一条就是条件跳，可去掉
     //跳到第一条了，可去掉
     VAROPTM_LIST::iterator headpos = used_list.begin();
-    PINSTR head_label_instr = NULL;
+    INSTR * head_label_instr = NULL;
     for (VAROPTM_LIST::iterator pos = used_list.begin(); pos!=used_list.end(); ++pos)
     {
         st_VarOptm* the = *pos;
-        PINSTR p = the->pinstr;
+        INSTR * p = the->pInstr;
         if (headpos == pos)
         {
             if (p->type == i_Return)
@@ -542,12 +542,12 @@ bool CFuncOptim::Optim_Var_Flow(VAROPTM_LIST& used_list)
 }
 
 
-st_VarOptm* Find_Instr(VAROPTM_LIST& used_list, PINSTR pinstr)
+st_VarOptm* Find_Instr(VAROPTM_LIST& used_list, INSTR * pinstr)
 {
     for (VAROPTM_LIST::iterator pos = used_list.begin(); pos!=used_list.end(); ++pos)
     {
         st_VarOptm* the = *pos;
-        if (the->pinstr == pinstr)
+        if (the->pInstr == pinstr)
             return the;
     }
     return NULL;
@@ -562,12 +562,12 @@ bool CFuncOptim::SureNotUse_1(VAROPTM_LIST& used_list, st_VarOptm* the)
         return true;
     if (the->rw & 1)
         return false;
-    if (the->pinstr->type == i_Return)
+    if (the->pInstr->type == i_Return)
         return true;
 
     if (the->bJxx)
     {
-        if (!SureNotUse_1(used_list, Find_Instr(used_list, the->pinstr->jmp.the_label)))
+        if (!SureNotUse_1(used_list, Find_Instr(used_list, the->pInstr->jmp.the_label)))
             return false;
     }
 
@@ -611,14 +611,14 @@ bool CFuncOptim::Optim_Var_Flow_4(VAROPTM_LIST& used_list)
     //没人用的Label，要删
 
     VAROPTM_LIST::iterator last_pos;
-    PINSTR last_jmp = NULL;
-    PINSTR last_label[256];
+    INSTR * last_jmp = NULL;
+    INSTR * last_label[256];
     int n_label = 0;
 
     for (VAROPTM_LIST::iterator pos = used_list.begin(); pos!=used_list.end(); ++pos)
     {
         st_VarOptm* the = *pos;
-        PINSTR p = the->pinstr;
+        INSTR * p = the->pInstr;
         if (the->IsJump())
         {
             for (int i=0; i<n_label; i++)
@@ -652,14 +652,14 @@ bool CFuncOptim::Optim_Var_Flow_4(VAROPTM_LIST& used_list)
     for (VAROPTM_LIST::iterator pos = used_list.begin(); pos!=used_list.end(); ++pos)
     {
         st_VarOptm* the = *pos;
-        PINSTR p = the->pinstr;
+        INSTR * p = the->pInstr;
         if (p->type == i_Label)
         {
             bool used = false;
             for (VAROPTM_LIST::iterator pos1 = used_list.begin(); pos1!=used_list.end(); ++pos1)
             {
                 st_VarOptm* the1 = *pos1;
-                PINSTR p1 = the1->pinstr;
+                INSTR * p1 = the1->pInstr;
                 if (!the1->IsJump())
                     continue;
 
@@ -697,7 +697,7 @@ char HowVarUse_Char(st_VarOptm* the)
     if (the->bJxx)
         return 'J';
 
-    PINSTR pinstr = the->pinstr;
+    INSTR * pinstr = the->pInstr;
     BYTE rw = the->rw;
     if (pinstr->type == i_Label) return 'L';
     if (pinstr->type == i_Return) return 'E';
@@ -722,7 +722,7 @@ bool CFuncOptim::Optim_var_flow_NT(VAROPTM_LIST& volist, M_t* pvar)
 {
     int n = 0;
     char tbl_c[256];
-    PINSTR tbl_pinstr[256];
+    INSTR * tbl_pinstr[256];
 
     VAROPTM_LIST::iterator pos = volist.begin();
     while (pos!=volist.end())
@@ -731,13 +731,13 @@ bool CFuncOptim::Optim_var_flow_NT(VAROPTM_LIST& volist, M_t* pvar)
         ++pos;
         char b = HowVarUse_Char(the);
         tbl_c[n] = b; tbl_c[n+1] = '\0';
-        tbl_pinstr[n] = the->pinstr;
+        tbl_pinstr[n] = the->pInstr;
         n++;
 
         if (n >= 1)
         {
             const char* pb = tbl_c + n - 1;
-            PINSTR* pi = tbl_pinstr + n - 1;
+            INSTR ** pi = tbl_pinstr + n - 1;
             if (strcmp(pb, "7") == 0 && pi[0]->va_r1.pao == NULL)
             {//自己assign自己
                 g_CStrategy.AddOne_CanDelete(pvar, pi[0], "assiang self, delete it");
@@ -747,7 +747,7 @@ bool CFuncOptim::Optim_var_flow_NT(VAROPTM_LIST& volist, M_t* pvar)
         if (n >= 2)
         {
             const char* pb = tbl_c + n - 2;
-            PINSTR* pi = tbl_pinstr + n - 2;
+            INSTR ** pi = tbl_pinstr + n - 2;
             if (strcmp(pb, "2E") == 0 || strcmp(pb, "3E") == 0 || strcmp(pb, "6E") == 0
                 || strcmp(pb, "7E") == 0)
             {
@@ -784,7 +784,7 @@ bool CFuncOptim::Optim_var_flow_NT(VAROPTM_LIST& volist, M_t* pvar)
             if (fpt[2] == '6' || fpt[2] == '2')
                 fpt[2] = 'E';
 
-            PINSTR* pi = tbl_pinstr + n - 3;
+            INSTR ** pi = tbl_pinstr + n - 3;
             if (strcmp(fpt, "25E") == 0 && pi[1]->va_r1.pao == NULL)
             {
                 g_CStrategy.AddOne_CanEliminate_25E(pvar,pi[0],pi[1],"25E");
@@ -827,7 +827,7 @@ bool CFuncOptim::Optim_var_flow_NT(VAROPTM_LIST& volist, M_t* pvar)
         if (n >= 4)
         {
             const char* pb = tbl_c + n - 4;
-            PINSTR* pi = tbl_pinstr + n - 4;
+            INSTR ** pi = tbl_pinstr + n - 4;
 
             char fpt[5];    //finger point
             strcpy(fpt,pb);
@@ -894,24 +894,24 @@ void CFuncOptim::TryDistinguishVar_1( VAROPTM_LIST& volist, M_t* pvar, VAROPTM_L
         st_VarOptm* the = *pos;
         if (the->bJxx)
         {
-            st_VarOptm* plabel = used_list_Find(the->pinstr->jmp.the_label, volist);
+            st_VarOptm* plabel = used_list_Find(the->pInstr->jmp.the_label, volist);
             assert(plabel != 0);
             VAROPTM_LIST::iterator it_found=std::find(volist.begin(),volist.end(),plabel);
             assert(it_found!=volist.end());
             TryDistinguishVar_1(volist, pvar, it_found, pglobalstep);
 
-            if (the->pinstr->jmp.jmp_type == JMP_jmp)
+            if (the->pInstr->jmp.jmp_type == JMP_jmp)
             {
                 step = *pglobalstep;
                 *pglobalstep = step+1;
             }
             continue;
         }
-        if (the->pinstr->type == i_Label)
+        if (the->pInstr->type == i_Label)
         {
             continue;   //不需要做什么事情
         }
-        if (the->pinstr->type == i_Return)
+        if (the->pInstr->type == i_Return)
         {
             step = *pglobalstep;
             *pglobalstep = step+1;
@@ -1008,15 +1008,15 @@ void CFuncOptim::Replace_Var_vo(VAROPTM_LIST& volist, int step, M_t* pvar, M_t* 
         st_VarOptm* p = *pos;
         if (p->varstep_r == step)
         {
-            if (p->pinstr->var_r1.thevar == pvar)
-                p->pinstr->var_r1.thevar = pnew;
-            if (p->pinstr->var_r2.thevar == pvar)
-                p->pinstr->var_r2.thevar = pnew;
+            if (p->pInstr->var_r1.thevar == pvar)
+                p->pInstr->var_r1.thevar = pnew;
+            if (p->pInstr->var_r2.thevar == pvar)
+                p->pInstr->var_r2.thevar = pnew;
         }
         if (p->varstep_w == step)
         {
-            if (p->pinstr->var_w.thevar == pvar)
-                p->pinstr->var_w.thevar = pnew;
+            if (p->pInstr->var_w.thevar == pvar)
+                p->pInstr->var_w.thevar = pnew;
         }
     }
 }
@@ -1076,25 +1076,23 @@ bool CFuncOptim::TryDistinguishVar(VAROPTM_LIST& volist, M_t* pvar)
 }
 
 void CFuncOptim::Get_Var_Use_Flow(VAROPTM_LIST& used_list, M_t* pvar)
-//只写used_list.pinstr 的 used_list.rw，不写varstep_r和varstep_w
 {
-    PINSTR tbl_label[728];
+    //Write only used_list.pInstr the used_list.rw, do not write varstep_r and varstep_w
+    INSTR * tbl_label[728];
     int num = 0;
 
     INSTR_LIST &list = this->Q->m_instr_list;
     POSITION pos = list.begin();
-    while (pos!=list.end())
+    for( ;pos!=list.end();++pos)
     {
-        POSITION savpos = pos;
-        PINSTR p = *pos;
-        ++pos;
+        INSTR * p = *pos;
         BYTE c = GetVarFinger_INSTR(pvar, p);
         if (c != 0 || p->type == i_Label || p->type == i_Return)
-        {//只有这些才是我关心的
+        {//These are my only concern
 
             st_VarOptm* the = new st_VarOptm;
 
-            the->pinstr = p;
+            the->pInstr = p;
             the->rw = c;
 
             used_list.push_back(the);
@@ -1105,7 +1103,7 @@ void CFuncOptim::Get_Var_Use_Flow(VAROPTM_LIST& used_list, M_t* pvar)
 
             st_VarOptm* the = new st_VarOptm;
 
-            the->pinstr = p;
+            the->pInstr = p;
             the->rw = c;
             the->bJxx = true;
 
@@ -1113,13 +1111,16 @@ void CFuncOptim::Get_Var_Use_Flow(VAROPTM_LIST& used_list, M_t* pvar)
 
             //这样，一条jump可能会加两次，前一次是它用到了本变量cmp(v,?)
             //后一条是它jxx了
+            // In this way, a jump may be added twice,
+            // the first one is that it uses the variable cmp (v,?)
+            // After one of its jxx
         }
     }
     //----------------------------------
-    //要优化这个序列，把没用的jmp和label去掉
+    //To optimize the sequence and the label to get rid of useless jmp
+
     while (Optim_Var_Flow(used_list))
-    {
-    }
+        ;
 }
 
 void CFuncOptim::Prt_Var_Flow(const char * varname)
@@ -1127,15 +1128,15 @@ void CFuncOptim::Prt_Var_Flow(const char * varname)
     M_t* pvar = this->Q->m_exprs->GetVarByName(varname);
     if (pvar == NULL)
     {
-        log_prtl("not find var: %s", varname);
+        log_prtl("var: %s not found ", varname);
         return;
     }
     log_prtl("find var: %s", varname);
-    VAROPTM_LIST used_list; //分析过的instr
+    VAROPTM_LIST used_list; //parsed instr
 
     Get_Var_Use_Flow(used_list, pvar);
     prt_var_uselist(used_list);
     std::string s = Get_var_finger_NT(used_list, pvar);
 
-    log_prtl("%s", (const char *)s.c_str());
+    log_prtl("%s", s.c_str());
 }

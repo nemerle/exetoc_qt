@@ -66,8 +66,8 @@ class XmlOutPro
     bool fHasSpace;
 public:
     //Is true when requested the output to one line without a \n
-        bool	m_f_prt_in_1line;
-        bool	m_f_prt_in_comma;	//1 - use ',' instead of ';'
+    bool	m_f_prt_in_1line;
+    bool	m_f_prt_in_comma;	//1 - use ',' instead of ';'
     XmlOutPro(I_XmlOut* out)
     {
         fHasSpace = false;
@@ -77,7 +77,7 @@ public:
         m_f_prt_in_comma = FALSE;
         m_nIdent = 0;
     }
-        void prtt(const char * s)
+    void prtt(const char * s)
     {
         if (fHasSpace)
             this->m_out->prtt(" ");
@@ -93,15 +93,15 @@ public:
 
         this->m_out->prtt(s);
     }
-        void prtslen(const char * s, int len);
-        void XMLbegin(enum XMLTYPE xmltype, void * p)
+    void prtslen(const char * s, int len);
+    void XMLbegin(enum XMLTYPE xmltype, void * p)
     {
         if (fHasSpace)
             this->m_out->prtt(" ");
         fHasSpace = false;
         this->m_out->XMLbegin(xmltype,p);
     }
-        void XMLend(enum XMLTYPE xmltype)
+    void XMLend(enum XMLTYPE xmltype)
     {
         this->m_out->XMLend(xmltype);
         this->fHasSpace = true;
@@ -110,9 +110,9 @@ public:
     {
         for (int i=0; i<n; i++) prtt(" ");
     }
-        void prtf(const char * fmt,...);
-        void prtl(const char * fmt,...);
-        void	EOL();		//Under normal circumstances, is "; \ n"
+    void prtf(const char * fmt,...);
+    void prtl(const char * fmt,...);
+    void EOL();		//Under normal circumstances, is ";\n"
     void endline();
     void SetOneLine(bool b)
     {
@@ -122,10 +122,10 @@ public:
     }
 
 
-        void	ident_add1();
-        void	ident_sub1();
-        void    ident();
-        void 	prtl_ident(const char * fmt,...);
+    void	ident_add1();
+    void	ident_sub1();
+    void    ident();
+    void 	prtl_ident(const char * fmt,...);
     void 	prtf_ident(const char * fmt,...);
     void    nospace()
     {

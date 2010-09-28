@@ -5,7 +5,7 @@
 
 #include <string>
 #include <stdint.h>
-
+#include <sstream>
 #define BIT16	0
 #define	BIT32	1
 
@@ -354,10 +354,16 @@ struct st_IDA_OUT
 
     st_IDA_OUT() : linear(0)
     {
-        //This code is rather strange in order not to clear away std::string
     }
-
-    void output(char * buf);
+    bool has_param2()
+    {
+        return !(Par2Ptr.empty() && !Par2SegPrefix.empty() && !Par2Str.empty());
+    }
+    bool has_param3()
+    {
+        return !Par3Str.empty();
+    }
+    void output(std::ostringstream &buf);
 };
 
 class CDisasm

@@ -76,8 +76,8 @@ uint32_t	regindex_2_regoff(uint32_t regindex);
 
 //---------------------------------------------
 //	CFunc_CreateInstrList.cpp
-PINSTR	instr_next(const INSTR_LIST& list,const INSTR *p);
-PINSTR	instr_prev(const INSTR_LIST& list,const INSTR *p);
+INSTR *	instr_next(const INSTR_LIST& list,const INSTR *p);
+INSTR *	instr_prev(const INSTR_LIST& list,const INSTR *p);
 
 //---------------------------------------------
 //	FileLoad.cpp

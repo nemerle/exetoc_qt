@@ -23,10 +23,10 @@ void	CFunc_Prt::prt_case(const INSTR * phead, const INSTR * plabel, XmlOutPro* o
 {
     CFunc_InstrList instrl(m_instr_list);
 
-    PINSTR p;
+    INSTR * p;
     p = phead->begin.m_end;
     p = instrl.instr_prev_in_func(p);
-    PINSTR pbreak = p;	//	For the time being that the last one is the break
+    INSTR * pbreak = p;	//	For the time being that the last one is the break
     assert(pbreak->type == i_Label);
 
     if (plabel == pbreak)
@@ -56,11 +56,11 @@ void	CFunc_Prt::prt_case(const INSTR * phead, const INSTR * plabel, XmlOutPro* o
     {// No need to add a break at the end
         // Since the last case followed by break
 
-        PINSTR pend = p->begin.m_end;
-        PINSTR plast = instrl.instr_prev_in_func(pend);
+        INSTR * pend = p->begin.m_end;
+        INSTR * plast = instrl.instr_prev_in_func(pend);
         if (plast->type != i_Jump)
         {
-            PINSTR pnext = instrl.instr_next_in_func(pend);
+            INSTR * pnext = instrl.instr_next_in_func(pend);
             if (pnext == pbreak)
             {
                 out->prtl_ident("break;");
@@ -234,13 +234,13 @@ void 	CFunc_Prt::prt_var(const VAR* var, XmlOutPro* out)
 
     //现在，确认这是一个临时变量
     //this->Get_TemVar_Name(v->temno);
-    PINSTR lastcall = NULL;
+    INSTR * lastcall = NULL;
     POSITION lastcallposition;
 
     POSITION pos = m_instr_list.begin();
     for (;pos!=m_instr_list.end();++pos)
     {
-        PINSTR p = *pos;
+        INSTR * p = *pos;
         if (p->type == i_Call || p->type == i_CallApi)
         {
             lastcall = p;
@@ -259,10 +259,10 @@ void 	CFunc_Prt::prt_var(const VAR* var, XmlOutPro* out)
         }
     }
 }
-void	CFunc_Prt::prt_jxx_compare_false(PINSTR &pjxx, XmlOutPro* out)
+void	CFunc_Prt::prt_jxx_compare_false(INSTR * &pjxx, XmlOutPro* out)
 {	//	after this, pjxx really point to the JXX
     CFunc_InstrList instrl(m_instr_list);
-        PINSTR p1 = pjxx;
+        INSTR * p1 = pjxx;
         if (p1->type == i_Begin)
         {	// 这里可能会有一小段，比如if ((x=getx()) != 0)
                 prt_compare(p1, out);
@@ -310,7 +310,7 @@ void	CFunc_Prt::prt_one_statement(const INSTR *phead, XmlOutPro* out)
         return;
     POSITION pos = std::find(m_instr_list.begin(),m_instr_list.end(),phead);
 
-    PINSTR begin = *pos;
+    INSTR * begin = *pos;
     if (begin->type != i_Begin)
     {
         alert_prtf("func %x, type = %s != i_Begin",m_head_off,hlcode_name(begin->type));
@@ -325,7 +325,7 @@ void	CFunc_Prt::prt_one_statement(const INSTR *phead, XmlOutPro* out)
     while(pos != endpos)
     {
         assert(pos != m_instr_list.end());
-        PINSTR p = *pos;
+        INSTR * p = *pos;
         ++pos;
         prt_instr(p, pos, out);
         if (p == phead && this->m_flag_prt_var_delare)
@@ -371,7 +371,7 @@ void	CFunc_Prt::prt_var_declares(XmlOutPro* out)
     this->m_exprs->prt_var_declares(out);
 }
 
-void	CFunc_Prt::prt_statement_in_1_line(PINSTR &phead, XmlOutPro* out1)
+void	CFunc_Prt::prt_statement_in_1_line(INSTR * &phead, XmlOutPro* out1)
 {	//	',' between each state ment
     CFunc_InstrList instrl(m_instr_list);
     if (phead->type != i_Begin)
@@ -391,7 +391,7 @@ void	CFunc_Prt::prt_statement_in_1_line(PINSTR &phead, XmlOutPro* out1)
     while ( pos != endpos)
     {
         assert(pos != m_instr_list.end());
-        PINSTR p = *pos;
+        INSTR * p = *pos;
         ++pos;
         prt_instr(p,pos, &out);
     }
@@ -403,10 +403,10 @@ void	CFunc_Prt::prt_statement_in_1_line(PINSTR &phead, XmlOutPro* out1)
     theprt.prtprtout(out1);
 }
 
-void	CFunc_Prt::prt_jxx_compare_true(PINSTR &pjxx, XmlOutPro* out)
+void	CFunc_Prt::prt_jxx_compare_true(INSTR * &pjxx, XmlOutPro* out)
 {	//	after this, pjxx really point to the JXX
     CFunc_InstrList instrl(m_instr_list);
-    PINSTR p1 = pjxx;
+    INSTR * p1 = pjxx;
     if (p1->type == i_Begin)
     {	// 这里可能会有一小段，比如if ((x=getx()) != 0)
         prt_compare(p1, out);
@@ -462,7 +462,7 @@ void	CFunc_Prt::prt_one_statement_mainbody(const INSTR * phead, XmlOutPro* out)
         return;
     POSITION pos = std::find(m_instr_list.begin(),m_instr_list.end(),phead);
 
-    PINSTR begin = *pos;
+    INSTR * begin = *pos;
     ++pos;
     if (begin->type != i_Begin)
     {
@@ -477,7 +477,7 @@ void	CFunc_Prt::prt_one_statement_mainbody(const INSTR * phead, XmlOutPro* out)
     while ( pos != endpos)
     {
         assert(pos != m_instr_list.end());
-        PINSTR p = *pos;
+        INSTR * p = *pos;
         ++pos;
         prt_instr(p,pos,out);
     }
@@ -698,7 +698,7 @@ void	CFunc_Prt::prtout_cpp(XmlOutPro* out)
 
     this->prt_func_head(out);
 
-    PINSTR phead = *m_instr_list.begin();
+    INSTR * phead = *m_instr_list.begin();
 
     this->m_flag_prt_var_delare = true;
     prt_one_statement(phead, out);
@@ -771,7 +771,7 @@ void CFunc_Prt::prt_instr_callthis(POSITION nextpos, XmlOutPro* out)
     POSITION pos = nextpos;
     for (;;)
     {
-        PINSTR p1 = *pos;
+        INSTR * p1 = *pos;
         ++pos;
         if (p1->type == i_CallPara)
             continue;
@@ -802,7 +802,7 @@ bool CFunc_Prt::prt_instr_callret(POSITION nextpos, XmlOutPro* out)
     POSITION pos = nextpos;
     for (;;)
     {
-        PINSTR p1 = *pos;
+        INSTR * p1 = *pos;
         ++pos;
         if (p1->type == i_CallThis)
             continue;
@@ -831,7 +831,7 @@ void CFunc_Prt::prt_para_1(M_t* thevar, XmlOutPro* out)
     INSTR_LIST::reverse_iterator pos=m_instr_list.rbegin();
     while (pos!=m_instr_list.rend())
     {
-        PINSTR p = *pos;
+        INSTR * p = *pos;
         ++pos;
         if (p->var_w.thevar == thevar)
         {
@@ -909,7 +909,7 @@ void	CFunc_Prt::prt_instr(const INSTR * p, POSITION &nextpos, XmlOutPro* out)
                     out->prtt("if");
                     out->XMLend(XT_Keyword);
                     out->prtt("(");
-                    PINSTR p1 = instrl.instr_next_in_func(p);
+                    INSTR * p1 = instrl.instr_next_in_func(p);
                     prt_jxx_compare_false(p1, out);
                     out->prtl(")");
                     p1 = instrl.instr_next_in_func(p1);
@@ -923,7 +923,7 @@ void	CFunc_Prt::prt_instr(const INSTR * p, POSITION &nextpos, XmlOutPro* out)
                     out->prtt("if");
                     out->XMLend(XT_Keyword);
                     out->prtt("(");
-                    PINSTR p1 = instrl.instr_next_in_func(p);
+                    INSTR * p1 = instrl.instr_next_in_func(p);
                     prt_jxx_compare_true(p1, out);
                     out->prtl(")");
                     p1 = instrl.instr_next_in_func(p1);	//	skip the jxx
@@ -939,7 +939,7 @@ void	CFunc_Prt::prt_instr(const INSTR * p, POSITION &nextpos, XmlOutPro* out)
                     out->prtt("if");
                     out->XMLend(XT_Keyword);
                     out->prtt("(");
-                    PINSTR p1 = instrl.instr_next_in_func(p);
+                    INSTR * p1 = instrl.instr_next_in_func(p);
                     prt_jxx_compare_false(p1, out);
                     out->prtl(")");
 
@@ -967,7 +967,7 @@ void	CFunc_Prt::prt_instr(const INSTR * p, POSITION &nextpos, XmlOutPro* out)
                     out->XMLend(XT_Keyword);
                     out->prtt("(");
 
-                    PINSTR p1 = instrl.instr_next_in_func(p);
+                    INSTR * p1 = instrl.instr_next_in_func(p);
                     p1 = instrl.instr_next_in_func(p1);	//	skip the first, its label
                     prt_jxx_compare_false(p1, out);
                     out->prtl(")");
@@ -985,7 +985,7 @@ void	CFunc_Prt::prt_instr(const INSTR * p, POSITION &nextpos, XmlOutPro* out)
                     out->XMLend(XT_Keyword);
                     out->endline();
 
-                    PINSTR p1 = instrl.instr_next_in_func(p);
+                    INSTR * p1 = instrl.instr_next_in_func(p);
                     p1 = instrl.instr_next_in_func(p1);	//	skip the first, its label
                     prt_one_statement(p1, out);
 
@@ -1009,16 +1009,16 @@ void	CFunc_Prt::prt_instr(const INSTR * p, POSITION &nextpos, XmlOutPro* out)
                     out->XMLend(XT_Keyword);
                     out->prtt("(");
 
-                    PINSTR p1 = instrl.instr_next_in_func(p);
+                    INSTR * p1 = instrl.instr_next_in_func(p);
 
                     prt_statement_in_1_line(p1, out);
                     assert(p1->type == i_Label);
-                    PINSTR p2 = instrl.instr_next_in_func(p1);
+                    INSTR * p2 = instrl.instr_next_in_func(p1);
                     p1 = p1->label.ref_instr;
                     prt_jxx_compare_true(p1, out);
                     out->prtt("; ");
                     {
-                        PINSTR p3 = instrl.skip_compl(p2);
+                        INSTR * p3 = instrl.skip_compl(p2);
                         prt_statement_in_1_line(p3, out);
                         out->prtl(")");
                     }
@@ -1035,7 +1035,7 @@ void	CFunc_Prt::prt_instr(const INSTR * p, POSITION &nextpos, XmlOutPro* out)
                     out->XMLend(XT_Keyword);
                     out->prtt("(");
 
-                    PINSTR p1 = instrl.instr_next_in_func(p);
+                    INSTR * p1 = instrl.instr_next_in_func(p);
 
                     prt_statement_in_1_line(p1, out);
                     if (p1->type != i_Jump)
@@ -1045,7 +1045,7 @@ void	CFunc_Prt::prt_instr(const INSTR * p, POSITION &nextpos, XmlOutPro* out)
                     assert(p1->type == i_Jump);
                     out->prtt("; ");
 
-                    PINSTR p2 = instrl.instr_next_in_func(p1);
+                    INSTR * p2 = instrl.instr_next_in_func(p1);
                     p2 = instrl.instr_next_in_func(p2);	//	skip the label
 
                     assert(p1->type == i_Jump);
@@ -1066,7 +1066,7 @@ void	CFunc_Prt::prt_instr(const INSTR * p, POSITION &nextpos, XmlOutPro* out)
             case COMP_switch_case:
                 {	//	小心了，swith_case的显示很困难的
                     out->prtf_ident("switch (");
-                    PINSTR p1 = instrl.instr_next_in_func(p);
+                    INSTR * p1 = instrl.instr_next_in_func(p);
                     assert(p1->type == i_Jump);		//	开头肯定是个条件跳
                     //while (p1->type != i_JmpAddr)
                     //{
@@ -1099,7 +1099,7 @@ void	CFunc_Prt::prt_instr(const INSTR * p, POSITION &nextpos, XmlOutPro* out)
             case COMP_switch_case_multcomp:
                 {	//	小心了，swith_case的显示很困难的
                     out->prtf_ident("switch (");
-                    PINSTR p1 = instrl.instr_next_in_func(p);
+                    INSTR * p1 = instrl.instr_next_in_func(p);
                     assert(p1->type == i_Jump);		//	开头肯定是个条件跳
                     //while (p1->type != i_JmpAddr)
                     //{
@@ -1239,7 +1239,7 @@ void	CFunc_Prt::prt_instr(const INSTR * p, POSITION &nextpos, XmlOutPro* out)
                     bool ffirst = true;
                     for (;;)
                     {
-                        PINSTR p1 = *pos;
+                        INSTR * p1 = *pos;
                         ++pos;
                         if (p1->type == i_RetPar)
                         {

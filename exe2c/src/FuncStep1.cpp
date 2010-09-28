@@ -749,28 +749,28 @@ void	CFuncLL::prtout_asm(Func* pfunc, VarLL* pvarll, XmlOutPro* out)
     out->XMLend(XT_Function);
 }
 void	CFuncLL::prtout_asm_1(VarLL* pvarll, XmlOutPro* out)
-{   //	按运行代码以ASM显示func，对其中的GAP能指出来
-
-        ea_t last = 0xffffffff;
-        AsmCodeList::iterator pos = this->m_asmlist->begin();
-        while (pos!=this->m_asmlist->end())
+{
+    //	按运行代码以ASM显示func，对其中的GAP能指出来
+    //Display by running the code to ASM func, GAP of them can point to
+    ea_t last = 0xffffffff;
+    AsmCodeList::iterator pos = this->m_asmlist->begin();
+    while (pos!=this->m_asmlist->end())
+    {
+        AsmCode* pasm = *pos;
+        ++pos;
+        if (pasm->iAddRemove == 2)
+            continue;
+        ea_t ea = pasm->linear;
+        std::ostringstream out_buf;
+        uint32_t n;
+        if (pasm->xcpu.opcode == C_JCASE)
         {
-            AsmCode* pasm = *pos;
-            ++pos;
-            if (pasm->iAddRemove == 2)
-                continue;
-            ea_t ea = pasm->linear;
-
-            char	buf[280];
-            uint32_t n;
-            if (pasm->xcpu.opcode == C_JCASE)
-            {
-                n = 0;
-                sprintf(buf,"case jmp to %lx",pasm->xcpu.op[0].nearptr.offset);
-            }
-            else
-            {
-                st_IDA_OUT idaout;
+            n = 0;
+            out_buf << "case jmp to " << std::ios::hex << pasm->xcpu.op[0].nearptr.offset;
+        }
+        else
+        {
+            st_IDA_OUT idaout;
             CDisasm the;
             //n = the.Disassembler(buf, ea2ptr(ea), ea);
             n = the.Disassembler_X(ea2ptr(ea), ea, &idaout);
@@ -788,9 +788,9 @@ void	CFuncLL::prtout_asm_1(VarLL* pvarll, XmlOutPro* out)
             {
                 OPERITEM* op = &pxcpu->op[0];
                 if (op->addr.base_reg_index == _ESP_
-                    || (op->addr.base_reg_index == _NOREG_
-                        && op->addr.off_reg_index == _ESP_
-                        && op->addr.off_reg_scale == 1))
+                        || (op->addr.base_reg_index == _NOREG_
+                            && op->addr.off_reg_index == _ESP_
+                            && op->addr.off_reg_scale == 1))
                 {
                     signed int level = pasm->esp_level + op->addr.off_value;
                     st_VarLL* p = pvarll->LookUp_VarLL(level- pvarll->m_VarRange_L);
@@ -805,9 +805,9 @@ void	CFuncLL::prtout_asm_1(VarLL* pvarll, XmlOutPro* out)
             {
                 OPERITEM* op = &pxcpu->op[1];
                 if (op->addr.base_reg_index == _ESP_
-                    || (op->addr.base_reg_index == _NOREG_
-                        && op->addr.off_reg_index == _ESP_
-                        && op->addr.off_reg_scale == 1))
+                        || (op->addr.base_reg_index == _NOREG_
+                            && op->addr.off_reg_index == _ESP_
+                            && op->addr.off_reg_scale == 1))
                 {
                     signed int level = pasm->esp_level + op->addr.off_value;
                     st_VarLL* p = pvarll->LookUp_VarLL(level- pvarll->m_VarRange_L);
@@ -818,10 +818,10 @@ void	CFuncLL::prtout_asm_1(VarLL* pvarll, XmlOutPro* out)
                     }
                 }
             }
-            idaout.output(buf);
+            idaout.output(out_buf);
         }
-                if (last != 0xffffffff && ea != last)
-                        out->prtl("//      gap here");
+        if (last != 0xffffffff && ea != last)
+            out->prtl("//      gap here");
 
         if (pasm->h.label.ref_j != NULL)
         {
@@ -833,7 +833,7 @@ void	CFuncLL::prtout_asm_1(VarLL* pvarll, XmlOutPro* out)
         //asm_prtl("%4x %x %s",-pasm->esp_level, ea, buf);
         if (pasm->esp_level == ESP_UNKNOWN)
         {
-            out->prtt("    ");  //四个空格的位置要留
+            out->prtt("    ");  //Location of the four spaces to stay
         }
         else
             out->prtf("%4x", -pasm->esp_level);
@@ -841,23 +841,23 @@ void	CFuncLL::prtout_asm_1(VarLL* pvarll, XmlOutPro* out)
         out->XMLbegin(XT_AsmOffset, (void*)ea);
         out->prtf("%x", ea);
         out->XMLend(XT_AsmOffset);
-        out->prtt(buf);
+        out->prtt(out_buf.str());
         out->endline();
 
-                last = ea+n;
-        }
+        last = ea+n;
+    }
 }
 
 
 void CFuncLL::GetVarRange(signed int& VarRange_L, signed int& VarRange_H)
 {
     /*
-    如果一个函数开头是：
+    If a function starts with:
    0 401010 SUB    ESP,00000190
  190 401016 LEA    ECX,[ESP+00]
- 则 VarRange_L = -190h
- 则 VarRange_H = 0
- 写作
+ Then VarRange_L = -190h
+ Then VarRange_H = 0
+ Write:
     0 401010 SUB    ESP,00000190
   190 401016 LEA    ECX,[ESP+v_00]
     */
@@ -865,10 +865,9 @@ void CFuncLL::GetVarRange(signed int& VarRange_L, signed int& VarRange_H)
     signed int H = 0;
 
     AsmCodeList::iterator pos = this->m_asmlist->begin();
-        while (pos!=this->m_asmlist->end())
-        {
-                AsmCode* pasm = *pos;
-                ++pos;
+    for( ; pos!=this->m_asmlist->end(); ++pos)
+    {
+        AsmCode* pasm = *pos;
         signed int last = pasm->esp_level;
         signed int here = pasm->esp_level_next;
         if (pasm->xcpu.opcode == C_SUB || pasm->xcpu.opcode == C_ADD)
@@ -887,6 +886,18 @@ void CFuncLL::GetVarRange(signed int& VarRange_L, signed int& VarRange_H)
     }
 }
 
+std::string VarLL::size_to_ptr_name(int size)
+{
+    switch(size)
+    {
+    case 1:
+        return "BYTE ptr" ;
+    case 2:
+        return "WORD ptr";
+    case 4:
+        return "DWORD ptr";
+    }
+}
 
 void VarLL::prtout(XmlOutPro* out)
 {
@@ -894,10 +905,10 @@ void VarLL::prtout(XmlOutPro* out)
     int maxlevel = this->m_VarRange_H - this->m_VarRange_L;
 
     VarLL_LIST::iterator pos = this->m_varll_list.begin();
-    while (pos!=this->m_varll_list.end())
+    VarLL_LIST::iterator iter_end = this->m_varll_list.end();
+    for(;pos!=iter_end; ++pos)
     {
         st_VarLL* p = *pos;
-        ++pos;
         if (curlevel > p->off)
         {
             out->prtl("error, var collapse!!!");
@@ -920,9 +931,7 @@ void VarLL::prtout(XmlOutPro* out)
         out->XMLend(XT_Symbol);
         out->prtt("equ");
         out->prtspace();
-        out->prtt((p->size == 1) ? "BYTE ptr" :
-                          (p->size == 2) ? "WORD ptr" :
-                          (p->size == 4) ? "uint32_t ptr" : "");
+        out->prtt(size_to_ptr_name(p->size == 1));
         out->prtspace();
         if (p->array != 1)
         {

@@ -1,69 +1,69 @@
 include_directories(include)
 set(exe2c_SOURCES
-  src/analysis.cpp
-  src/ApiManage.cpp
-  src/Cbuf.cpp
-  src/ClassManage.cpp
-  src/CodeList.cpp
-  src/EnumMng.cpp
-  src/exe2c.cpp
-  src/ExprManage.cpp
-  src/Func.cpp
-  src/Func_CreateInstrList.cpp
-  src/FuncOptim.cpp
-  src/FuncPrt.cpp
-  src/FuncStep1.cpp
-  src/FuncType.cpp
-  src/MyString.cpp
-  src/NameID.cpp
-  src/ComplexInstr.cpp
-  src/Strategy.cpp
-  src/XmlList.cpp
-  src/XmlPrt.cpp
-  src/DataType.cpp
-  src/Deasm_Init.cpp
-  src/Disasm.cpp
-  src/DLL32DEF.cpp
-  src/FileLoad.cpp
-  src/hpp.cpp
-  src/INSTR.cpp
-  src/main.cpp
-  src/optim.cpp
-  src/PEload.cpp
-  src/PUB.cpp
-  src/standard.cpp
-  src/strparse.cpp
-  src/SVarType.cpp
-  src/XmlType.cpp
-  src/LibScanner.cpp
+    src/analysis.cpp
+    src/ApiManage.cpp
+    src/Cbuf.cpp
+    src/ClassManage.cpp
+    src/CodeList.cpp
+    src/EnumMng.cpp
+    src/exe2c.cpp
+    src/ExprManage.cpp
+    src/Func.cpp
+    src/Func_CreateInstrList.cpp
+    src/FuncOptim.cpp
+    src/FuncPrt.cpp
+    src/FuncStep1.cpp
+    src/FuncType.cpp
+    src/MyString.cpp
+    src/NameID.cpp
+    src/ComplexInstr.cpp
+    src/Strategy.cpp
+    src/XmlList.cpp
+    src/XmlPrt.cpp
+    src/DataType.cpp
+    src/Deasm_Init.cpp
+    src/Disasm.cpp
+    src/DLL32DEF.cpp
+    src/FileLoad.cpp
+    src/hpp.cpp
+    src/INSTR.cpp
+    src/main.cpp
+    src/optim.cpp
+    src/PEload.cpp
+    src/PUB.cpp
+    src/standard.cpp
+    src/strparse.cpp
+    src/SVarType.cpp
+    src/XmlType.cpp
+    src/LibScanner.cpp
 )
 set(exe2c_HEADERS
-include/ApiManage.h
-include/Cbuf.h
-include/ClassManage.h
-include/CodeList.h
-include/EnumMng.h
-include/exe2c.h
-include/CISC.h
-include/ExprManage.h
-include/Func.h
-include/LibScanner.h
-include/MyString.h
-include/Strategy.h
-include/NameID.h
-include/ComplexInstr.h
-include/XmlPrt.h
-include/DataType.h
-include/dasm.h
-include/enum.h
-include/EXPR.h
-include/FileLoad.h
-include/INSTR.h
-include/ParseHead.h
-include/proto.h
-include/standard.h
-include/strparse.h
-include/types.h
-exe2c_interface.h
+    include/ApiManage.h
+    include/Cbuf.h
+    include/ClassManage.h
+    include/CodeList.h
+    include/EnumMng.h
+    include/exe2c.h
+    include/CISC.h
+    include/ExprManage.h
+    include/Func.h
+    include/LibScanner.h
+    include/MyString.h
+    include/Strategy.h
+    include/NameID.h
+    include/ComplexInstr.h
+    include/XmlPrt.h
+    include/DataType.h
+    include/dasm.h
+    include/enum.h
+    include/EXPR.h
+    include/FileLoad.h
+    include/INSTR.h
+    include/ParseHead.h
+    include/proto.h
+    include/standard.h
+    include/strparse.h
+    include/types.h
+    exe2c_interface.h
 )
 ADD_LIBRARY(exe2c_lib STATIC ${exe2c_SOURCES} ${exe2c_HEADERS})

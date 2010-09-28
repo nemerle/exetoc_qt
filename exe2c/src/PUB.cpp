@@ -90,7 +90,7 @@ void _warn(char * __cond, char * __file, int __line)
 const char * prt_DWORD(uint32_t d)
 {
         static char s[16];
-        if (d < 16 || (d % 100) == 0)
+        if ( (d < 16) || (d % 100) == 0)
                 sprintf(s,"%d",d);
         else
                 sprintf(s,"0x%x",d);

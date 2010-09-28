@@ -48,7 +48,7 @@ UINT Func::GetVaryParaSize(POSITION pos)
 {
     for (;pos!=m_instr_list.end();++pos)
     {
-        PINSTR pinstr = *pos;
+        INSTR * pinstr = *pos;
         if (pinstr->type == i_EspReport)
         {
             return pinstr->espreport.howlen;
@@ -61,14 +61,14 @@ bool	Func::Func_FillCallParas()
     POSITION pos = m_instr_list.begin();
     while (pos!=m_instr_list.end())
     {
-        PINSTR pinstr = *pos;
+        INSTR * pinstr = *pos;
         ++pos;
         if (pinstr->type == i_Call)
         {
             FuncType* pfctype = pinstr->call.call_func->m_functype;
             if (pfctype != NULL && pfctype->m_class != NULL)
             {//这是一个ecx->func
-                PINSTR p = new INSTR;   //new_INSTR
+                INSTR * p = new INSTR;   //new_INSTR
                 p->type = i_CallThis;
                 p->var_r1.type = v_Reg;
                 p->var_r1.opsize = BIT32_is_4;
@@ -78,7 +78,7 @@ bool	Func::Func_FillCallParas()
             }
             if (pfctype != NULL && pfctype->m_args != 0)
             {
-                PINSTR p = new INSTR;   //new_INSTR
+                INSTR * p = new INSTR;   //new_INSTR
                 p->type = i_CallPara;
 
                 p->call_addon.p_thecall = pinstr;
@@ -97,7 +97,7 @@ bool	Func::Func_FillCallParas()
             //怎么说？call的返回值会影响eax
             {//在每一个call后面加i_CallRet是没有问题的。如果这个函数没有返加值，
                 //这个i_CallRet肯定会被优化掉
-                PINSTR p = new INSTR;   //new_INSTR
+                INSTR * p = new INSTR;   //new_INSTR
                 p->type = i_CallRet;
 
                 p->call_addon.p_thecall = pinstr;
@@ -116,7 +116,7 @@ bool	Func::Func_FillCallParas()
         {
             if (papi->m_functype->para_total_size() != 0)
             {
-                PINSTR p = new INSTR;   //new_INSTR
+                INSTR * p = new INSTR;   //new_INSTR
                 p->type = i_CallPara;
 
                 p->call_addon.p_thecall = pinstr;
@@ -134,7 +134,7 @@ bool	Func::Func_FillCallParas()
             int n = GG_VarType_ID2Size(papi->m_functype->m_retdatatype_id);
             if (n == 4 || n == 2 || n == 1)
             {
-                PINSTR p = new INSTR;   //new_INSTR
+                INSTR * p = new INSTR;   //new_INSTR
                 p->type = i_CallRet;
 
                 p->call_addon.p_thecall = pinstr;
@@ -160,7 +160,7 @@ bool	Func::Step5_GetArgs()
     uint32_t maxesp = 0;
     for(POSITION pos = m_instr_list.begin(); pos!=m_instr_list.end(); ++pos)
     {
-        PINSTR p = *pos;
+        INSTR * p = *pos;
         Code_GetArgs(&p->var_w,maxesp);		//change maxesp if need
         Code_GetArgs(&p->var_r1,maxesp);
         Code_GetArgs(&p->var_r2,maxesp);
@@ -320,9 +320,9 @@ int	VAR::VarCompare(const VAR* v1,const VAR* v2)
 
 
 //	在phead所指的complex中，找到第no个statement
-PINSTR	Func::Get_no_Statement(PINSTR phead,int no)
+INSTR *	Func::Get_no_Statement(INSTR * phead,int no)
 {
-    PINSTR p = phead;
+    INSTR * p = phead;
     while (p)
     {
         p = instr_next(this->m_instr_list,p);
@@ -343,13 +343,13 @@ PINSTR	Func::Get_no_Statement(PINSTR phead,int no)
 
 void Func::MakeDownInstr(void* hline)
 {
-    PINSTR p0 = (PINSTR)hline;
+    INSTR * p0 = (INSTR *)hline;
 
     POSITION pos = m_instr_list.begin();
     while (pos!=m_instr_list.end())
     {
         POSITION savpos = pos;
-        PINSTR pinstr = *pos;
+        INSTR * pinstr = *pos;
         ++pos;
         if (pinstr == p0 && pos != m_instr_list.end())
         {
@@ -363,7 +363,7 @@ void Func::MakeDownInstr(void* hline)
 }
 
 
-void	prt_partern(INSTR_LIST* list,PINSTR phead,char * partern_buf);
+void	prt_partern(INSTR_LIST* list,INSTR * phead,char * partern_buf);
 
 
 
@@ -479,7 +479,7 @@ void	Func::prtout_internal(XmlOutPro* out)
 
     for(POSITION pos=m_instr_list.begin(); pos != m_instr_list.end(); ++pos)
     {
-        PINSTR p = *pos;
+        INSTR * p = *pos;
 
         if (p->type == i_End || p->type == i_CplxEnd)
             out->ident_sub1();
@@ -530,7 +530,7 @@ void Func::DeleteUnusedVar()
     this->m_exprs->ClearUse();
     for(POSITION pos=m_instr_list.begin(); pos != m_instr_list.end(); ++pos)
     {
-        PINSTR p = *pos;
+        INSTR * p = *pos;
         M_t* pt;
         pt = p->var_r1.thevar; if (pt != NULL) pt->tem_useno++;
         pt = p->var_r2.thevar; if (pt != NULL) pt->tem_useno++;
@@ -563,7 +563,7 @@ VarTypeID GetMemDataType(VAR* pvar)
     }
 }
 
-std::string Func::Instr_prt_simple(PINSTR p)
+std::string Func::Instr_prt_simple(INSTR * p)
 {
     std::string s = hlcode_name(p->type);
     if (p->var_w.type != 0)
@@ -606,7 +606,7 @@ bool CFuncOptim::DataType_Check(VAR_ADDON* pva, FuncType* pftype)
     //这是把i_CallPara的参数的数据类型改了
     for(POSITION pos=Q->m_instr_list.begin(); pos != Q->m_instr_list.end(); ++pos)
     {
-        PINSTR p = *pos;
+        INSTR * p = *pos;
         if (p->var_w.thevar == pvar && p->type == i_Assign)
         {
             if (p->var_r1.thevar != NULL
@@ -733,10 +733,10 @@ bool CFuncOptim::VarDataType_analysis()
 {
     for(POSITION pos=Q->m_instr_list.begin(); pos != Q->m_instr_list.end(); ++pos)
     {
-        PINSTR p = *pos;
+        INSTR * p = *pos;
         if (p->type == i_CallThis)
         {
-            PINSTR pcall = p->call_addon.p_thecall;
+            INSTR * pcall = p->call_addon.p_thecall;
             assert(pcall);
             if (pcall->type == i_Call)
             {
@@ -770,7 +770,7 @@ bool CFuncOptim::VarDataType_analysis()
         }
         if (p->type == i_CallPara)
         {
-            PINSTR pcall = p->call_addon.p_thecall;
+            INSTR * pcall = p->call_addon.p_thecall;
             assert(pcall);
             if (pcall->type == i_CallApi)
             {
@@ -789,7 +789,7 @@ bool CFuncOptim::VarDataType_analysis()
         }
         if (p->type == i_CallRet)
         {
-            PINSTR pcall = p->call_addon.p_thecall;
+            INSTR * pcall = p->call_addon.p_thecall;
             assert(pcall);
             if (pcall->type == i_Call)
             {
@@ -841,7 +841,7 @@ bool Func::Var_analysis()
     POSITION pos = m_instr_list.begin();
     while (pos!=m_instr_list.end())
     {
-        PINSTR p = *pos;
+        INSTR * p = *pos;
         ++pos;
 
         if (p->type == i_EspReport)

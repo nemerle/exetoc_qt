@@ -21,7 +21,7 @@
 #include "ParseHead.h"
 #include "LibScanner.h"
 
-
+using namespace boost::lambda;
 //KS_DECLARE_COMPONENT(exe2c, EXE2C)
 
 
@@ -46,21 +46,6 @@ void exe2c_Exit()
 {
     lib_exit();
 }
-//FIXME : static initializer
-//class CSelfInit
-//{
-//public:
-//    CSelfInit()
-//    {
-//        exe2c_Init();
-//    }
-//    ~CSelfInit()
-//    {
-//        exe2c_Exit();
-//    }
-//};
-//CSelfInit self;
-
 
 bool Exe2c::BaseInit()
 {
@@ -205,7 +190,7 @@ void	Exe2c::do_exe2c(ea_t start)
 Func* Exe2c::GetFunc(ea_t start)
 {
     FUNC_LIST::iterator iter=std::find_if(m_func_list.begin(),m_func_list.end(),
-        boost::bind<ea_t>(&Func::m_head_off,_1)==start);
+        boost::lambda::bind<ea_t>(&Func::m_head_off,_1)==start);
     if(iter==m_func_list.end())
         return NULL;
     return *iter;

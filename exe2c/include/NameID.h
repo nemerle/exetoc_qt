@@ -3,6 +3,7 @@
 #ifndef NameID__H
 #define NameID__H
 #include <string>
+#define BOOST_BIMAP_DISABLE_SERIALIZATION
 #include <boost/bimap.hpp>
 #include <boost/bimap/unordered_set_of.hpp>
 
