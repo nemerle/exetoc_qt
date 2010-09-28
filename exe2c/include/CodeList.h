@@ -1,6 +1,4 @@
-// Copyright(C) 1999-2005 LiuTaoTaobookaa@rorsoft.com
-
-//	CCodeList
+﻿// Copyright(C) 1999-2005 LiuTaoTaobookaa@rorsoft.com
 #ifndef CCodeList__H
 #define CCodeList__H
 
@@ -9,17 +7,16 @@ class	CodeList
 	friend class CodeList_Maker;
 private:
 	//CFunc*	m_owner;
-	void InstrAddTail(INSTR * p);
+	void			InstrAddTail(INSTR * p);
 
-    AsmCodeList* m_asmlist;
-    int m_EBP_base;
-    INSTR_LIST & m_instr_list;
+    AsmCodeList *	m_asmlist;
+    int				m_EBP_base;
+    INSTR_LIST &	m_instr_list;
 public:
+				CodeList(INSTR_LIST &list):m_instr_list(list)
+				{}
 
-	CodeList(INSTR_LIST &list):m_instr_list(list)
-	{}
-
-	void CreateInstrList_raw(AsmCodeList* asmlist, int EBP_base);
+	void		CreateInstrList_raw(AsmCodeList* asmlist, int EBP_base);
 };
 
 enum

@@ -608,13 +608,13 @@ bool InstrList::IsSwitchCase_multcomp(INSTR * begin)
     //	Comparison is not the kind switch_case multiple comparisons
 
     assert(begin->type == i_CplxBegin);
-    POSITION pos = std::find(m_list.begin(),m_list.end(),begin);
+    POSITION iter = std::find(m_list.begin(),m_list.end(),begin);
     M_t* v;
 
     int first = 0;
-    for(;pos!=m_list.end();++pos)
+    for(;iter!=m_list.end();++iter)
     {
-        INSTR * p = *pos;
+        INSTR * p = *iter;
         first++;
         if (first == 1)
             continue;	//	The first is certainly i_CplxBegin, do not need to read
@@ -625,28 +625,26 @@ bool InstrList::IsSwitchCase_multcomp(INSTR * begin)
             v = p->var_r1.thevar;	//	Write it down, keep up the same as before the next line
             continue;
         }
-        if (p->type == i_Jump)
+        if (p->type != i_Jump)
+		{
+			//There was no Jump
+			if (first < 4)		//	not enough comparisons, not really a switch case
+				return false;
+			return true;
+		}
+        if (p->jmp.jmp_type == JMP_jz)
         {
-            if (p->jmp.jmp_type == JMP_jz)
-            {
-                if (v != p->var_r1.thevar)
-                    return false;
-            }
-            else if (p->jmp.jmp_type == JMP_jmp)	//	find default
-            {
-                if (first < 4)		//	if less then that many, not really a switch case
-                    return false;
-                return true;
-            }
-            else
+            if (v != p->var_r1.thevar)
                 return false;
-
-            continue;
         }
-        //There was no Jump
-        if (first < 4)		//	not enough comparisons, not really a switch case
+        else if (p->jmp.jmp_type == JMP_jmp)	//	find default
+        {
+            if (first < 4)		//	if less then that many, not really a switch case
+                return false;
+            return true;
+        }
+        else
             return false;
-        return true;
     }
     return false;
 }
@@ -669,10 +667,9 @@ bool InstrList::IsSwitchCase(INSTR * begin)
             return false;
         if (p->type == i_Jump)
         {	//	allows only one jump
-            if (first)
-                first = false;
-            else
+            if (false==first)
                 return false;
+            first = false;
         }
     }
     return false;
@@ -970,19 +967,19 @@ void	CFunc_Prt::Add_case_entry(CasePrt_List* list, int case_n, INSTR * thelabel)
     //alert("add case entry");
     //static function
 
-    CasePrt_List::iterator pos = list->begin();
-    for (;pos!=list->end(); ++pos)
+    CasePrt_List::iterator iter = list->begin();
+    for (;iter!=list->end(); ++iter)
     {
-        OneCase* p = *pos;
+        OneCase* p = *iter;
         if (p->case_n == case_n)
             error("why same case");
         if (p->thelabel->label.label_off >= thelabel->label.label_off)
         {
-            --pos; // move pos to the last proper element
+            --iter; // move pos to the last proper element
             break;
         }
     }
     // std::list handles inserting at end() iterator
-    list->insert(pos, new OneCase(case_n,thelabel));
+    list->insert(iter, new OneCase(case_n,thelabel));
     return;
 }

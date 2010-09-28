@@ -1,8 +1,8 @@
+﻿#ifndef INSTR__H
+#define INSTR__H
 // Copyright(C) 1999-2005 LiuTaoTao，bookaa@rorsoft.com
 
-// INSTR.h
-#ifndef INSTR__H
-#define INSTR__H
+#include <stdint.h>
 #include <list>
 #include "enum.h"
 #include "EXPR.h"

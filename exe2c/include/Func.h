@@ -1,4 +1,4 @@
-// Copyright(C) 1999-2005 LiuTaoTao，bookaa@rorsoft.com
+﻿// Copyright(C) 1999-2005 LiuTaoTao，bookaa@rorsoft.com
 
 // CFunc.h
 #ifndef CFunc__H

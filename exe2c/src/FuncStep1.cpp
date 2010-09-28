@@ -864,10 +864,10 @@ void CFuncLL::GetVarRange(signed int& VarRange_L, signed int& VarRange_H)
     signed int L = 0;
     signed int H = 0;
 
-    AsmCodeList::iterator pos = this->m_asmlist->begin();
-    for( ; pos!=this->m_asmlist->end(); ++pos)
+    AsmCodeList::iterator iter = this->m_asmlist->begin();
+    for( ; iter!=this->m_asmlist->end(); ++iter)
     {
-        AsmCode* pasm = *pos;
+        AsmCode* pasm = *iter;
         signed int last = pasm->esp_level;
         signed int here = pasm->esp_level_next;
         if (pasm->xcpu.opcode == C_SUB || pasm->xcpu.opcode == C_ADD)
@@ -897,6 +897,7 @@ std::string VarLL::size_to_ptr_name(int size)
     case 4:
         return "DWORD ptr";
     }
+	return "UNKOWN ptr";
 }
 
 void VarLL::prtout(XmlOutPro* out)
@@ -904,11 +905,11 @@ void VarLL::prtout(XmlOutPro* out)
     int curlevel = 0;
     int maxlevel = this->m_VarRange_H - this->m_VarRange_L;
 
-    VarLL_LIST::iterator pos = this->m_varll_list.begin();
+    VarLL_LIST::iterator iter = this->m_varll_list.begin();
     VarLL_LIST::iterator iter_end = this->m_varll_list.end();
-    for(;pos!=iter_end; ++pos)
+    for(;iter!=iter_end; ++iter)
     {
-        st_VarLL* p = *pos;
+        st_VarLL* p = *iter;
         if (curlevel > p->off)
         {
             out->prtl("error, var collapse!!!");
@@ -931,7 +932,7 @@ void VarLL::prtout(XmlOutPro* out)
         out->XMLend(XT_Symbol);
         out->prtt("equ");
         out->prtspace();
-        out->prtt(size_to_ptr_name(p->size == 1));
+        out->prtt(size_to_ptr_name(p->size));
         out->prtspace();
         if (p->array != 1)
         {
