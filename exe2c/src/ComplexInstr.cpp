@@ -213,8 +213,8 @@ bool	InstrList_Finger::Finger_check_partern_for1(Instruction * p)
         if (ptem->type != i_Label)
             return false;
         p2 = ptem->label.ref_instr;
-	}
-	if (p1 == NULL || p2 == NULL)
+    }
+    if (p1 == NULL || p2 == NULL)
         return false;
 
     if (VAR::IsSame(&p1->var_w, &p2->var_r1) || VAR::IsSame(&p1->var_w, &p2->var_r2))
@@ -447,11 +447,11 @@ bool	InstrList::Flow_cc(Instruction * pNode, POSITION firstpos, POSITION endpos)
         Instruction * end = new Instruction(i_End);
         begin->begin.m_end = end;
         POSITION afterokpos=okpos;
-		++afterokpos;
+        ++afterokpos;
         Add_Begin_End(firstpos, okpos, begin, end);
         okpos=--afterokpos;
 
-		begin->begin.m_break = pNode->begin.m_break;	//	inherit
+        begin->begin.m_break = pNode->begin.m_break;	//	inherit
         begin->begin.m_conti = pNode->begin.m_conti;	//	inherit
 
         this->Flow_a(begin);
@@ -475,7 +475,7 @@ void InstrList::RemoveNops()
 }
 void InstrList::Add_Begin_End(POSITION firstpos, POSITION endpos, Instruction * begin, Instruction * end)
 {
-    this->Add_Begin_End_1(firstpos,endpos,begin,end);
+	this->Add_Begin_End_1(firstpos,endpos,begin,end);
 // remove nopped instructions
 	RemoveNops();
 }
@@ -655,7 +655,7 @@ void	InstrList::Flow_b(Instruction * pParentNode, POSITION firstpos, POSITION en
     Instruction * end = new Instruction(i_CplxEnd);
     begin->begin.m_end = end;
     Add_Begin_End(firstpos, endpos, begin, end);
-	POSITION pos = std::find(m_list.begin(),m_list.end(),end);
+    POSITION pos = std::find(m_list.begin(),m_list.end(),end);
     assert(pos != m_list.end());
     --pos;		//now it points to last instr in body
     Instruction * plast = *pos;
