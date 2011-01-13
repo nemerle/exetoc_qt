@@ -962,7 +962,7 @@ BYTE CDisasm::Global_GetSize(uint32_t srcsize)
         return 0;
 }
 
-uint32_t Global_SIB(char * outbuf,BYTE * codebuf,POPERITEM op,uint32_t mod)
+uint32_t Global_SIB(char * outbuf,BYTE * codebuf,OPERITEM *op,uint32_t mod)
 {
         SIB sib;
 
@@ -1038,7 +1038,7 @@ uint32_t Global_SIB(char * outbuf,BYTE * codebuf,POPERITEM op,uint32_t mod)
         }
 }
 
-uint32_t CDisasm::Global_MEMORY(char * outbuf,BYTE * codebuf,POPERITEM op)
+uint32_t CDisasm::Global_MEMORY(char * outbuf,BYTE * codebuf,OPERITEM *op)
 {
         MODRM	modrm;
         uint32_t	len=1;
@@ -1172,7 +1172,7 @@ uint32_t CDisasm::Global_MEMORY(char * outbuf,BYTE * codebuf,POPERITEM op)
         return len;
 }
 
-uint32_t CDisasm::Global_MODRM(char * outbuf,BYTE * codebuf,POPERITEM op)
+uint32_t CDisasm::Global_MODRM(char * outbuf,BYTE * codebuf,OPERITEM *op)
 {
         MODRM	modrm;
         modrm.v	= PeekB(codebuf);
@@ -1198,7 +1198,7 @@ uint32_t CDisasm::Global_MODRM(char * outbuf,BYTE * codebuf,POPERITEM op)
         return Global_MEMORY(outbuf,codebuf,op);
 }
 
-uint32_t CDisasm::Global_OFFSET(char * outbuf,BYTE * codebuf,POPERITEM op)
+uint32_t CDisasm::Global_OFFSET(char * outbuf,BYTE * codebuf,OPERITEM *op)
 {
         op->mode=OP_Address;
 
@@ -1221,7 +1221,7 @@ uint32_t CDisasm::Global_OFFSET(char * outbuf,BYTE * codebuf,POPERITEM op)
         }
 }
 
-uint32_t Global_REG(char * outbuf,BYTE * codebuf,POPERITEM op)
+uint32_t Global_REG(char * outbuf,BYTE * codebuf,OPERITEM *op)
 {
         MODRM	modrm;
 
@@ -1246,7 +1246,7 @@ uint32_t Global_REG(char * outbuf,BYTE * codebuf,POPERITEM op)
         return 0;
 }
 
-uint32_t Global_SREG(char * outbuf,BYTE * codebuf,POPERITEM op)
+uint32_t Global_SREG(char * outbuf,BYTE * codebuf,OPERITEM *op)
 {
         MODRM	modrm;
         modrm.v	= PeekB(codebuf);
@@ -1258,7 +1258,7 @@ uint32_t Global_SREG(char * outbuf,BYTE * codebuf,POPERITEM op)
         return 0;
 }
 
-uint32_t Global_IMMED(char * outbuf,BYTE * codebuf,POPERITEM op)
+uint32_t Global_IMMED(char * outbuf,BYTE * codebuf,OPERITEM *op)
 {
         op->mode = OP_Immed;
 
@@ -1281,7 +1281,7 @@ uint32_t Global_IMMED(char * outbuf,BYTE * codebuf,POPERITEM op)
         return op->opersize;
 }
 
-uint32_t Global_SIGNEDIMMED(char * outbuf,BYTE * codebuf,POPERITEM op)
+uint32_t Global_SIGNEDIMMED(char * outbuf,BYTE * codebuf,OPERITEM *op)
 {
         op->mode = OP_Immed;
 
@@ -1295,22 +1295,16 @@ uint32_t Global_SIGNEDIMMED(char * outbuf,BYTE * codebuf,POPERITEM op)
         return 1;
 }
 
-uint32_t CDisasm::Global_NEARPTR(char * outbuf,BYTE * codebuf,POPERITEM op)
+uint32_t CDisasm::Global_NEARPTR(char * outbuf,BYTE * codebuf,OPERITEM *op)
 {
         op->mode = OP_Near;
-
+    op->nearptr.offset = BaseAddress + CodeCount;
         if (op->opersize == 1)
-        {
-                op->nearptr.offset = BaseAddress + CodeCount + 1 + (int)(char)PeekB(codebuf);
-        }
+        op->nearptr.offset += 1 + (int)(char)PeekB(codebuf);
         else if (op->opersize == 2)
-        {
-                op->nearptr.offset = BaseAddress + CodeCount + 2 + (int)(short)PeekW(codebuf);
-        }
+        op->nearptr.offset += 2 + (int)(short)PeekW(codebuf);
         else
-        {
-                op->nearptr.offset = BaseAddress + CodeCount + 4 + (int)PeekD(codebuf);
-        }
+        op->nearptr.offset += 4 + (int)PeekD(codebuf);
 
         if (U_Size == BIT16)
                 sprintf(outbuf,"%04lX",op->nearptr.offset);
@@ -1320,7 +1314,7 @@ uint32_t CDisasm::Global_NEARPTR(char * outbuf,BYTE * codebuf,POPERITEM op)
         return op->opersize;
 }
 
-uint32_t CDisasm::Global_FARPTR(char * outbuf,BYTE * codebuf,POPERITEM op)
+uint32_t CDisasm::Global_FARPTR(char * outbuf,BYTE * codebuf,OPERITEM *op)
 {
         op->mode = OP_Far;
 
@@ -1345,13 +1339,8 @@ uint32_t CDisasm::Global_FARPTR(char * outbuf,BYTE * codebuf,POPERITEM op)
 
 /***********************************************************/
 
-uint32_t	CDisasm::ProcessOpdata(uint32_t opdata,POPERITEM op,char * outbuf,uint32_t codepos)
+uint32_t	CDisasm::ProcessOpdata(uint32_t opdata,OPERITEM *op,char * outbuf,uint32_t codepos)
 {
-    if (BaseAddress == 0x4011cb)
-    {
-        BaseAddress = 0x4011cb;
-    }
-
         op->mode		= OP_Invalid;
         switch(opdata)
         {
@@ -1515,7 +1504,7 @@ uint32_t	CDisasm::ProcessOpdata(uint32_t opdata,POPERITEM op,char * outbuf,uint3
         return 0;
 }
 
-std::string	CDisasm::ProcessSegPrefix(POPERITEM op)
+std::string	CDisasm::ProcessSegPrefix(OPERITEM *op)
 {
     std::string retn;
         if (op->mode != OP_Address)
@@ -1639,7 +1628,7 @@ void	CDisasm::ProcessInstruction(	uint32_t	opcode,
                 break;
 
                         case 4:
-                this->m_idaout->Par1Ptr = "uint32_t PTR ";
+                this->m_idaout->Par1Ptr = "DWORD PTR ";
                 break;
                         }
                 }

@@ -57,7 +57,7 @@ enum enum_COMP
 	COMP_while  	=	4,
 	COMP_do_while  	=	5,
 	COMP_long_if	=	6,
-	COMP_for1,      //do while ͵forʡ˵һж
+	COMP_for1,      //do while , for
 	COMP_switch_case,
 	COMP_switch_case_multcomp,	//	compareswitch_case
 };
@@ -72,24 +72,24 @@ enum HLType
 	i_Assign,
 	i_Var	,
 	i_Unknown,
-	i_RetPar,		//ķֵi_Returnǰ
-	i_Return,		//־
+	i_RetPar,		//return value
+	i_Return,		// mark
 	i_Add, i_Sub, i_Xor, i_Sar, i_And, i_Shl, i_Shr, i_Imul,
 	i_Readpointto,
 	i_Writepointto,
 
-	i_Cmp,		//ʱģҪȥ
-	i_Test,		//ʱģҪȥ
-	i_Lea,		//ʱģҪȥ
-	i_Address,	//ԶԸ [eax+ebx*4+8888],ֳ˭pointerҪi_GetAddr
-	i_JmpAddr,	//ʱswitch case
+	i_Cmp,		//mode to go when
+	i_Test,		//mode to go when
+	i_Lea,		//mode to go when
+	i_Address,	//
+	i_JmpAddr,	// occasionally switch case
 
 	i_GetAddr,
 	i_Call,
 	i_CallApi,
-	i_CallThis, //callǸecx->func1Ҫõecx
-	i_CallPara,	//callĲǽi_Call
-	i_CallRet,	//callķֵǽi_Call
+	i_CallThis, //call ecx->func1 ecx
+	i_CallPara,	//call parameter
+	i_CallRet,	//call return value of i_Call
 	i_CplxBegin,
 	i_CplxEnd,
 	i_Nop,
@@ -97,7 +97,7 @@ enum HLType
 	i_SignExpand,	//	for movsx
 	i_NosignExpand,	//	for movzx
 
-	i_EspReport,
+	i_EspReport
 };
 
 

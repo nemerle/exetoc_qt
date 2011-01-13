@@ -1,9 +1,9 @@
 // Copyright(C) 1999-2005 LiuTaoTao，bookaa@rorsoft.com
 
-//	CExprManage.h
-#ifndef CExprManage__H
-#define CExprManage__H
+#pragma once
+
 #include <list>
+#include <string>
 enum en_MTTYPE
 {
     MTT_invalid = 0,
@@ -11,8 +11,8 @@ enum en_MTTYPE
     MTT_reg,
     MTT_var,
     MTT_par,
-    MTT_immed,  //对此，namestr和s_off是不用的
-    MTT_global,
+    MTT_immed,  //In this case, namestr and s_off are unused
+    MTT_global
 };
 struct M_t
 {
@@ -21,11 +21,9 @@ struct M_t
 	uint32_t size;
 
     //H_NAMEID nameid;
-    char namestr[80];
-    int tem_useno;  //有几个人用我，一般不要管这个变量
-
-    //是否临时变量
-    bool bTem;
+    std::string namestr;
+    int tem_useno;  //how many others, counting me, [do not control this variable]
+    bool bTem; //Is temporary variable
     int iThrowned;
 
     union
@@ -42,7 +40,7 @@ struct M_t
 
     VarTypeID m_DataTypeID;
 
-    const char * GetName() const
+    const std::string &GetName() const
     {
         return namestr;
     }
@@ -51,7 +49,6 @@ struct M_t
     {
         s_off=0;
         size=0;
-        namestr[0]=0;
         bTem = false;
         iThrowned = 0;
         m_DataTypeID = 0;
@@ -119,4 +116,3 @@ public:
 };
 
 extern ExprManage g_GlobalExpr;
-#endif // CExprManage__H

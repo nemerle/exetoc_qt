@@ -1,4 +1,4 @@
-// Copyright(C) 1999-2005 LiuTaoTao，bookaa@rorsoft.com
+﻿// Copyright(C) 1999-2005 LiuTaoTao，bookaa@rorsoft.com
 
 // CFunc.h
 #ifndef CFunc__H
@@ -35,11 +35,11 @@ struct st_LINE_SYNTAX
 
 struct AsmCode
 {
-        ea_t		linear;
-        BYTE		opsize;	//length in byte of this opcode
-        signed int	esp_level;	//init to ESP_UNKNOWN, usually negative
-        signed int	esp_level_next;	//esp level next instr should be
-        XCPUCODE	xcpu;
+    ea_t		linear;
+    BYTE		opsize;	//length in byte of this opcode
+    signed int	esp_level;	//init to ESP_UNKNOWN, usually negative
+    signed int	esp_level_next;	//esp level next instr should be
+    XCPUCODE	xcpu;
 
     int iAddRemove; //0是原来的，1是删掉的，2是新加的
 
@@ -88,31 +88,31 @@ typedef	std::list<AsmCode*>	AsmCodeList;
 
 enum REF_ENUM
 {
-        enum_NOREF	= 0,
-        enum_REF	= 1,
-        enum_REUSE	= 2,	//	居然有人重用我！改它
+    enum_NOREF	= 0,
+    enum_REF	= 1,
+    enum_REUSE	= 2	//	Actually it was reuse of me! Change it
 };
 
 
 
 enum em_STEP
 {
-        STEP_Init = 0,
-        STEP_IDA_1 = 1,
-        STEP_IDA_2 = 2,
-        STEP_IDA_3 = 3,
-        STEP_IDA_4 = 4,
-        STEP_4 = 5,
-        STEP_5 = 6,
-        STEP_6 = 7,
-        STEP_7 = 8,
+    STEP_Init = 0,
+    STEP_IDA_1 = 1,
+    STEP_IDA_2 = 2,
+    STEP_IDA_3 = 3,
+    STEP_IDA_4 = 4,
+    STEP_4 = 5,
+    STEP_5 = 6,
+    STEP_6 = 7,
+    STEP_7 = 8,
 
     STEP_100 = 100,
 };
 
 struct st_VarLL
 {
-    int off;    //总是>=0的
+    int off;    //Always >=0
     int size;
     int array;  //default to 1
     char Name[40];
@@ -210,7 +210,7 @@ public:
     void Create_Labels_backend();   // label back-end processing
     // create methods end
 
-    bool expr_only_use_in_this(VAR* pvar, INSTR *phead);
+    bool expr_only_use_in_this(VAR* pvar, Instruction *phead);
 
     void    PrepareFunc();
     void    analysis();
@@ -228,15 +228,15 @@ public:
 
     //	Output methods
 
-    void	prtout_internal(XmlOutPro* out);		//	把CFunc按internal打印
-    INSTR *	Get_no_Statement(INSTR * phead,int no);
+    void	prtout_internal(XmlOutPro* out);		//	CFunc by the internal print
+    Instruction *	Get_no_Statement(Instruction * phead,int no);
     void    report_info();
     //	Output methods end
 
     void MakeDownInstr(void* hline);
     void ReType(M_t* p, const char * newtype);
 
-    std::string Instr_prt_simple(INSTR * p);
+    std::string Instr_prt_simple(Instruction * p);
 };
 
 typedef std::list<Func*>	FUNC_LIST;
@@ -245,52 +245,52 @@ typedef std::list<Func*>	FUNC_LIST;
 class CFunc_Prt
 {
     typedef INSTR_LIST::iterator POSITION;
-    Func* Q;
+    Func* m_my_func;
     bool m_flag_prt_var_delare;
 
     const char *	BareVarName(const VAR* v);
-    void        	prt_case(const INSTR *phead, const INSTR *plabel, XmlOutPro* out);
-    void          	prt_instr(const INSTR *p,POSITION &nextpos, XmlOutPro* out);
-    void            prt_instr_call(const INSTR *p, XmlOutPro* out);
-    void            prt_parameter(const INSTR *p, XmlOutPro* out);
+    void        	prt_case(const Instruction *phead, const Instruction *plabel, XmlOutPro* out);
+    void          	prt_instr(const Instruction *p,POSITION &nextpos, XmlOutPro* out);
+    void            prt_instr_call(const Instruction *p, XmlOutPro* out);
+    void            prt_parameter(const Instruction *p, XmlOutPro* out);
     void            prt_para_1(M_t* thevar, XmlOutPro* out);
     bool            prt_instr_callret(POSITION nextpos, XmlOutPro* out);
     void            prt_instr_callthis(POSITION nextpos, XmlOutPro* out);
-    void           	prt_add(const INSTR *p, const char * s, XmlOutPro* out);
+    void           	prt_add(const Instruction *p, const char * s, XmlOutPro* out);
     void            prt_var(const VAR* var, XmlOutPro* out);
     void         	prt_va(const VAR_ADDON& va, XmlOutPro* out);
     void            prt_va_1(const st_InstrAddOn* pa,const VAR* pv, XmlOutPro* out);
     void            out_PointTo(st_InstrAddOn* pa,const VAR* pv, XmlOutPro* out);
-    void            prt_jxx_compare_false(INSTR * &pjxx, XmlOutPro* out);
-    void            prt_one_statement(const INSTR *phead, XmlOutPro* out);
-    void            prt_switch_case(CasePrt_List* list, const INSTR* phead, XmlOutPro* out);
+    void            prt_jxx_compare_false(Instruction * &pjxx, XmlOutPro* out);
+    void            prt_one_statement(const Instruction *phead, XmlOutPro* out);
+    void            prt_switch_case(CasePrt_List* list, const Instruction* phead, XmlOutPro* out);
     void            prt_var_declares(XmlOutPro* out);
-    void            prt_statement_in_1_line(INSTR * &p, XmlOutPro* out);
-    void            prt_jxx_compare_true(INSTR * &spjxx, XmlOutPro* out);
-    void            prt_compare(const INSTR *phead, XmlOutPro* out);
-    void            prt_one_statement_mainbody(const INSTR *phead, XmlOutPro* out);
-    void            prt_sub(const INSTR *p, const char * s, XmlOutPro* out);
-    void            prt_func_head(XmlOutPro* out);		//打印 CFunc 的头, 如 void func1(int a1,int a2)
-    const char *	prt_iAddress(const INSTR *p);
-    void            prt_iAddress_out(const INSTR *p, XmlOutPro* out);
+    void            prt_statement_in_1_line(Instruction * &p, XmlOutPro* out);
+    void            prt_jxx_compare_true(Instruction * &spjxx, XmlOutPro* out);
+    void            prt_compare(const Instruction *phead, XmlOutPro* out);
+    void            prt_one_statement_mainbody(const Instruction *phead, XmlOutPro* out);
+    void            prt_sub(const Instruction *p, const char * s, XmlOutPro* out);
+    void            prt_func_head(XmlOutPro* out);		//Print CFunc head like void func1 (int a1, int a2)
+    const char *	prt_iAddress(const Instruction *p);
+    void            prt_iAddress_out(const Instruction *p, XmlOutPro* out);
 
-static void     add_default_entry(CasePrt_List* list, INSTR * thelabel);
-static void	Add_case_entry(CasePrt_List* list, int case_n, INSTR * thelabel);
-    void	prt_the_instr_1(const INSTR *p, XmlOutPro* out);
+    static void     add_default_entry(CasePrt_List* list, Instruction * thelabel);
+    static void	Add_case_entry(CasePrt_List* list, int case_n, Instruction * thelabel);
+    void	prt_the_instr_1(const Instruction *p, XmlOutPro* out);
 public:
 
     CFunc_Prt(Func* p)
     {
-        Q = p;
+        m_my_func = p;
     }
-        void	prtout_cpp(XmlOutPro* out);			//	把CFunc按CPP打印
-        std::string	prt_the_instr(const INSTR *p);
+    void	prtout_cpp(XmlOutPro* out);			//	Print the CFunc as CPP
+    std::string	prt_the_instr(const Instruction *p);
 
 };
 
 struct st_VarOptm
 {
-    INSTR * pInstr;
+    Instruction * pInstr;
     BYTE rw;
     bool bJxx;
     int varstep_r;	//May read a variable, and then write into another variable
@@ -312,9 +312,9 @@ typedef std::list< INSTR_LIST::iterator > POS_LIST;
 class CFuncOptim
 {
     typedef INSTR_LIST::iterator POSITION;
-    Func* Q;
-    bool MakeSure_NotRef_in_Range(VAR* pvar, INSTR * p1, INSTR * p2);
-    bool expr_never_use_after_this(VAR* pvar, INSTR * pend, INSTR_LIST* oldroad);
+    Func* m_my_func;
+    bool MakeSure_NotRef_in_Range(VAR* pvar, Instruction * p1, Instruction * p2);
+    bool expr_never_use_after_this(VAR* pvar, Instruction * pend, INSTR_LIST* oldroad);
 
     void prt_var_uselist(VAROPTM_LIST& used_list);
     bool Optim_Var_Flow(VAROPTM_LIST& used_list);
@@ -334,10 +334,13 @@ class CFuncOptim
 
     bool SetParaType(UINT offset, UINT sizepara, enum_CallC conv,
                      const std::string & paraname, VarTypeID paraid);
+    void SimplifyGetAddr(Instruction *p);
+    void SimplifyAddImmed(Instruction *p);
+    void SimplifyImulImmed(Instruction *p);
 public:
     CFuncOptim(Func* p)
     {
-        Q = p;
+        m_my_func = p;
     }
     bool Var_Split();
     bool ClassSubFuncProcess();
@@ -378,7 +381,7 @@ class CPrtOut
     bool b_Indent;
     bool b_Endl;
     bool b_OneLine;
-    const void* hline;    //this is INSTR *
+    const void* hline;    //this is Instruction *
     st_OutBuf m_buf;
 public:
     CPrtOut();
@@ -425,9 +428,9 @@ public:
     {
 
     }
-    INSTR * instr_next_in_func(const INSTR * p);
-    INSTR * instr_prev_in_func(const INSTR * p);
-    INSTR * skip_compl(const INSTR * p);
+    Instruction * instr_next_in_func(const Instruction * p);
+    Instruction * instr_prev_in_func(const Instruction * p);
+    Instruction * skip_compl(const Instruction * p);
 };
 
 

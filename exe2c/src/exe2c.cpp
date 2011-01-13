@@ -53,7 +53,7 @@ bool Exe2c::BaseInit()
     //TODO: Convert Exe2c to singleton
     g_Cexe2c = this;
     //this->m_api_name_manager = new CNameMng;    //new_CNameMng
-	// Make some global initializations
+    // Make some global initializations
 
 	m_FileLoader = NULL;
 	return true;
@@ -96,8 +96,8 @@ void	Exe2c::Recurse_Analysis()
     {
         p = *pos;
         log_prtl("Recurse_analysis %x",p->m_head_off);
-		if (p->m_nStep != STEP_100)
-			continue;
+        if (p->m_nStep != STEP_100)
+            continue;
         p->analysis();
     }
 }
@@ -111,9 +111,9 @@ void	Exe2c::Recurse_Optim()
     {
         p = *pos;
         log_prtl("Recurse_Optim %x",p->m_head_off);
-		if (p->m_nStep < STEP_6)
-			continue;
-	}
+        if (p->m_nStep < STEP_6)
+            continue;
+    }
 }
 void Exe2c::exe2c_main(const std::string & fname)
 {
@@ -211,7 +211,7 @@ static std::string CheckIf_libfunc(PCBYTE phead)
     {
         std::string fcname = g_LIBSCANNER->CheckIfLibFunc(phead);
 
-        if (fcname.length()!=0)
+        if (!fcname.empty())
             return fcname;
     }
     return "";
@@ -442,7 +442,7 @@ bool Exe2c::Rename(int arg, void* handle, const char * newname)
     else if (xmltype == XT_Symbol)
     {
         M_t* p = (M_t*)handle;
-        strcpy(p->namestr, newname);
+        p->namestr=newname;
         return true;
     }
     /*

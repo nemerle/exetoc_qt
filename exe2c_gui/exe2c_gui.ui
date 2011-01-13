@@ -36,7 +36,7 @@
      <x>0</x>
      <y>0</y>
      <width>800</width>
-     <height>23</height>
+     <height>18</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuFile">
@@ -108,6 +108,7 @@
     <bool>false</bool>
    </attribute>
    <addaction name="actionOptim"/>
+   <addaction name="actionOptim10"/>
   </widget>
   <action name="actionNew">
    <property name="text">
@@ -240,6 +241,11 @@
     <string>Tile windows</string>
    </property>
   </action>
+  <action name="actionOptim10">
+   <property name="text">
+    <string>Optim10</string>
+   </property>
+  </action>
  </widget>
  <resources/>
  <connections>
@@ -339,11 +345,28 @@
     </hint>
    </hints>
   </connection>
+  <connection>
+   <sender>actionOptim10</sender>
+   <signal>triggered()</signal>
+   <receiver>Exe2C_MainWindow</receiver>
+   <slot>onOptim10()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>-1</x>
+     <y>-1</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>399</x>
+     <y>299</y>
+    </hint>
+   </hints>
+  </connection>
  </connections>
  <slots>
   <slot>onOptim()</slot>
   <slot>onOpenFile_Action()</slot>
   <slot>displayCurrentFunction(QModelIndex)</slot>
   <slot>functionSelected(QModelIndex)</slot>
+  <slot>onOptim10()</slot>
  </slots>
 </ui>

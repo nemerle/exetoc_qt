@@ -1,11 +1,10 @@
 // Copyright(C) 1999-2005 LiuTaoTao，bookaa@rorsoft.com
 
 //	analysis.cpp
-////#include "stdafx.h"
-
+#include <QDebug>
+#include <list>
 #include "CISC.h"
 #include "Strategy.h"
-#include <QDebug>
 extern bool g_f_Step_by_Step;
 extern bool g_any1_return_TRUE;
 bool Step_by_Step();
@@ -99,17 +98,15 @@ bool	Func::analysis_once_1()
 }
 bool	Func::analysis_once()
 {
-    bool f = analysis_once_1();
-    if (f)
-    {
-        if (g_CStrategy.IfAny())
-        {
-            g_CStrategy.PrintIt(this->m_instr_list, this);
-            g_CStrategy.DoIt(this->m_instr_list, this->m_exprs);
-        }
-        DeleteUnusedVar();
-    }
-    return f;
+	if(false==analysis_once_1())
+		return false;
+	if (g_CStrategy.IfAny())
+	{
+		g_CStrategy.PrintIt(this->m_instr_list, this);
+		g_CStrategy.DoIt(this->m_instr_list, this->m_exprs);
+	}
+	DeleteUnusedVar();
+	return true;
 }
 void Func::analysis()
 {
@@ -144,15 +141,13 @@ void	Func::ana_RetType()
     while (pos!=m_instr_list.end())
     {
         INSTR_LIST::iterator savpos = pos;
-        INSTR * p = *pos;
-        ++pos;
-        if (p->type == i_Return)
-        {
-            INSTR * pnew = new INSTR;    //new_INSTR
-            pnew->type = i_RetPar;	// For the time being that each is ret uint32_t func
-            pnew->var_r1 = v;
-            m_instr_list.insert(savpos,pnew);
-        }
+        Instruction * p = *(pos++);
+		if (p->type != i_Return)
+			continue;
+
+		Instruction * pnew = new Instruction(i_RetPar);// For the time being that each is ret uint32_t func
+		pnew->var_r1 = v;
+		m_instr_list.insert(savpos,pnew);
     }
 }
 //Prepare is to add new functions, but does not call the new function prepare

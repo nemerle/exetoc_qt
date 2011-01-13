@@ -43,7 +43,7 @@ FuncType* FuncType::ft_clone()
 
 void FuncType::create_internal_funcname()
 {
-        if (this->m_internal_name.size()!=0)
+        if (!this->m_internal_name.empty())
                 return;
 
         char buf[80];

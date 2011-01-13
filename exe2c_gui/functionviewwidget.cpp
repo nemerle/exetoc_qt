@@ -40,6 +40,7 @@ void FunctionViewWidget::XMLbegin(XMLTYPE xmltype, void *p)
     case XT_DataType:
     case XT_Number:
     case XT_AsmOffset:
+    case XT_AsmLabel:
         collected_text+="<font color='"+col.name()+"'>";
         break;
     default:
@@ -68,6 +69,7 @@ void FunctionViewWidget::XMLend(XMLTYPE xmltype)
     case XT_DataType:
     case XT_Number:
     case XT_AsmOffset:
+    case XT_AsmLabel:
         collected_text+="</font>";
         break;
     default:

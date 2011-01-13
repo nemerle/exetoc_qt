@@ -3,19 +3,19 @@
 ////#include "stdafx.h"
 #include	"CISC.h"
 
-INSTR::INSTR() : i1(0),i2(0)
+Instruction::Instruction(HLType hl_type,enum_COMP comp_type) : i1(0),i2(0)
 {
-
+    this->type=hl_type;
     this->va_r1.pv = &this->var_r1;
     this->va_r2.pv = &this->var_r2;
     this->begin.m_end=0;
-    this->begin.type=COMP_unknown;
+    this->begin.type=comp_type;
     this->begin.m_break=0;
     this->begin.m_conti=0;
     this->begin.m_not_conti=0;
 }
 
-INSTR::~INSTR()
+Instruction::~Instruction()
 {
 }
 

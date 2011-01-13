@@ -93,8 +93,8 @@ bool hpp_init()
         current_dir = current_dir/"inc";
         g_incpath = current_dir.native_directory_string();
 
-//	if (g_EXEType == enum_PE_sys)
-//		strcat(g_incpath, "\\ntddk\\");
+    //	if (g_EXEType == enum_PE_sys)
+    //		strcat(g_incpath, "\\ntddk\\");
 
         LoadIncFile("my.h");
 
@@ -138,11 +138,8 @@ CCInfo::CCInfo()
 
 CCInfo::~CCInfo()
 {
-        if (this->m_buf)
-        {
-                delete this->m_buf;
-                this->m_buf = NULL;
-        }
+    delete m_buf;
+    m_buf = NULL;
 }
 
 void CCInfo::LoadFile(FILE *f)

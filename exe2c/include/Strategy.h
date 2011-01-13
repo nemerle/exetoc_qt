@@ -25,31 +25,31 @@ class Strategy
         struct
         {
             M_t* pvar;  //which variables
-            INSTR * pinstr;  //Used when we need to delete a statement
+            Instruction * pinstr;  //Used when we need to delete a statement
             char reason[80];
         }can_delete;    //for m_es == ES_Instr_can_Delete
         struct
         {
             M_t* pvar;  //which variable
-            INSTR * p1;  //previous to my assignment
-            INSTR * p2;  //1 after my use
+            Instruction * p1;  //previous to my assignment
+            Instruction * p2;  //1 after my use
             char reason[80];
         }m_can_elim;    //for m_es == ES_Instr_can_Elim
     };
     char m_buf[256];
 
-    std::string PrintOne(const INSTR_LIST & list, const INSTR *p, Func* pFunc);
+    std::string PrintOne(const INSTR_LIST & list, const Instruction *p, Func* pFunc);
 
 public:
     Strategy()
     {
         m_es = ES_Error;
     }
-    void AddOne_CanDelete(M_t* pvar, INSTR * pinstr, const char * reason);
-    void AddOne_CanEliminate_25E(M_t* pvar, INSTR * p1, INSTR * p2, const char * reason);
-    void AddOne_CanEliminate_31E(M_t* pvar, INSTR * p1, INSTR * p2, const char * reason);
-    void AddOne_CanEliminate_21E(M_t* pvar, INSTR * p1, INSTR * p2, const char * reason);
-    void AddOne_CanEliminate_63(M_t* pvar, INSTR * p1, INSTR * p2, const char * reason);
+    void AddOne_CanDelete(M_t* pvar, Instruction * pinstr, const char * reason);
+    void AddOne_CanEliminate_25E(M_t* pvar, Instruction * p1, Instruction * p2, const char * reason);
+    void AddOne_CanEliminate_31E(M_t* pvar, Instruction * p1, Instruction * p2, const char * reason);
+    void AddOne_CanEliminate_21E(M_t* pvar, Instruction * p1, Instruction * p2, const char * reason);
+    void AddOne_CanEliminate_63(M_t* pvar, Instruction * p1, Instruction * p2, const char * reason);
     void PrintIt(const INSTR_LIST& list, Func* pFunc);
     void DoIt(INSTR_LIST& list, ExprManage* expr);
     bool DoIt_Addon(INSTR_LIST& list, ExprManage* expr);

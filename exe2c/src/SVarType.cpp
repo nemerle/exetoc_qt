@@ -26,20 +26,15 @@ void CExprManage_cpp_Init()
 }
 void CExprManage_cpp_exit()
 {
-    if (g_VarTypeManage)
-    {
         delete g_VarTypeManage;
         g_VarTypeManage = NULL;
-    }
 }
 
 CVarTypeMng::CVarTypeMng()
 {
     list = new VarTypeList;
     nextfreeid = 1;
-
-    //	用这些缺省的类型填小于100的编号
-    // Fill with the default type of number is less than 100
+    // Add default types whose id number is less than 100
     NewBaseVarType(0, "void");	//	id = 1 id_void
 
     NewBaseVarType(1, "BYTE");	//	id = 2
@@ -135,8 +130,7 @@ VarTypeID	CVarTypeMng::NewTypeDef(VarTypeID id0, const char * name)
 
     SVarType* p = this->id2_VarType(id0);
     assert(p);
-    if (p->type == vtt_class
-            && p->m_class.pClass->m_name[0] == '\0')
+    if (p->type == vtt_class && p->m_class.pClass->m_name[0] == '\0')
     {	//	是一个没名的class或struct或union
         //Is not the name of a class or struct or union
         strcpy(p->m_class.pClass->m_name, name);
@@ -597,7 +591,7 @@ VarTypeID Get_Additional_id(VarTypeID baseid, const char * &p)
     //	对 "unsigned char *", 已经知道 "unsigned char" 的id,
     //	期望 p 指的是一个 "*" 或 "**" 之类
     //  On the "unsigned char *", have known "unsigned char" in the id,
-    //  p refers to expect a "*" or "**" and the like
+    //  Expect p refers to a "*"or"** " and the like
     VarTypeID id = baseid;
     for (;;)
     {
@@ -871,19 +865,19 @@ VarTypeID CVarTypeMng::NewUnknownStruc(const char * strucname)
 }
 VarTypeID CVarTypeMng::GetAddressOfID(VarTypeID id)
 {
-	//It returns an type id of pointer to type 'id'
-	// so for unsigned long it returns unsigned long *
-	VarTypeList::iterator pos = list->begin();
-	while (pos!=list->end())
-	{
-		SVarType* p = *pos;//list->;
-		++pos;
-		if (p->type == vtt_point && p->m_point.id_pointto == id)
-			return p->id;
-	}
-	//	not found, create one
+    //It returns an type id of pointer to type 'id'
+    // so for unsigned long it returns unsigned long *
+    VarTypeList::iterator pos = list->begin();
+    while (pos!=list->end())
+    {
+        SVarType* p = *pos;//list->;
+        ++pos;
+        if (p->type == vtt_point && p->m_point.id_pointto == id)
+            return p->id;
+    }
+    //	not found, create one
 
-	return this->New_p(id);
+    return this->New_p(id);
 }
 
 //	-------------------------------------------------------

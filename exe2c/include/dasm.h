@@ -234,7 +234,7 @@ enum OPCODETYPE
 
 typedef	uint32_t	ea_t;
 
-typedef struct OPERITEM
+struct OPERITEM
 {
         OP_TYPE mode;		//OP_Register, ...
         BYTE    rwflag;		//0:Unknown	1:Read 2:Write 3:Access
@@ -272,7 +272,7 @@ typedef struct OPERITEM
                         uint32_t   offset;
                 }   farptr;		//for OP_Far
         };
-} *POPERITEM;
+};
 
 typedef struct XCPUCODE
 {
@@ -381,21 +381,21 @@ class CDisasm
     uint32_t	AdrSize;
 
 
-    uint32_t Global_OFFSET(char * outbuf,unsigned char * codebuf,POPERITEM op);
-    uint32_t Global_MEMORY(char * outbuf,unsigned char * codebuf,POPERITEM op);
-    uint32_t Global_MODRM(char * outbuf,unsigned char * codebuf,POPERITEM op);
+    uint32_t Global_OFFSET(char * outbuf,unsigned char * codebuf,OPERITEM *op);
+    uint32_t Global_MEMORY(char * outbuf,unsigned char * codebuf,OPERITEM *op);
+    uint32_t Global_MODRM(char * outbuf,unsigned char * codebuf,OPERITEM *op);
     BYTE	GetByte();
     WORD	GetWord();
     uint32_t	GetDWord();
     BYTE	GetByteEx();
     WORD	GetWordEx();
     uint32_t	GetDWordEx();
-    uint32_t Global_NEARPTR(char * outbuf,unsigned char * codebuf,POPERITEM op);
-    uint32_t Global_FARPTR(char * outbuf,unsigned char * codebuf,POPERITEM op);
+    uint32_t Global_NEARPTR(char * outbuf,unsigned char * codebuf,OPERITEM *op);
+    uint32_t Global_FARPTR(char * outbuf,unsigned char * codebuf,OPERITEM *op);
     void	OpSizePrefix();
     void	AdrSizePrefix();
     BYTE Global_GetSize(uint32_t srcsize);
-    uint32_t	ProcessOpdata(uint32_t opdata,POPERITEM op,char * outbuf,uint32_t codepos);
+    uint32_t	ProcessOpdata(uint32_t opdata,OPERITEM *op,char * outbuf,uint32_t codepos);
     void	SetError(uint32_t errcode);
     void	DisassemblerOne();
     void	ProcessGroup(PINSTRUCTION pG,PINSTRUCTION inst);
@@ -404,7 +404,7 @@ class CDisasm
                                uint32_t	opdata1,
                                uint32_t	opdata2,
                                uint32_t	opdata3);
-    std::string	ProcessSegPrefix(POPERITEM op);
+    std::string	ProcessSegPrefix(OPERITEM *op);
 
 public:
     BYTE	Disasm_OneCode(ea_t &pos);

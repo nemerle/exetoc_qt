@@ -105,6 +105,8 @@ struct VAR
         part_flag = 0;
         reg=0;
     }
+    bool IfTemVar() const;
+    bool IfSameTemVar(const VAR* v2) const;
 };
 
 

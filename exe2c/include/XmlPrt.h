@@ -5,6 +5,7 @@
 #ifndef	CXmlPrt_H
 #define CXmlPrt_H
 #include <string>
+#include <QString>
 #include "XmlList.h"
 #include "MyString.h"
 class I_XmlOut
@@ -92,6 +93,14 @@ public:
         fHasSpace = false;
 
         this->m_out->prtt(s);
+    }
+    void prtt(const QString &s)
+    {
+        if (fHasSpace)
+            this->m_out->prtt(" ");
+        fHasSpace = false;
+
+        this->m_out->prtt(s.toStdString());
     }
     void prtslen(const char * s, int len);
     void XMLbegin(enum XMLTYPE xmltype, void * p)

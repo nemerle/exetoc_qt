@@ -18,13 +18,11 @@ void _warn(char * __cond, char * __file, int __line);
 
 
 #ifdef NDEBUG
-#define assert(p)   ((void)0)
 #define assert_msg(p,msg)   ((void)0)
 #define warn(p)   ((void)0)
 #define warn_msg(p,msg)   ((void)0)
 #else
 //Assert error process will be aborted, but with warn it will not
-//#define assert(p)   ((p) ? (void)0 : _assert(#p, __FILE__, __LINE__))
 #define assert_msg(p,msg)   ((p) ? (void)0 : assert(msg##" -- "#p))
 #define warn(p)   ((p) ? (void)0 : _warn(#p, __FILE__, __LINE__))
 #define warn_msg(p,msg)   ((p) ? (void)0 : _warn(msg##" -- "#p, __FILE__, __LINE__))
@@ -76,12 +74,12 @@ uint32_t	regindex_2_regoff(uint32_t regindex);
 
 //---------------------------------------------
 //	CFunc_CreateInstrList.cpp
-INSTR *	instr_next(const INSTR_LIST& list,const INSTR *p);
-INSTR *	instr_prev(const INSTR_LIST& list,const INSTR *p);
+Instruction *	instr_next(const INSTR_LIST& list,const Instruction *p);
+Instruction *	instr_prev(const INSTR_LIST& list,const Instruction *p);
 
 //---------------------------------------------
 //	FileLoad.cpp
-bool	IfInWorkSpace(ea_t off);	//	check if off lye in our work space
+bool	IfInWorkSpace(ea_t off);	//	check if off lies in our work space
 
 
 

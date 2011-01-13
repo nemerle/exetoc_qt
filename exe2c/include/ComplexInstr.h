@@ -6,9 +6,9 @@
 #include <list>
 struct OneCase
 {
-	OneCase(int num,INSTR *lab) : case_n(num),thelabel(lab) {}
-	int case_n;
-	INSTR *thelabel;
+    OneCase(int num,Instruction *lab) : case_n(num),thelabel(lab) {}
+    int case_n;
+    Instruction *thelabel;
 };
 
 typedef std::list<OneCase*> CasePrt_List;

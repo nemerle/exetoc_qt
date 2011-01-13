@@ -22,8 +22,8 @@ void skip_eos(const char * &p)
                 p++;
 }
 void get_1part(char * buf,const char * &p)
-{	//把p所指，不为空格的部分存buf
-    //	分隔符可以是' ',',','\0','[',']',';','{','}'
+{	// P referred to, is not part of the storage space buf
+    //	Separator can be '' , ',' , '\0' , '[' , ']' , ';' , '{' , '}'
     assert(p);
     assert(*p != ' ');
     *buf = 0;
@@ -67,23 +67,23 @@ bool if_split_char(char c)
 }
 uint32_t Str2Num(const char * p)
 {
-        uint32_t d = 0;
-        if (*p == '0' && (p[1] | 0x20) == 'x')
-        {
-                sscanf(p+2,"%x",&d);
-                return d;
-        }
-        sscanf(p,"%d",&d);
+    uint32_t d = 0;
+    if (*p == '0' && (p[1] | 0x20) == 'x')
+    {
+        sscanf(p+2,"%x",&d);
         return d;
+    }
+    sscanf(p,"%d",&d);
+    return d;
 }
 
 signed int Str2Int(const char * p)
 {
-        if (*p == '-')
-        {
-                return -Str2Int(p+1);
-        }
-        return (signed int)Str2Num(p);
+    if (*p == '-')
+    {
+        return -Str2Int(p+1);
+    }
+    return (signed int)Str2Num(p);
 }
 
 

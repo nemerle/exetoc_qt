@@ -48,7 +48,7 @@ UINT Func::GetVaryParaSize(POSITION pos)
 {
     for (;pos!=m_instr_list.end();++pos)
     {
-        INSTR * pinstr = *pos;
+        Instruction * pinstr = *pos;
         if (pinstr->type == i_EspReport)
         {
             return pinstr->espreport.howlen;
@@ -61,15 +61,14 @@ bool	Func::Func_FillCallParas()
     POSITION pos = m_instr_list.begin();
     while (pos!=m_instr_list.end())
     {
-        INSTR * pinstr = *pos;
+        Instruction * pinstr = *pos;
         ++pos;
         if (pinstr->type == i_Call)
         {
             FuncType* pfctype = pinstr->call.call_func->m_functype;
             if (pfctype != NULL && pfctype->m_class != NULL)
             {//这是一个ecx->func
-                INSTR * p = new INSTR;   //new_INSTR
-                p->type = i_CallThis;
+                Instruction * p = new Instruction(i_CallThis);   //new_INSTR
                 p->var_r1.type = v_Reg;
                 p->var_r1.opsize = BIT32_is_4;
                 p->var_r1.reg = enum_ECX;
@@ -78,9 +77,7 @@ bool	Func::Func_FillCallParas()
             }
             if (pfctype != NULL && pfctype->m_args != 0)
             {
-                INSTR * p = new INSTR;   //new_INSTR
-                p->type = i_CallPara;
-
+                Instruction * p = new Instruction(i_CallPara);   //new_INSTR
                 p->call_addon.p_thecall = pinstr;
                 pinstr->call.p_callpara = p;
                 p->var_r1.type = v_Var;
@@ -97,8 +94,7 @@ bool	Func::Func_FillCallParas()
             //怎么说？call的返回值会影响eax
             {//在每一个call后面加i_CallRet是没有问题的。如果这个函数没有返加值，
                 //这个i_CallRet肯定会被优化掉
-                INSTR * p = new INSTR;   //new_INSTR
-                p->type = i_CallRet;
+                Instruction * p = new Instruction(i_CallRet);   //new_INSTR
 
                 p->call_addon.p_thecall = pinstr;
                 pinstr->call.p_callret = p;
@@ -116,8 +112,7 @@ bool	Func::Func_FillCallParas()
         {
             if (papi->m_functype->para_total_size() != 0)
             {
-                INSTR * p = new INSTR;   //new_INSTR
-                p->type = i_CallPara;
+                Instruction * p = new Instruction(i_CallPara);   //new_INSTR
 
                 p->call_addon.p_thecall = pinstr;
                 pinstr->call.p_callpara = p;
@@ -134,9 +129,7 @@ bool	Func::Func_FillCallParas()
             int n = GG_VarType_ID2Size(papi->m_functype->m_retdatatype_id);
             if (n == 4 || n == 2 || n == 1)
             {
-                INSTR * p = new INSTR;   //new_INSTR
-                p->type = i_CallRet;
-
+                Instruction * p = new Instruction(i_CallRet);   //new_INSTR
                 p->call_addon.p_thecall = pinstr;
                 pinstr->call.p_callret = p;
                 p->var_w.type = v_Reg;
@@ -160,7 +153,7 @@ bool	Func::Step5_GetArgs()
     uint32_t maxesp = 0;
     for(POSITION pos = m_instr_list.begin(); pos!=m_instr_list.end(); ++pos)
     {
-        INSTR * p = *pos;
+        Instruction * p = *pos;
         Code_GetArgs(&p->var_w,maxesp);		//change maxesp if need
         Code_GetArgs(&p->var_r1,maxesp);
         Code_GetArgs(&p->var_r2,maxesp);
@@ -229,9 +222,7 @@ bool	IfValideFuncName(const char * pname)
         return false;
 
     char c = *pname;
-    if ( c>='a' && c<='z' )
-        return true;
-    if ( c>='A' && c<='Z' )
+    if(isalnum(c))
         return true;
     if ( c=='_' || c=='~')
         return true;
@@ -320,9 +311,9 @@ int	VAR::VarCompare(const VAR* v1,const VAR* v2)
 
 
 //	在phead所指的complex中，找到第no个statement
-INSTR *	Func::Get_no_Statement(INSTR * phead,int no)
+Instruction *	Func::Get_no_Statement(Instruction * phead,int no)
 {
-    INSTR * p = phead;
+    Instruction * p = phead;
     while (p)
     {
         p = instr_next(this->m_instr_list,p);
@@ -343,13 +334,13 @@ INSTR *	Func::Get_no_Statement(INSTR * phead,int no)
 
 void Func::MakeDownInstr(void* hline)
 {
-    INSTR * p0 = (INSTR *)hline;
+    Instruction * p0 = (Instruction *)hline;
 
     POSITION pos = m_instr_list.begin();
     while (pos!=m_instr_list.end())
     {
         POSITION savpos = pos;
-        INSTR * pinstr = *pos;
+        Instruction * pinstr = *pos;
         ++pos;
         if (pinstr == p0 && pos != m_instr_list.end())
         {
@@ -361,9 +352,7 @@ void Func::MakeDownInstr(void* hline)
         }
     }
 }
-
-
-void	prt_partern(INSTR_LIST* list,INSTR * phead,char * partern_buf);
+//void	prt_partern(INSTR_LIST* list,Instruction * phead,char * partern_buf);
 
 
 
@@ -429,57 +418,32 @@ void Func::report_info()
     else
         log_prtl("func m_VarRange_H = -%x", -this->m_VarRange_H);
 }
-const char * my_itoa(int i);
-std::string PrtAddOn_internal(const char * varname, Pst_InstrAddOn pAddOn)
 //SuperC_func: 只在＜CFunc::prtout_internal＞中使用
+QString PrtAddOn_internal(const char * varname, Pst_InstrAddOn pAddOn)
 {
     if (pAddOn == NULL)
         return varname;
-
     switch (pAddOn->type)
     {
     case IA_Nothing:
         return varname;
     case IA_ReadPointTo:
-    {
-        std::string retn = "*";
-        retn += PrtAddOn_internal(varname,pAddOn->pChild);
-        return retn;
-    }
+        return QString("*%1").arg(PrtAddOn_internal(varname,pAddOn->pChild));
     case IA_AddImmed:
-    {
-        std::string retn = "(";
-        retn += PrtAddOn_internal(varname,pAddOn->pChild);
-        retn += " + ";
-        retn += my_itoa(pAddOn->addimmed.iAddon);
-        retn += ")";
-        return retn;
-    }
+        return QString("(%1+%2)").arg(PrtAddOn_internal(varname,pAddOn->pChild)).arg(pAddOn->addimmed.iAddon);
     case IA_MulImmed:
-    {
-        std::string retn = "";
-        retn += PrtAddOn_internal(varname,pAddOn->pChild);
-        retn += " * ";
-        retn += my_itoa(pAddOn->addimmed.iAddon);
-        retn += "";
-        return retn;
-    }
+        return QString("%1 * %2").arg(PrtAddOn_internal(varname,pAddOn->pChild)).arg(pAddOn->addimmed.iAddon);
     case IA_GetAddress:
-    {
-        std::string retn = "&";
-        retn += PrtAddOn_internal(varname,pAddOn->pChild);
-        return retn;
+        return QString("&%1").arg(PrtAddOn_internal(varname,pAddOn->pChild));
     }
-    default:
-        return "Error_PrtAddOn";
-    }
+    return "Error_PrtAddOn";
 }
 void	Func::prtout_internal(XmlOutPro* out)
 {
 
     for(POSITION pos=m_instr_list.begin(); pos != m_instr_list.end(); ++pos)
     {
-        INSTR * p = *pos;
+        Instruction * p = *pos;
 
         if (p->type == i_End || p->type == i_CplxEnd)
             out->ident_sub1();
@@ -530,7 +494,7 @@ void Func::DeleteUnusedVar()
     this->m_exprs->ClearUse();
     for(POSITION pos=m_instr_list.begin(); pos != m_instr_list.end(); ++pos)
     {
-        INSTR * p = *pos;
+        Instruction * p = *pos;
         M_t* pt;
         pt = p->var_r1.thevar; if (pt != NULL) pt->tem_useno++;
         pt = p->var_r2.thevar; if (pt != NULL) pt->tem_useno++;
@@ -563,7 +527,7 @@ VarTypeID GetMemDataType(VAR* pvar)
     }
 }
 
-std::string Func::Instr_prt_simple(INSTR * p)
+std::string Func::Instr_prt_simple(Instruction * p)
 {
     std::string s = hlcode_name(p->type);
     if (p->var_w.type != 0)
@@ -574,274 +538,23 @@ std::string Func::Instr_prt_simple(INSTR * p)
     if (p->var_r1.type != 0)
     {
         s += " r1=";
-        s += PrtAddOn_internal(this->m_exprs->BareVarName(&p->var_r1), p->va_r1.pao);
+        s += PrtAddOn_internal(this->m_exprs->BareVarName(&p->var_r1), p->va_r1.pao).toStdString();
     }
     if (p->var_r2.type != 0)
     {
         s += " r2=";
-        s += PrtAddOn_internal(this->m_exprs->BareVarName(&p->var_r2), p->va_r2.pao);
+        s += PrtAddOn_internal(this->m_exprs->BareVarName(&p->var_r2), p->va_r2.pao).toStdString();
     }
     return s;
 }
 
-bool CFuncOptim::DataType_Check(VAR_ADDON* pva, FuncType* pftype)
-{
-    M_t* pvar = pva->pv->thevar;
-    if (pvar->m_DataTypeID == 0)
-        return false;
-    assert(pvar);
-    if (!pftype->m_varpar)
-    {
-        int i1 = GG_VarType_ID2Size(pvar->m_DataTypeID);
-        int i2 = pftype->para_total_size();
-        if (pva->pao == NULL)
-        {
-            assert(i1 == i2);
-        }
-        else if (pva->pao->type == IA_GetAddress)
-        {
-            assert(i2 == 4);
-        }
-    }
-    //这是把i_CallPara的参数的数据类型改了
-    for(POSITION pos=Q->m_instr_list.begin(); pos != Q->m_instr_list.end(); ++pos)
-    {
-        INSTR * p = *pos;
-        if (p->var_w.thevar == pvar && p->type == i_Assign)
-        {
-            if (p->var_r1.thevar != NULL
-                    && g_VarTypeManage->is_simple(p->var_r1.thevar->m_DataTypeID)
-                    )
-            {
-                VarTypeID id;
-                if (p->var_w.part_flag == 0)
-                {//说明只有一个参数
-                    assert(pftype->m_args == 1);
-                    id = pftype->m_partypes[0];
-                }
-                else
-                {
-                    id = pftype->SearchPara(p->var_w.part_flag - 1);
-                }
-                if (id != 0)
-                {
-                    if (p->va_r1.pao == NULL)
-                    {
-                        if (p->var_r1.thevar->type != MTT_immed)
-                        {
-                            int size1 = p->var_r1.thevar->size;
-                            int size2 = GG_VarType_ID2Size(id);
-                            assert(size1 == size2);
-                        }
-                        VarTypeID oldid = p->var_r1.thevar->m_DataTypeID;
-                        p->var_r1.thevar->m_DataTypeID = id;
-
-                        log_prtl("1: %s datatype %s -> %s",
-                                 p->var_r1.thevar->GetName(),
-                                 ::GG_VarType_ID2Name(oldid).c_str(),
-                                 ::GG_VarType_ID2Name(id).c_str()
-                                 );
-
-                        return true;
-                    }
-                    else if (p->va_r1.pao->type == IA_GetAddress)
-                    {
-                        VarTypeID oldid = p->var_r1.thevar->m_DataTypeID;
-                        VarTypeID id2 = g_VarTypeManage->GetPointTo(id);
-
-                        p->var_r1.thevar->m_DataTypeID = id2;
-
-                        UINT size1 = p->var_r1.thevar->size;    //原来的size
-                        UINT size2 = GG_VarType_ID2Size(id2);   //新的size
-                        if (size1 < size2)
-                        {//变大了
-                            p->var_r1.thevar->size = size2;
-                            this->Q->m_exprs->Enlarge_Var(p->var_r1.thevar, Q->m_instr_list);
-                        }
-
-                        log_prtl(this->Q->Instr_prt_simple(p).c_str());
-                        log_prtl("& X = TYPE *, so X = TYPE");
-
-                        log_prtl("2: %s datatype %s -> %s",
-                                 p->var_r1.thevar->GetName(),
-                                 ::GG_VarType_ID2Name(oldid).c_str(),
-                                 ::GG_VarType_ID2Name(id2).c_str());
-
-                        return true;
-                    }
-                }
-            }
-        }
-    }
-    return false;
-}
-bool CFuncOptim::SetParaType(UINT offset, UINT sizepara, enum_CallC conv,const std::string & paraname, VarTypeID paraid)
-{
-    if (conv == enum_cdecl || conv == enum_stdcall)
-    {
-        UINT par_off = offset + 4;  //对不对呢
-        M_t* pmt = this->Q->m_exprs->SearchMT(MTT_par, par_off);
-        if (pmt == NULL)
-            return false;
-        if (pmt->m_DataTypeID != 0 && !g_VarTypeManage->is_simple(pmt->m_DataTypeID))
-            return false;   //Already have the type, please do not do it again //已经有类型了，就不必再做了
-
-        strcpy(pmt->namestr, paraname.c_str());
-        //Now, make pmt-> m_DataType for the paratype
-        if (pmt->size == GG_VarType_ID2Size(paraid))
-        {
-            pmt->m_DataTypeID = paraid;
-        }
-        else
-        {
-            M_t* pnew = new M_t;    //new_M_t
-            *pnew = *pmt;
-            pnew->m_DataTypeID = paraid;
-
-            Q->m_exprs->vList->push_back(pnew);
-
-            this->Q->m_exprs->Enlarge_Var(pnew, Q->m_instr_list);
-
-            assert(pnew->size == GG_VarType_ID2Size(paraid));
-        }
-        return true;
-    }
-    else
-        assert(0);
-    return false;
-}
-bool CFuncOptim::VarDataType_analysis_mydefine()
-{//I already have a function definition, parameter names and types from which to take
-    if (this->Q->m_functype == NULL)
-        return false;
-    FuncType* pftype = this->Q->m_functype;
-
-    UINT sizepara = pftype->para_total_size();
-    int offset = 0;
-    for (int i=0; i<pftype->m_args; i++)
-    {
-        if (this->SetParaType(offset,sizepara, this->Q->m_functype->m_callc,pftype->m_parnames[i],pftype->m_partypes[i]))
-            return true;
-        offset += GG_VarType_ID2Size(pftype->m_partypes[i]);
-        while (offset % 4)
-            offset++;
-    }
-
-    return false;
-}
-bool CFuncOptim::VarDataType_analysis()
-{
-    for(POSITION pos=Q->m_instr_list.begin(); pos != Q->m_instr_list.end(); ++pos)
-    {
-        INSTR * p = *pos;
-        if (p->type == i_CallThis)
-        {
-            INSTR * pcall = p->call_addon.p_thecall;
-            assert(pcall);
-            if (pcall->type == i_Call)
-            {
-                FuncType* pft = pcall->call.call_func->m_functype;
-                assert(pft != NULL);
-                assert(pft->m_class != NULL);
-
-                if (p->var_r1.thevar != NULL
-                        && g_VarTypeManage->is_simple(p->var_r1.thevar->m_DataTypeID)
-                        )
-                {
-                    VarTypeID id = g_VarTypeManage->Class2VarID(pft->m_class);
-                    VarTypeID oldid = p->var_r1.thevar->m_DataTypeID;
-                    if (p->va_r1.pao == NULL)
-                    {
-                        id = g_VarTypeManage->GetAddressOfID(id);
-                        p->var_r1.thevar->m_DataTypeID = id;
-                    }
-                    else if (p->va_r1.pao->type == IA_GetAddress)
-                    {
-                        p->var_r1.thevar->m_DataTypeID = id;
-                    }
-                    log_prtl("3: %s datatype %s -> %s",
-                             p->var_r1.thevar->GetName(),
-                             ::GG_VarType_ID2Name(oldid).c_str(),
-                             ::GG_VarType_ID2Name(id).c_str());
-
-                    return true;
-                }
-            }
-        }
-        if (p->type == i_CallPara)
-        {
-            INSTR * pcall = p->call_addon.p_thecall;
-            assert(pcall);
-            if (pcall->type == i_CallApi)
-            {
-                FuncType* pft = pcall->call.papi->m_functype;
-                if (pft != NULL)
-                    if (this->DataType_Check(&p->va_r1, pft))
-                        return true;
-            }
-            if (pcall->type == i_Call)
-            {
-                FuncType* pft = pcall->call.call_func->m_functype;
-                if (pft != NULL)
-                    if (this->DataType_Check(&p->va_r1, pft))
-                        return true;
-            }
-        }
-        if (p->type == i_CallRet)
-        {
-            INSTR * pcall = p->call_addon.p_thecall;
-            assert(pcall);
-            if (pcall->type == i_Call)
-            {
-                FuncType* pdf = pcall->call.call_func->m_functype;
-                if (pdf != NULL
-                        && p->var_w.thevar != NULL
-                        && g_VarTypeManage->is_simple(p->var_w.thevar->m_DataTypeID)
-                        )
-                {
-                    VarTypeID oldid = p->var_w.thevar->m_DataTypeID;
-                    VarTypeID id = pdf->m_retdatatype_id;
-                    p->var_w.thevar->m_DataTypeID = pdf->m_retdatatype_id;
-
-                    log_prtl("4: %s datatype %s -> %s",
-                             p->var_w.thevar->GetName(),
-                             ::GG_VarType_ID2Name(oldid).c_str(),
-                             ::GG_VarType_ID2Name(id).c_str());
-
-                    return true;
-                }
-            }
-            if (pcall->type == i_CallApi)
-            {
-                Api* papi = pcall->call.papi;
-                VarTypeID retid = papi->m_functype->m_retdatatype_id;
-                assert(retid);
-                if (p->var_w.thevar != NULL
-                        && g_VarTypeManage->is_simple(p->var_w.thevar->m_DataTypeID)
-                        )
-                {
-                    VarTypeID oldid = p->var_w.thevar->m_DataTypeID;
-                    p->var_w.thevar->m_DataTypeID = retid;
-
-                    log_prtl("5: %s datatype %s -> %s",
-                             p->var_w.thevar->GetName(),
-                             ::GG_VarType_ID2Name(oldid).c_str(),
-                             ::GG_VarType_ID2Name(retid).c_str());
-
-                    return true;
-                }
-            }
-        }
-    }
-    return false;
-}
 bool Func::Var_analysis()
 {
-    //这函数只能调用一遍
+    //This function can only be called once
     POSITION pos = m_instr_list.begin();
     while (pos!=m_instr_list.end())
     {
-        INSTR * p = *pos;
+        Instruction * p = *pos;
         ++pos;
 
         if (p->type == i_EspReport)
@@ -861,15 +574,15 @@ bool Func::Var_analysis()
 }
 
 
-INSTR *CFunc_InstrList::instr_next_in_func(const INSTR * p)
+Instruction *CFunc_InstrList::instr_next_in_func(const Instruction * p)
 {
     return instr_next(m_instr_list,p);
 }
-INSTR *CFunc_InstrList::instr_prev_in_func(const INSTR * p)
+Instruction *CFunc_InstrList::instr_prev_in_func(const Instruction * p)
 {
     return instr_prev(m_instr_list, p);
 }
-INSTR *CFunc_InstrList::skip_compl(const INSTR * p)
+Instruction *CFunc_InstrList::skip_compl(const Instruction * p)
 {
     //p是一个begin，返回是end后一条
     assert(p->type == i_Begin);
@@ -954,11 +667,10 @@ bool    Func::Step_1()
 }
 void Func::Fill_this_ECX(VarTypeID id)
 {
-    //	意思是说，这是一个class的子函数，把ECX改名为 'this'
+    //	This means that this is subroutine of a class ECX changes its name into 'this'
     M_t* p = this->m_exprs->SearchMT(MTT_reg, enum_ECX);
     if (p == NULL || p->size != BIT32_is_4)
         return;		//	why ?
-    strcpy(p->namestr, "this");
+    p->namestr = "this";
     p->m_DataTypeID = id;
 }
-

@@ -13,13 +13,7 @@
 #define	_EXE2C_H_
 #include <list>
 #include <string>
-//#include <Windows.h>
-//#include "..\I_KSUNKNOWN\KsFrame.h"
 
-#define	IID_EXE2C				0x00006efa
-#define	EXE2C_INITORDER		0x80000000
-#define	EXE2C_PARENT_IID		NULL
-#define	EXE2C_PRIORITY			0x80000000
 class Func;
 typedef std::list<Func *> FUNC_LIST;
 struct st_FuncInfo;

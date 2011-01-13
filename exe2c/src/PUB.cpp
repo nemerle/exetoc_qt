@@ -73,11 +73,9 @@ void _warn(char * __cond, char * __file, int __line)
                         __cond,
                         __file,
                         __line);
-        QMessageBox box;
-        box.setText("warn");
-        box.setInformativeText(buf);
-        box.setIcon(QMessageBox::Warning);
-        box.exec();
+        QMessageBox::warning(0,"Warning",
+                             QString("%1, [%2 at line %3]").arg(__cond).arg(__file).arg(__line)
+                             );
 }
 
 //char * new_str(const char * p)

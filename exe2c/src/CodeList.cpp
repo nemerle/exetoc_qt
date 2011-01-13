@@ -4,20 +4,17 @@
 #include	"CISC.h"
 #include "exe2c.h"
 
-// 初步构造instr_list和expr_list
 //Initial construction instr_list and expr_list
 void CodeList::CreateInstrList_raw(AsmCodeList* asmlist, int EBP_base)
 {
     this->m_asmlist = asmlist;
     this->m_EBP_base = EBP_base;
 
-	INSTR * p_begin = new INSTR;     //new_INSTR
-	p_begin->type = i_Begin;
-	INSTR * p_end = new INSTR;		//new_INSTR	总是同时new //new_INSTR	 is always the same time, new
-	p_end->type = i_End;
-	p_begin->begin.m_end = p_end;			//	指向它 //Point to it
+    Instruction * p_begin = new Instruction(i_Begin);     //new_INSTR
+    Instruction * p_end = new Instruction(i_End);		//new_INSTR	总是同时new //new_INSTR	 is always the same time, new
+    p_begin->begin.m_end = p_end;			//	指向它 //Point to it
 
-	InstrAddTail(p_begin);	// 在前面加一条i_Begin //In front plus a i_Begin
+    InstrAddTail(p_begin);	// 在前面加一条i_Begin //In front plus a i_Begin
 
     signed int esp_level = 3;
     AsmCodeList::iterator pos = this->m_asmlist->begin();
@@ -29,23 +26,19 @@ void CodeList::CreateInstrList_raw(AsmCodeList* asmlist, int EBP_base)
 
         CodeList_Maker the(this,cur);
 
-		if (cur->xcpu.opcode != C_JCASE)
-		{	//	唯一的例外，C_JCASE前不加label //The only exception, C_JCASE not label the former
-			INSTR * p = new INSTR;   //new_INSTR
-			p->type = i_Label;
-			p->label.label_off = cur->linear;
-
-			// 在每条指令前加一个label
-		//In front of a label for each instruction
-			InstrAddTail(p);
-		}
+        if (cur->xcpu.opcode != C_JCASE)
+        {	//The only exception, C_JCASE label without prior
+            Instruction * p = new Instruction(i_Label);   //new_INSTR
+            p->label.label_off = cur->linear;
+            //In front of each instruction preceded by a label
+            InstrAddTail(p);
+        }
 
         if (esp_level != 3 && esp_level < cur->esp_level)
-        {//这是一个pop
-      //This is a pop
+        {
+            //This is a pop
             cur->xcpu.opcode;
-            INSTR *	p = new INSTR;  //new_INSTR
-            p->type = i_EspReport;
+            Instruction *	p = new Instruction(i_EspReport);  //new_INSTR
             p->espreport.esp_level = cur->esp_level;
             p->espreport.howlen = cur->esp_level - esp_level;
             InstrAddTail(p);
@@ -56,47 +49,42 @@ void CodeList::CreateInstrList_raw(AsmCodeList* asmlist, int EBP_base)
         esp_level = cur->esp_level;
     }
 
-    InstrAddTail(p_end);	//	在后面加一条i_End //In the back plus a i_End
+    InstrAddTail(p_end);	//	i_End - last instruction
 }
 
-void CodeList::InstrAddTail(INSTR * p)
+void CodeList::InstrAddTail(Instruction * p)
 {
     if (p->var_w.type)
-        if (p->var_w.opsize == 0)
-            nop();//assert(p->var_w.opsize);
+            assert(p->var_w.opsize);
     if (p->var_r1.type)
-        if (p->var_r1.opsize == 0)
-            nop();//assert(p->var_r1.opsize);
+            assert(p->var_r1.opsize);
     if (p->var_r2.type)
-        if (p->var_r2.opsize == 0)
-            nop();//assert(p->var_r2.opsize);
+            assert(p->var_r2.opsize);
 
     m_instr_list.push_back(p);
 }
 
-void	set_address(OPERITEM* op,INSTR * p)
+void	set_address(OPERITEM* op,Instruction * p)
 {
-	if (op->addr.base_reg_index != _NOREG_)
-	{
-		p->var_r1.type = v_Reg;
-		p->var_r1.opsize = BIT32_is_4;
-		p->var_r1.reg = regindex_2_regoff(op->addr.base_reg_index);
-	}
+    if (op->addr.base_reg_index != _NOREG_)
+    {
+        p->var_r1.type = v_Reg;
+        p->var_r1.opsize = BIT32_is_4;
+        p->var_r1.reg = regindex_2_regoff(op->addr.base_reg_index);
+    }
 
-	if (op->addr.off_reg_index != _NOREG_)
-	{
-		p->var_r2.type = v_Reg;
-		p->var_r2.opsize = BIT32_is_4;
-		p->var_r2.reg = regindex_2_regoff(op->addr.off_reg_index);
-	}
+    if (op->addr.off_reg_index != _NOREG_)
+    {
+        p->var_r2.type = v_Reg;
+        p->var_r2.opsize = BIT32_is_4;
+        p->var_r2.reg = regindex_2_regoff(op->addr.off_reg_index);
+    }
 
-	p->i1 = op->addr.off_reg_scale;
-	p->i2 = op->addr.off_value;
+    p->i1 = op->addr.off_reg_scale;
+    p->i2 = op->addr.off_value;
 }
 //-------------------------------------------------------
-#define m_instr_list Q->m_instr_list
-#define InstrAddTail Q->InstrAddTail
-#define m_EBP_base Q->m_EBP_base
+void	set_address(OPERITEM* op,Instruction * p);
 
 ea_t FindApiAddress_Reg(uint32_t regindex, XCPUCODE* pxcpu1, AsmCodeList* asmlist);
 
@@ -104,21 +92,21 @@ ea_t FindApiAddress_Reg(uint32_t regindex, XCPUCODE* pxcpu1, AsmCodeList* asmlis
 //Put the current xcpu into pseudo-code, while intr_list in addtail
 void	CodeList_Maker::AddTail_Cur_Opcode()
 {
-	XCPUCODE* pxcpu = &cur->xcpu;
+    XCPUCODE* pxcpu = &cur->xcpu;
 
-	switch (pxcpu->opcode)
-	{
-	case C_INC:
-		{
-			OPERITEM* op0 = &pxcpu->op[0];
-			OPERITEM* op1 = &pxcpu->op[1];
+    switch (pxcpu->opcode)
+    {
+    case C_INC:
+        {
+            OPERITEM* op0 = &pxcpu->op[0];
+            OPERITEM* op1 = &pxcpu->op[1];
 //            OPERITEM* op2 = &this->cur->xcpu.op[2];
             op1->mode = OP_Immed;
             op1->opersize = op0->opersize;
             op1->immed.immed_value = 1;
         }
 
-        Code_general(enum_AR, i_Add);    //2005.2.1加
+        Code_general(enum_AR, i_Add);    // Added 2005.2.1
         break;
     case C_DEC:
         {
@@ -144,12 +132,11 @@ void	CodeList_Maker::AddTail_Cur_Opcode()
     case C_JCASE:
         {
             //alert("C_JCASE find ");
-            INSTR * p = new INSTR;   //new_INSTR
-            p->type = i_Jump;
+            Instruction * p = new Instruction(i_Jump);   //new_INSTR
             p->jmp.jmp_type = JMP_case;
             p->jmp.jmpto_off = pxcpu->op[0].nearptr.offset;
             //We take a look at what it is before a
-            INSTR * plast = *m_instr_list.rbegin();	//	我们看看它前一条是什么
+            Instruction * plast = *Q->m_instr_list.rbegin(); //We take a look at what it is before a
             if (plast->type == i_JmpAddr)
             {	//	means this is case 0
                 p->var_r1 = plast->var_r2;	// index reg
@@ -167,29 +154,20 @@ void	CodeList_Maker::AddTail_Cur_Opcode()
                 alert_prtf("type is %s", hlcode_name(plast->type));
                 assert(0);
             }
-            InstrAddTail(p);
+            Q->InstrAddTail(p);
         }
         break;
-    case C_LEA:
-        Code_general(enum_WR, i_Lea);
-        break;
-    case C_MOV:
-        Code_general(enum_WR, i_Assign);
-        break;
-    case C_MOVZX:
-        Code_general(enum_WR, i_NosignExpand);
-        break;
-    case C_MOVSX:
-        Code_general(enum_WR, i_SignExpand);
-        break;
-
-	case C_ADD: Code_general(enum_AR, i_Add);    break;
-	case C_IMUL: Code_general(enum_AR, i_Imul);    break;
-	case C_SUB:
-		Code_general(enum_AR, i_Sub);
-		{
-			OPERITEM* op0 = &pxcpu->op[0];
-			OPERITEM* op1 = &pxcpu->op[1];
+    case C_LEA:     Code_general(enum_WR, i_Lea);          break;
+    case C_MOV:     Code_general(enum_WR, i_Assign);       break;
+    case C_MOVZX:   Code_general(enum_WR, i_NosignExpand); break;
+    case C_MOVSX:   Code_general(enum_WR, i_SignExpand);   break;
+    case C_ADD:     Code_general(enum_AR, i_Add);    break;
+    case C_IMUL:    Code_general(enum_AR, i_Imul);    break;
+    case C_SUB:
+        Code_general(enum_AR, i_Sub);
+        {
+            OPERITEM* op0 = &pxcpu->op[0];
+            OPERITEM* op1 = &pxcpu->op[1];
 //            OPERITEM* op2 = &this->cur->xcpu.op[2];
             op1->mode = OP_Immed;
             op1->opersize = op0->opersize;
@@ -203,7 +181,7 @@ void	CodeList_Maker::AddTail_Cur_Opcode()
     case C_AND: Code_general(enum_AR, i_And);    break;
     case C_XOR:
         {
-            INSTR * p = Code_general(enum_AR, i_Xor);
+            Instruction * p = Code_general(enum_AR, i_Xor);
             if (VAR::IsSame(&p->var_r1,&p->var_r2))
             {	//	xor eax,eax means mov eax,0
                 p->type = i_Assign;
@@ -215,189 +193,175 @@ void	CodeList_Maker::AddTail_Cur_Opcode()
             break;
         }
 
-	case C_TEST:
-		{
-			INSTR * p = Code_general(enum_RR, i_Test);
-			if (VAR::IsSame(&p->var_r1,&p->var_r2))
-			{	//	test eax,eax means cmp eax,0
-				p->type = i_Cmp;
-				p->var_r2.type = v_Immed;
-				p->var_r2.d = 0;
-				//opsize not change
-			}
-		}
-		break;
-	case C_CMP:
-		Code_general(enum_RR, i_Cmp);
-		break;
-	case C_PUSH:
-		{
-			INSTR *	p = new INSTR;  //new_INSTR
-			p->type = i_Assign;
+    case C_TEST:
+        {
+            Instruction * p = Code_general(enum_RR, i_Test);
+            if (VAR::IsSame(&p->var_r1,&p->var_r2))
+            {	//	test eax,eax means cmp eax,0
+                p->type = i_Cmp;
+                p->var_r2.type = v_Immed;
+                p->var_r2.d = 0;
+                //opsize not change
+            }
+        }
+        break;
+    case C_CMP:
+        Code_general(enum_RR, i_Cmp);
+        break;
+    case C_PUSH:
+        {
+            Instruction *	p = new Instruction(i_Assign);  //new_INSTR
 
-			p->var_w.type = v_Var;
-			p->var_w.opsize = BIT32_is_4;
-			p->var_w.var_off = stack2varoff(cur->esp_level - 4);	// or esp_level_next
+            p->var_w.type = v_Var;
+            p->var_w.opsize = BIT32_is_4;
+            p->var_w.var_off = stack2varoff(cur->esp_level - 4);	// or esp_level_next
 
-			TransVar(&p->var_r1, 0);	//	0 means	xcpu.op[0]
-			InstrAddTail(p);
-		}
-		break;
-	case C_POP:
-		{
-			INSTR *	p = new INSTR;  //new_INSTR
-			p->type = i_Assign;
+            TransVar(p->var_r1, 0);	//	0 means	xcpu.op[0]
+            Q->InstrAddTail(p);
+        }
+        break;
+    case C_POP:
+        {
+            Instruction *	p = new Instruction(i_Assign);  //new_INSTR
+            p->var_r1.type = v_Var;
+            p->var_r1.opsize = BIT32_is_4;
+            p->var_r1.var_off = stack2varoff(cur->esp_level);
 
-			p->var_r1.type = v_Var;
-			p->var_r1.opsize = BIT32_is_4;
-			p->var_r1.var_off = stack2varoff(cur->esp_level);
-
-			TransVar(&p->var_w, 0);	//	0 means	xcpu.op[0]
-			InstrAddTail(p);
-		}
-		break;
-	case C_LEAVE:
-		break;
+            TransVar(p->var_w, 0);	//	0 means	xcpu.op[0]
+            Q->InstrAddTail(p);
+        }
+        break;
+    case C_LEAVE:
+        break;
 
 
-	case C_JO: 	Code_Jxx(JMP_jo);	break;
-	case C_JNO: Code_Jxx(JMP_jno);	break;
-	case C_JB: 	Code_Jxx(JMP_jb);	break;
-	case C_JNB: Code_Jxx(JMP_jnb);	break;
-	case C_JZ:	Code_Jxx(JMP_jz);	break;
-	case C_JNZ: Code_Jxx(JMP_jnz);	break;
-	case C_JNA: Code_Jxx(JMP_jna);	break;
-	case C_JA:	Code_Jxx(JMP_ja);	break;
-	case C_JS: 	Code_Jxx(JMP_js);	break;
-	case C_JNS:	Code_Jxx(JMP_jns);	break;
-	case C_JP: 	Code_Jxx(JMP_jp);	break;
-	case C_JNP: Code_Jxx(JMP_jnp);	break;
-	case C_JL: 	Code_Jxx(JMP_jl);	break;
-	case C_JNL: Code_Jxx(JMP_jnl);	break;
-	case C_JLE:	Code_Jxx(JMP_jle);	break;
-	case C_JNLE:Code_Jxx(JMP_jnle);	break;
-	case C_JMP:
-		if (pxcpu->op[0].mode == OP_Near)
-			Code_Jxx(JMP_jmp);
-		else
-		{
-			if (pxcpu->op[0].mode == OP_Address)
-			{
-				INSTR * p = new INSTR;   //new_INSTR
-				//That said, I should first of this jmp [edx * 4 +402000] write it down
-				 //And look forward to the back of C_JCASE
-				p->type = i_JmpAddr;	//	就是说，我先把这个jmp [edx*4+402000]记下来
-										//	并期望后面有 C_JCASE
+    case C_JO: 	Code_Jxx(JMP_jo);	break;
+    case C_JNO: Code_Jxx(JMP_jno);	break;
+    case C_JB: 	Code_Jxx(JMP_jb);	break;
+    case C_JNB: Code_Jxx(JMP_jnb);	break;
+    case C_JZ:	Code_Jxx(JMP_jz);	break;
+    case C_JNZ: Code_Jxx(JMP_jnz);	break;
+    case C_JNA: Code_Jxx(JMP_jna);	break;
+    case C_JA:	Code_Jxx(JMP_ja);	break;
+    case C_JS: 	Code_Jxx(JMP_js);	break;
+    case C_JNS:	Code_Jxx(JMP_jns);	break;
+    case C_JP: 	Code_Jxx(JMP_jp);	break;
+    case C_JNP: Code_Jxx(JMP_jnp);	break;
+    case C_JL: 	Code_Jxx(JMP_jl);	break;
+    case C_JNL: Code_Jxx(JMP_jnl);	break;
+    case C_JLE:	Code_Jxx(JMP_jle);	break;
+    case C_JNLE:Code_Jxx(JMP_jnle);	break;
+    case C_JMP:
+        if (pxcpu->op[0].mode == OP_Near)
+            Code_Jxx(JMP_jmp);
+        else
+        {
+            if (pxcpu->op[0].mode == OP_Address)
+            {
+                Instruction * p = new Instruction(i_JmpAddr);   //new_INSTR
+                //That said, I should first of this jmp [edx * 4 +402000] write it down
+                 //And look forward to the back of C_JCASE
+                set_address(&pxcpu->op[0], p);
+                Q->InstrAddTail(p);
+            }
+        }
+        break;
+    case C_CALL:
+        if (pxcpu->op[0].mode == OP_Near)
+        {
+            Instruction * p = new Instruction(i_Call);  //new_INSTR
+            p->call.esp_level = cur->esp_level;
+            p->call.call_func = g_Cexe2c->GetFunc(pxcpu->op[0].nearptr.offset);
+            p->call.p_callpara = NULL;
+            p->call.p_callret = NULL;
+            Q->InstrAddTail(p);
+        }
+        else if (pxcpu->op[0].mode == OP_Address)
+        {
+            if (pxcpu->op[0].addr.base_reg_index == _NOREG_ &&
+                pxcpu->op[0].addr.off_reg_index == _NOREG_)
+            {
+                ea_t address = pxcpu->op[0].addr.off_value;
+                Api* papi = g_ApiManage->get_api(address);	//find it
+                if (papi)
+                {
+                    Instruction *	p = new Instruction(i_CallApi);  //new_INSTR
+                    p->call.papi = papi;
+                    p->call.esp_level = cur->esp_level;
+                    p->call.p_callpara = NULL;
+                    p->call.p_callret = NULL;
+                    Q->InstrAddTail(p);
+                }
+                else
+                    Code_general(0, i_Unknown);
+            }
+            else
+                Code_general(0, i_Unknown);
+        }
+        else if (pxcpu->op[0].mode == OP_Register)
+        {
+            ea_t address = FindApiAddress_Reg(pxcpu->op[0].reg.reg_index, pxcpu, this->Q->m_asmlist);
+            Api* papi = g_ApiManage->get_api(address);	//find it
+            if (papi)
+            {
+                Instruction *	p = new Instruction(i_CallApi);  //new_INSTR
+                p->call.papi = papi;
+                p->call.esp_level = cur->esp_level;
+                p->call.p_callpara = NULL;
+                p->call.p_callret = NULL;
+                Q->InstrAddTail(p);
+            }
+            else
+                Code_general(0, i_Unknown);
+        }
+        else
+            Code_general(0, i_Unknown);
+        break;
+    case C_RET:	Code_general(0, i_Return);	break;
+    default:	Code_general(0, i_Unknown);	break;
 
-void	set_address(OPERITEM* op,INSTR * p);
-
-				set_address(&pxcpu->op[0], p);
-
-				InstrAddTail(p);
-			}
-		}
-		break;
-	case C_CALL:
-		if (pxcpu->op[0].mode == OP_Near)
-		{
-			INSTR * p = new INSTR;  //new_INSTR
-			p->type = i_Call;
-			p->call.esp_level = cur->esp_level;
-			p->call.call_func = g_Cexe2c->GetFunc(pxcpu->op[0].nearptr.offset);
-			p->call.p_callpara = NULL;
-			p->call.p_callret = NULL;
-			InstrAddTail(p);
-		}
-		else if (pxcpu->op[0].mode == OP_Address)
-		{
-			if (pxcpu->op[0].addr.base_reg_index == _NOREG_ &&
-				pxcpu->op[0].addr.off_reg_index == _NOREG_)
-			{
-				ea_t address = pxcpu->op[0].addr.off_value;
-				Api* papi = g_ApiManage->get_api(address);	//find it
-				if (papi)
-				{
-					INSTR *	p = new INSTR;  //new_INSTR
-					p->type = i_CallApi;
-					p->call.papi = papi;
-					p->call.esp_level = cur->esp_level;
-					p->call.p_callpara = NULL;
-					p->call.p_callret = NULL;
-					InstrAddTail(p);
-				}
-				else
-					Code_general(0, i_Unknown);
-			}
-			else
-				Code_general(0, i_Unknown);
-		}
-		else if (pxcpu->op[0].mode == OP_Register)
-		{
-			ea_t address = FindApiAddress_Reg(pxcpu->op[0].reg.reg_index, pxcpu, this->Q->m_asmlist);
-			Api* papi = g_ApiManage->get_api(address);	//find it
-			if (papi)
-			{
-				INSTR *	p = new INSTR;  //new_INSTR
-				p->type = i_CallApi;
-				p->call.papi = papi;
-				p->call.esp_level = cur->esp_level;
-				p->call.p_callpara = NULL;
-				p->call.p_callret = NULL;
-				InstrAddTail(p);
-			}
-			else
-				Code_general(0, i_Unknown);
-		}
-		else
-			Code_general(0, i_Unknown);
-		break;
-	case C_RET:	Code_general(0, i_Return);	break;
-	default:	Code_general(0, i_Unknown);	break;
-
-	}
+    }
 }
 
 void	CodeList_Maker::Code_Jxx(JxxType t)
 {
-	INSTR * p = new INSTR;   //new_INSTR
-	p->type = i_Jump;
-	p->jmp.jmp_type = t;
-	p->jmp.jmpto_off = cur->xcpu.op[0].nearptr.offset;
-	InstrAddTail(p);
+    Instruction * p = new Instruction(i_Jump);   //new_INSTR
+    p->jmp.jmp_type = t;
+    p->jmp.jmpto_off = cur->xcpu.op[0].nearptr.offset;
+    Q->InstrAddTail(p);
 }
 
-INSTR *	CodeList_Maker::Code_general(int type, HLType t)
-{	//	只有type == enum_RR时，返回值才有用
+Instruction *	CodeList_Maker::Code_general(int type, HLType t)
+{
   //Only type == enum_RR, the return value to be useful
     if (t == i_Unknown)
     {
         t=i_Unknown;
     }
-    INSTR *	p = new INSTR;  //new_INSTR
-    p->type = t;
+    Instruction *	p = new Instruction(t);  //new_INSTR
     switch (type)
     {
     case enum_00:
-        InstrAddTail(p);
+        Q->InstrAddTail(p);
         return p;
     case enum_RR:
         {
-            TransVar(&p->var_r1, 0);	//	0 means	xcpu.op[0]
-            TransVar(&p->var_r2, 1);	//	1 means	xcpu.op[1]
+            TransVar(p->var_r1, 0);	//	0 means	xcpu.op[0]
+            TransVar(p->var_r2, 1);	//	1 means	xcpu.op[1]
             VarRead(p->va_r1);
             VarRead(p->va_r2);
         }
-        InstrAddTail(p);
+        Q->InstrAddTail(p);
         return p;
     case enum_WR:
         {
-            TransVar(&p->var_w, 0);	//	0 means	xcpu.op[0]
-            TransVar(&p->var_r1, 1);	//	1 means	xcpu.op[1]
+            TransVar(p->var_w, 0);	//	0 means	xcpu.op[0]
+            TransVar(p->var_r1, 1);	//	1 means	xcpu.op[1]
             if (t == i_Lea)
             {
                 p->type = i_Assign;
                 if (p->var_r1.type != v_Tem)
-                {	//	比如象 lea eax,[ebp]
+                {
                     //For example, as lea eax, [ebp]
                     p->type = i_GetAddr;
                 }
@@ -409,18 +373,17 @@ INSTR *	CodeList_Maker::Code_general(int type, HLType t)
                 if (p->var_w.type == v_Tem)
                 {
                     WriteToAddress(p);
-                    //Because there no one will use the return value
-                    return NULL;	//	因为这里没人会用这个返回值
+                    return NULL;//Because here no one will use the return value
                 }
             }
         }
-        InstrAddTail(p);
+        Q->InstrAddTail(p);
         return p;
     case enum_AR:
         {
             VAR v;
-            TransVar(&v, 0);	//	0 means	xcpu.op[0]
-            TransVar(&p->var_r2, 1);	//	1 means	xcpu.op[1]
+            TransVar(v, 0);	//	0 means	xcpu.op[0]
+            TransVar(p->var_r2, 1);	//	1 means	xcpu.op[1]
             p->var_r1 = v;
             p->var_w = v;
             VarRead(p->va_r2);
@@ -429,11 +392,11 @@ INSTR *	CodeList_Maker::Code_general(int type, HLType t)
             if (p->var_w.type == v_Tem)
             {
                 WriteToAddress(p);
-                //Because there no one will use the return value
-                return NULL;	//	因为这里没人会用这个返回值
+                //Because here no one will use the return value
+                return NULL;
             }
         }
-        InstrAddTail(p);
+        Q->InstrAddTail(p);
         return p;
     default:
         alert("why here 325426");
@@ -441,108 +404,105 @@ INSTR *	CodeList_Maker::Code_general(int type, HLType t)
     }
     //return NULL;
 }
-void	CodeList_Maker::TransVar(VAR* pvar,int no)
+// translate asm operand to var
+void	CodeList_Maker::TransVar(VAR &pvar,int no)
 {
-	TransVar_(pvar,no);
-	if (pvar->type)
-	{
-		assert(pvar->opsize);
-	}
+    TransVar_(pvar,no);
+    if (pvar.type)
+    {
+        assert(pvar.opsize);
+    }
 }
-//SuperC_func: 只在＜CCodeList_Maker::TransVar＞中使用
 //SuperC_func: Use only in <CCodeList_Maker::TransVar>
-void	CodeList_Maker::TransVar_(VAR* pvar,int no)
+void    CodeList_Maker::TransVar_op_addr(VAR &pvar,OPERITEM *op)
 {
-	OPERITEM* op = &this->cur->xcpu.op[no];
-	switch (op->mode)
-	{
-	case OP_Register:
-		pvar->type = v_Reg;
-		pvar->opsize = op->opersize;
-		pvar->reg = regindex_2_regoff(op->reg.reg_index);
-		return;
-	case OP_Immed:
-		pvar->type = v_Immed;
-		pvar->opsize = op->opersize;
-		pvar->d = op->immed.immed_value;
-		return;
-	case OP_Address:
-		if (op->addr.base_reg_index == _NOREG_
-			&& op->addr.off_reg_index == _NOREG_)
-		{
-			if (op->addr.off_value == 0 && op->addr.seg_index == _FS_)
-			{//判断 fs:[0]
-		//determine fs: [0]
-				pvar->type = v_Volatile;    //现在只用于 fs:0 //Now only used in fs: 0
-				pvar->opsize = op->opersize;
-				pvar->temno = 222;  //只要是偶数就行 //As long as even on the line
-				return;
-			}
-			pvar->type = v_Global;
-			pvar->opsize = op->opersize;
-			pvar->off = op->addr.off_value;
-			return;
-		}
-		if (op->addr.base_reg_index == _ESP_
-			&& op->addr.off_reg_index == _NOREG_)
-		{
-			pvar->opsize = op->opersize;
-			signed long l = this->cur->esp_level + (signed int)op->addr.off_value;
-			if (l >= 0)
-			{
-				pvar->par_off = l;
-				pvar->type = v_Par;
-			}
-			else
-			{
-				pvar->var_off = stack2varoff(l);
-				pvar->type = v_Var;
-			}
-			return;
-		}
-		if (op->addr.base_reg_index == _EBP_
-			&& this->m_EBP_base != Not_EBP_based
-			&& op->addr.off_reg_index == _NOREG_)
-		{
-			pvar->opsize = op->opersize;
-			signed long l = this->m_EBP_base + (signed int)op->addr.off_value;
-			if (l >= 0)
-			{
-				pvar->par_off = l;
-				pvar->type = v_Par;
-			}
-			else
-			{
-				pvar->var_off = stack2varoff(l);
-				pvar->type = v_Var;
-			}
-			return;
-		}
-		//	now, really stuff
-		{
-			VAR v;
-			new_temp(&v);
+    if (op->addr.base_reg_index == _NOREG_ && op->addr.off_reg_index == _NOREG_)
+    {
+        if (op->addr.off_value == 0 && op->addr.seg_index == _FS_)
+        {
+            //determine fs: [0]
+            pvar.type = v_Volatile;    //Now only used for fs: 0
+            pvar.opsize = op->opersize;
+            pvar.temno = 222;  //As long as even on the list
+            return;
+        }
+        pvar.type = v_Global;
+        pvar.opsize = op->opersize;
+        pvar.off = op->addr.off_value;
+        return;
+    }
+    if (op->addr.base_reg_index == _ESP_ && op->addr.off_reg_index == _NOREG_) // [esp+x]
+    {
+        pvar.opsize = op->opersize;
+        signed long l = this->cur->esp_level + (signed int)op->addr.off_value;
+        if (l >= 0)
+        {
+            pvar.par_off = l;
+            pvar.type = v_Par;
+        }
+        else
+        {
+            pvar.var_off = stack2varoff(l);
+            pvar.type = v_Var;
+        }
+        return;
+    }
+    if (op->addr.base_reg_index == _EBP_ && this->Q->m_EBP_base != Not_EBP_based && op->addr.off_reg_index == _NOREG_)
+    {
+        pvar.opsize = op->opersize;
+        signed long l = this->Q->m_EBP_base + (signed int)op->addr.off_value;
+        if (l >= 0)
+        {
+            pvar.par_off = l;
+            pvar.type = v_Par;
+        }
+        else
+        {
+            pvar.var_off = stack2varoff(l);
+            pvar.type = v_Var;
+        }
+        return;
+    }
+    //	now, really stuff
+    VAR v;
+    new_temp(&v);
 
-			INSTR * p = new INSTR;   //new_INSTR
-			p->type = i_Address;
+    Instruction * p = new Instruction(i_Address);   //new_INSTR
 
-			p->var_w = v;
+    p->var_w = v;
 
-			set_address(op, p);
+    set_address(op, p);
 
-			InstrAddTail(p);
+    Q->InstrAddTail(p);
 
-			*pvar = v;
-		}
-		return;
-	default:
-		//warn_msg(0,"op mode unknown");
-		break;
-	}
+    pvar = v;
+
+}
+void	CodeList_Maker::TransVar_(VAR &pvar,int no)
+{
+    OPERITEM* op = &this->cur->xcpu.op[no];
+    switch (op->mode)
+    {
+    case OP_Register:
+        pvar.type = v_Reg;
+        pvar.opsize = op->opersize;
+        pvar.reg = regindex_2_regoff(op->reg.reg_index);
+        return;
+    case OP_Immed:
+        pvar.type = v_Immed;
+        pvar.opsize = op->opersize;
+        pvar.d = op->immed.immed_value;
+        return;
+    case OP_Address:
+        TransVar_op_addr(pvar,op);
+        return;
+    default:
+        warn("op mode unknown");
+        break;
+    }
 }
 
-//	这个函数的意思是，如果这是个v_Tem,则加一条 i_Readpointto
-//This function means that, if this is a v_Tem, then add a i_Readpointto
+//This function means that, if this is a v_Tem, then add one i_Readpointto
 void	CodeList_Maker::VarRead(VAR_ADDON& va)
 {
     VAR* pvar = va.pv;
@@ -557,59 +517,43 @@ void	CodeList_Maker::VarRead(VAR_ADDON& va)
 
     return;
 }
-//	这个函数的意思是，如果是向一个address写，则加一条 i_Writepointto
 //This function means that, if it is to an address to write, then add a i_Writepointto
-void	CodeList_Maker::WriteToAddress(INSTR * p)
+void	CodeList_Maker::WriteToAddress(Instruction * p)
 {
-// For the add [ebx +4], 6, becomes
-// 		Tem_1 = i_addr (ebx, 4);
-// 		Tem_2 = i_readpointto (tem_1);
-// 		Tem_3 = tem_2 + 6;
-// 		I_writepointto (tem_1, tem_3);
+    // For the add [ebx +4], 6, becomes
+    //		tem_1 = i_addr(ebx,4);
+    //		tem_2 = i_readpointto(tem_1);
+    //		tem_3 = tem_2 + 6;
+    //		i_writepointto(tem_1, tem_3);
 
 
-	// 	The current situation is:
-	// 		Tem1 addr eax, ebx * 4,401000
-	// 		Tem1 =????
-	// 	We wanted to change
-	// 		Tem1 addr eax, ebx * 4,401000
-	// 		Tem2 =????
-	// 		Writepointto (tem1, tem2);
+    // 	The current situation is:
+    //		tem1 addr eax,ebx*4,401000
+    //		tem1 = ????
+    // 	We wanted to change
+    //		tem1 addr eax,ebx*4,401000
+    //		tem2 = ????
+    //		Writepointto(tem1, tem2);
 
-//	对于add [ebx+4],6,变为
-//		tem_1 = i_addr(ebx,4);
-//		tem_2 = i_readpointto(tem_1);
-//		tem_3 = tem_2 + 6;
-//		i_writepointto(tem_1, tem_3);
+    if (p->var_w.type != v_Tem)
+    {
+        //	Will not actually enter here
+        Q->InstrAddTail(p);
+        return;
+    }
 
+    VAR tem1 = p->var_w;	//	sav it
+    VAR tem2;
 
-	//	当前的情况是：
-	//		tem1 addr eax,ebx*4,401000
-	//		tem1 = ????
-	//	要改成
-	//		tem1 addr eax,ebx*4,401000
-	//		tem2 = ????
-	//		Writepointto(tem1, tem2);
-	if (p->var_w.type != v_Tem)
-	{	//	实际上不会来这里 //Does not actually come here
-		InstrAddTail(p);
-		return;
-	}
+    new_temp(&tem2);
 
-	VAR tem1 = p->var_w;	//	sav it
-	VAR tem2;
+    p->var_w = tem2;
+    Q->InstrAddTail(p);	//	add this
 
-	new_temp(&tem2);
-
-	p->var_w = tem2;
-	InstrAddTail(p);	//	add this
-
-	INSTR * pnew = new INSTR;    //new_INSTR
-	pnew->type = i_Writepointto;
-	pnew->var_r1 = tem1;				// the pointer
-	pnew->var_r2 = tem2;					// the value
-		//	对 i_Writepointto, 是var_r1是指针，var_r2是值 //Right i_Writepointto, yes var_r1 is a pointer, var_r2 is the value of
-	InstrAddTail(pnew);
+    Instruction * pnew = new Instruction(i_Writepointto);    //new_INSTR
+    pnew->setVars(tem1,tem2);// the pointer,the value
+    //Right i_Writepointto, yes var_r1 is a pointer, var_r2 is the value of
+    Q->InstrAddTail(pnew);
 
 }
 
@@ -618,6 +562,6 @@ void	CodeList_Maker::new_temp(VAR* pvar)
 {
     pvar->type = v_Tem;
     pvar->temno = g_newtemno;
-    g_newtemno += 2;
     pvar->opsize = BIT32_is_4;	//	temp var always uint32_t
+    g_newtemno += 2;
 }

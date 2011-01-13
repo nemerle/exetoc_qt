@@ -1,141 +1,151 @@
 // Copyright(C) 1999-2005 LiuTaoTao，bookaa@rorsoft.com
 
-////#include "stdafx.h"
 #include	"CISC.h"
 #include "exe2c.h"
 #include "Strategy.h"
 
-bool CFuncOptim::Simplify_Instr()
-//看看简单指令能不能变成i_Assign
+
+void CFuncOptim::SimplifyGetAddr(Instruction *p)
 {
-    INSTR_LIST& list = this->Q->m_instr_list;
-    INSTR * p;
+    p->type = i_Assign;
+
+    st_InstrAddOn* pnew = new st_InstrAddOn;
+    pnew->type = IA_GetAddress;
+    pnew->pChild = p->va_r1.pao;
+
+    p->va_r1.pao = pnew;
+}
+void CFuncOptim::SimplifyAddImmed(Instruction *p)
+{
+    p->type = i_Assign;
+
+    st_InstrAddOn* pnew = new st_InstrAddOn;
+    pnew->type = IA_AddImmed;
+    pnew->addimmed.iAddon = p->var_r2.d;
+    pnew->pChild = p->va_r1.pao;
+
+    p->va_r1.pao = pnew;
+
+    p->var_r2.type = v_Invalid;
+}
+void CFuncOptim::SimplifyImulImmed(Instruction *p)
+{
+    p->type = i_Assign;
+
+    st_InstrAddOn* pnew = new st_InstrAddOn;
+    pnew->type = IA_MulImmed;
+    pnew->addimmed.iAddon = p->var_r2.d;
+    pnew->pChild = p->va_r1.pao;
+
+    p->va_r1.pao = pnew;
+
+    p->var_r2.type = v_Invalid;
+
+}
+//Simple instructions can look into i_Assign
+bool CFuncOptim::Simplify_Instr()
+{
+    INSTR_LIST& list = this->m_my_func->m_instr_list;
+    Instruction * p;
     for(POSITION pos = list.begin(); pos!=list.end(); ++pos )
     {
         p=*pos;
         if (p->type == i_GetAddr)
         {
-            p->type = i_Assign;
-
-            st_InstrAddOn* pnew = new st_InstrAddOn;
-            pnew->type = IA_GetAddress;
-            pnew->pChild = p->va_r1.pao;
-
-            p->va_r1.pao = pnew;
-
+            SimplifyGetAddr(p);
             return true;
         }
         if (p->type == i_Add && p->var_r2.type == v_Immed)
         {
-            p->type = i_Assign;
-
-            st_InstrAddOn* pnew = new st_InstrAddOn;
-            pnew->type = IA_AddImmed;
-            pnew->addimmed.iAddon = p->var_r2.d;
-            pnew->pChild = p->va_r1.pao;
-
-            p->va_r1.pao = pnew;
-
-            p->var_r2.type = v_Invalid;
-
+            SimplifyAddImmed(p);
             return true;
         }
         if (p->type == i_Imul && p->var_r2.type == v_Immed)
         {
-            p->type = i_Assign;
-
-            st_InstrAddOn* pnew = new st_InstrAddOn;
-            pnew->type = IA_MulImmed;
-            pnew->addimmed.iAddon = p->var_r2.d;
-            pnew->pChild = p->va_r1.pao;
-
-            p->va_r1.pao = pnew;
-
-            p->var_r2.type = v_Invalid;
-
+            SimplifyImulImmed(p);
             return true;
         }
     }
     return false;
 }
+//Look if i_Address can become i_Add
 bool CFuncOptim::Address_to_Add()
-//看看i_Address能不能变成i_Add
 {
-    INSTR_LIST& list = this->Q->m_instr_list;
-    INSTR * p;
+    INSTR_LIST& list = this->m_my_func->m_instr_list;
+    Instruction * p;
     for(POSITION pos = list.begin(); pos!=list.end(); ++pos )
     {
         p=*pos;
-        if (p->type == i_Address)
+        if (p->type != i_Address)
+            continue;
+        if (p->var_r2.type == v_Invalid)
         {
-            if (p->var_r2.type == v_Invalid)
+            p->i1 = 0;
+            if (p->i2 == 0)
             {
-                p->i1 = 0;
-                if (p->i2 == 0)
-                {
-                    p->type = i_Assign;
-                    return true;
-                }
-                //现在i2不为零，要变为add
-                p->var_r2.type = v_Immed;
-                p->var_r2.d = p->i2;
-                p->var_r2.thevar = NULL;
-                p->i2 = 0;
-                p->type = i_Add;
+                p->type = i_Assign;
                 return true;
             }
-            if (p->i2 == 0
+            //i2 is not zero, add to become
+            p->var_r2.type = v_Immed;
+            p->var_r2.d = p->i2;
+            p->var_r2.thevar = NULL;
+            p->i2 = 0;
+            p->type = i_Add;
+            return true;
+        }
+        if (p->i2 == 0
                 && VAR::IsSame(&p->var_r1, &p->var_r2)
                 && st_InstrAddOn::IsSame(p->va_r1.pao, p->va_r2.pao))
-            {
-                p->var_r2.type = v_Invalid;
-                p->va_r2.pao = NULL;
+        {
+            p->var_r2.type = v_Invalid;
+            p->va_r2.pao = NULL;
 
-                p->var_r2.type = v_Immed;
-                p->var_r2.d = p->i1 + 1;
-                p->var_r2.thevar = NULL;
+            p->var_r2.type = v_Immed;
+            p->var_r2.d = p->i1 + 1;
+            p->var_r2.thevar = NULL;
 
-                p->type = i_Imul;
+            p->type = i_Imul;
 
-                p->i1 = 0;
-                return true;
-            }
-            if (p->i1 > 1 && p->var_r2.type != v_Invalid)
-            {
-                st_InstrAddOn* pnew = new st_InstrAddOn;
-                pnew->type = IA_MulImmed;
-                pnew->addimmed.iAddon = p->i1;
-                pnew->pChild = p->va_r2.pao;
+            p->i1 = 0;
+            return true;
+        }
+        if (p->i1 > 1 && p->var_r2.type != v_Invalid)
+        {
+            st_InstrAddOn* pnew = new st_InstrAddOn;
+            pnew->type = IA_MulImmed;
+            pnew->addimmed.iAddon = p->i1;
+            pnew->pChild = p->va_r2.pao;
 
-                p->va_r2.pao = pnew;
+            p->va_r2.pao = pnew;
 
-                p->i1 = 1;
-                return true;
-            }
-            if (p->i1 == 1 && p->i2 == 0)
-            {//这是个Add
-                p->type = i_Add;
-                return true;
-            }
+            p->i1 = 1;
+            return true;
+        }
+        if (p->i1 == 1 && p->i2 == 0)
+        {
+            //This is Add
+            p->type = i_Add;
+            return true;
         }
     }
     return false;
 }
 bool	CFuncOptim::pcode_1()
 {	//	If cmp and jxx close, the cmp and jxx merger
-    INSTR_LIST& list = this->Q->m_instr_list;
+    INSTR_LIST& list = this->m_my_func->m_instr_list;
 
     POSITION pos = list.begin();
     for (;pos!=list.end();++pos)
     {
         POSITION nextpos=pos;
 
-        INSTR * pcmp = *pos;
+        Instruction * pcmp = *pos;
         if (pcmp->type != i_Cmp)
             continue;
         ++nextpos;
         assert(nextpos!=list.end());
-        INSTR * pjxx = *nextpos;
+        Instruction * pjxx = *nextpos;
         if (pjxx->type == i_Jump && pjxx->jmp.jmp_type != JMP_jmp)
         {
             pjxx->var_r1 = pcmp->var_r1;
@@ -155,23 +165,22 @@ bool	CFuncOptim::pcode_1()
 }
 
 bool	CFuncOptim::ana_Flow()
-{	//	流程分析
-    INSTR * first = *Q->m_instr_list.begin();
-
-    //	对这个i_Begin到i_End之间的进行分析,标出所有的i_Begin和i_End
-
-    InstrList the(Q->m_instr_list);
+{
+    //	Flow analysis
+    Instruction * first = *m_my_func->m_instr_list.begin();
+    //	On between the i_Begin to i_End analysis of all the i_Begin and i_End
+    InstrList the(m_my_func->m_instr_list);
     return the.Flow_a(first);
 }
 
-bool CFuncOptim::expr_never_use_after_this(VAR* pvar, INSTR * p0, INSTR_LIST* oldroad)
+bool CFuncOptim::expr_never_use_after_this(VAR* pvar, Instruction * p0, INSTR_LIST* oldroad)
 {	//	我必须知道，必须知道！
-    POSITION pos = std::find(Q->m_instr_list.begin(),Q->m_instr_list.begin(),p0);
-    for(;pos!=this->Q->m_instr_list.end();++pos)
+    POSITION pos = std::find(m_my_func->m_instr_list.begin(),m_my_func->m_instr_list.begin(),p0);
+    for(;pos!=this->m_my_func->m_instr_list.end();++pos)
     {
-        INSTR * p = *pos;
+        Instruction * p = *pos;
         if (p->type == i_Label)
-        {	//	根本不用考虑
+        {	//	 Do not consider this
             oldroad->push_front(p);
             continue;
         }
@@ -181,33 +190,32 @@ bool CFuncOptim::expr_never_use_after_this(VAR* pvar, INSTR * p0, INSTR_LIST* ol
             return false;
         if (VAR::IsSame(pvar, &p->var_r2))
             return false;
-        //	因为 i_Jump 也可以带参数，所以要先检查
+        // To i_Jump can also take parameters, so check first
         if (p->type != i_Jump)
             continue;
 
-        //	要防止死结
-        if (std::find(oldroad->begin(),oldroad->end(),p->jmp.the_label)==oldroad->end())
+        //	Should prevent deadlock
+        if (std::find(oldroad->begin(),oldroad->end(),p->jmp.target_label)==oldroad->end())
         {
-            oldroad->push_front(p->jmp.the_label);
-            if (! expr_never_use_after_this(pvar,p->jmp.the_label,oldroad))
+            oldroad->push_front(p->jmp.target_label);
+            if (! expr_never_use_after_this(pvar,p->jmp.target_label,oldroad))
                 return false;
         }
         if (p->jmp.jmp_type == JMP_jmp)
             return true;
-        continue;
     }
     return true;
 }
 
-bool	CFuncOptim::MakeSure_NotRef_in_Range(VAR* pvar, INSTR * p1, INSTR * p2)
+bool	CFuncOptim::MakeSure_NotRef_in_Range(VAR* pvar, Instruction * p1, Instruction * p2)
 {	//	确认从p1到p2没人用过pvar
     //	不包括p1在内,也不包括p2
 
-    POSITION pos = std::find(Q->m_instr_list.begin(),Q->m_instr_list.end(),p1);
+    POSITION pos = std::find(m_my_func->m_instr_list.begin(),m_my_func->m_instr_list.end(),p1);
     ++pos;		//	skip p1
-    for(;pos!=Q->m_instr_list.end();++pos)
+    for(;pos!=m_my_func->m_instr_list.end();++pos)
     {
-        INSTR * p = *pos;
+        Instruction * p = *pos;
         if (p == p2)
             return true;
         if (VAR::IsSame(pvar, &p->var_w))
@@ -222,15 +230,16 @@ bool	CFuncOptim::MakeSure_NotRef_in_Range(VAR* pvar, INSTR * p1, INSTR * p2)
 }
 
 bool CFuncOptim::ClassSubFuncProcess()
-{//return false 继续下一步的分析
-    FuncType* pfctype = this->Q->m_functype;
+{
+    //return false continue analysis
+    FuncType* pfctype = this->m_my_func->m_functype;
     if (pfctype == NULL || pfctype->m_class == NULL)
         return false;
 
     VarTypeID id = g_VarTypeManage->Class2VarID(pfctype->m_class);
     id = g_VarTypeManage->GetAddressOfID(id);
 
-    this->Q->Fill_this_ECX(id);
+    this->m_my_func->Fill_this_ECX(id);
 
     return false;
 }
@@ -238,14 +247,15 @@ bool CFuncOptim::ClassSubFuncProcess()
 bool CFuncOptim::Var_Split()
 {
     M_t* pvar;
-    for(MLIST::iterator pos = Q->m_exprs->vList->begin(); pos!=Q->m_exprs->vList->end(); ++pos)
+    MLIST *vList = m_my_func->m_exprs->vList;
+    for(MLIST::iterator pos = vList->begin(); pos!=vList->end(); ++pos)
     {
         pvar = *pos;
         if (pvar->type != MTT_reg)
             continue;
 
         VAROPTM_LIST used_list;
-        //分析过的instr
+        //Analyzed the instr
 
         Get_Var_Use_Flow(used_list, pvar);
 
@@ -258,12 +268,12 @@ bool CFuncOptim::Var_Split()
     return false;
 }
 bool CFuncOptim::DataType_Flow()
-{//数据类型流分析
-    POSITION pos = Q->m_instr_list.begin();
-    while (pos!=Q->m_instr_list.end())
+{
+    //Analysis of data types flow
+    POSITION pos = m_my_func->m_instr_list.begin();
+    for (;pos!=m_my_func->m_instr_list.end(); ++pos)
     {
-        INSTR * p = *pos;
-        ++pos;
+        Instruction * p = *pos;
         if (p->type == i_GetAddr
             && p->var_w.thevar != NULL
             && g_VarTypeManage->GetPointTo(p->var_w.thevar->m_DataTypeID) != 0
@@ -273,10 +283,10 @@ bool CFuncOptim::DataType_Flow()
                 >= GG_VarType_ID2Size(p->var_r1.thevar->m_DataTypeID))
         {
             p->var_r1.thevar->m_DataTypeID = g_VarTypeManage->GetPointTo(p->var_w.thevar->m_DataTypeID);
-            //仅仅改一下是不够的
+            //Just change it was not enough
             p->var_r1.opsize = GG_VarType_ID2Size(p->var_r1.thevar->m_DataTypeID);
             p->var_r1.thevar->size = GG_VarType_ID2Size(p->var_r1.thevar->m_DataTypeID);
-            this->Q->m_exprs->Enlarge_Var(p->var_r1.thevar, this->Q->m_instr_list);
+            this->m_my_func->m_exprs->Enlarge_Var(p->var_r1.thevar, this->m_my_func->m_instr_list);
             return true;
         }
     }
@@ -284,10 +294,10 @@ bool CFuncOptim::DataType_Flow()
 }
 //--------------------------------------------------
 bool CFuncOptim::optim_once_new()
-{//注意，这时cmp与jxx还没有合并
+{//Notice: at this time, cmp and jxx, has not yet merged
 
-    MLIST::iterator pos = this->Q->m_exprs->vList->begin();
-    for (;pos!=this->Q->m_exprs->vList->end();++pos)
+    MLIST::iterator pos = this->m_my_func->m_exprs->vList->begin();
+    for (;pos!=this->m_my_func->m_exprs->vList->end();++pos)
     {
         M_t* p = *pos;
         //if (p->type == MTT_reg)
@@ -297,36 +307,10 @@ bool CFuncOptim::optim_once_new()
                 return true;
         }
     }
-
-#if 0
-    INSTR_LIST* list = this->Q->m_instr_list;
-
-    POSITION pos = list->begin();
-    while (pos)
-    {
-        PINSTR p = *pos;//list->;
-        ++pos;
-        if (p->var_w.type && p->var_w.thevar)
-        {
-            if (Optim_var_NT(p->var_w.thevar))
-                return true;
-        }
-        if (p->var_r1.type && p->var_r1.thevar)
-        {
-            if (Optim_var_NT(p->var_r1.thevar))
-                return true;
-        }
-        if (p->var_r2.type && p->var_r2.thevar)
-        {
-            if (Optim_var_NT(p->var_r2.thevar))
-                return true;
-        }
-    }
-#endif
     return false;
 }
 
-static st_VarOptm* used_list_Find(INSTR * pinstr, VAROPTM_LIST& used_list)
+static st_VarOptm* used_list_Find(Instruction * pinstr, VAROPTM_LIST& used_list)
 {
     VAROPTM_LIST::iterator pos = used_list.begin();
 
@@ -338,7 +322,7 @@ static st_VarOptm* used_list_Find(INSTR * pinstr, VAROPTM_LIST& used_list)
     return NULL;
 }
 
-BYTE GetVarFinger_INSTR(M_t* pvar, INSTR * p)
+BYTE GetVarFinger_INSTR(M_t* pvar, Instruction * p)
                 //00: nothing with
                 //01: read
                 //02: write
@@ -374,7 +358,7 @@ void CFuncOptim::prt_var_uselist(VAROPTM_LIST& used_list)
     for (;pos!=used_list.end(); ++pos)
     {
         st_VarOptm* the = *pos;
-        INSTR * p = the->pInstr;
+        Instruction * p = the->pInstr;
         if (p->type == i_Jump)
         {
             if (p->jmp.jmp_type == JMP_jmp)
@@ -388,7 +372,7 @@ void CFuncOptim::prt_var_uselist(VAROPTM_LIST& used_list)
             log_prtl("    ret");
         else
         {
-            CFunc_Prt theprt(this->Q);
+            CFunc_Prt theprt(this->m_my_func);
             std::string s = theprt.prt_the_instr(p);
             log_prtl("    %s", (const char *)s.c_str());
         }
@@ -397,7 +381,7 @@ void CFuncOptim::prt_var_uselist(VAROPTM_LIST& used_list)
 }
 
 
-bool RemoveOneInstr_1(VAROPTM_LIST& used_list, INSTR * p)
+bool RemoveOneInstr_1(VAROPTM_LIST& used_list, Instruction * p)
 {
     assert(p->type == i_Jump);
     for(VAROPTM_LIST::iterator pos = used_list.begin(); pos!=used_list.end(); ++pos)
@@ -411,7 +395,7 @@ bool RemoveOneInstr_1(VAROPTM_LIST& used_list, INSTR * p)
     //std::remove_if()
     return false;
 }
-bool RemoveOneInstr(VAROPTM_LIST& used_list, INSTR * p)
+bool RemoveOneInstr(VAROPTM_LIST& used_list, Instruction * p)
 {
     bool rtn = false;
     rtn |= RemoveOneInstr_1(used_list, p);
@@ -424,7 +408,7 @@ bool RemoveOneInstr(VAROPTM_LIST& used_list, INSTR * p)
 }
 bool CFuncOptim::Optim_Var_Flow_3(VAROPTM_LIST& used_list)
 {
-    //连续两个EE，要删掉一个
+    //For two consecutive EE, should remove one
     bool FindE = false;
 
     for(VAROPTM_LIST::iterator pos = used_list.begin(); pos!=used_list.end(); ++pos)
@@ -449,9 +433,9 @@ bool CFuncOptim::Optim_Var_Flow_3(VAROPTM_LIST& used_list)
 }
 bool CFuncOptim::Optim_Var_Flow_2(VAROPTM_LIST& used_list)
 {
-    //如果有一个LE，则删掉这个指向LE的jmp
-    //如果有一个L6，则删掉这个指向L6的jmp
-    INSTR * lastlabelinstr = NULL;
+    //If there is a LE, then LE points to out of this the jmp
+    //If there is a L6, then L6 points to out of this the jmp
+    Instruction * lastlabelinstr = NULL;
     for (VAROPTM_LIST::iterator pos = used_list.begin(); pos!=used_list.end(); ++pos)
     {
         st_VarOptm* the = *pos;
@@ -461,7 +445,7 @@ bool CFuncOptim::Optim_Var_Flow_2(VAROPTM_LIST& used_list)
             if (the->pInstr->type == i_End || the->pInstr->type == i_Return)
             {
                 if (the->rw == 0)
-                {//找到一个LE
+                {//Found a LE
                     f=true;
                 }
             }
@@ -471,8 +455,8 @@ bool CFuncOptim::Optim_Var_Flow_2(VAROPTM_LIST& used_list)
             }
             if (f)
             {
-                INSTR * p = lastlabelinstr->label.ref_instr;
-                if (RemoveOneInstr(used_list, p))   //删掉这个指向LE的jmp
+                Instruction * p = lastlabelinstr->label.ref_instr;
+                if (RemoveOneInstr(used_list, p))   // This points to out the jmp LE
                     return true;
             }
         }
@@ -489,22 +473,22 @@ bool CFuncOptim::Optim_Var_Flow_1(VAROPTM_LIST& used_list)
     //第一条就是条件跳，可去掉
     //跳到第一条了，可去掉
     VAROPTM_LIST::iterator headpos = used_list.begin();
-    INSTR * head_label_instr = NULL;
+    Instruction * head_label_instr = NULL;
     for (VAROPTM_LIST::iterator pos = used_list.begin(); pos!=used_list.end(); ++pos)
     {
         st_VarOptm* the = *pos;
-        INSTR * p = the->pInstr;
+        Instruction * p = the->pInstr;
         if (headpos == pos)
         {
             if (p->type == i_Return)
             {
                 used_list.erase(pos); //remove me
-                return true;    //第一条就是Return，可去掉
+                return true;    //The first is Return, can be removed
             }
             if (the->IsJump())
             {
                 used_list.erase(pos); //remove me
-                return true;    //第一条就是条件跳，可去掉
+                return true;    //The first is jump, can be removed
             }
             if (p->type == i_Label)
             {
@@ -516,7 +500,7 @@ bool CFuncOptim::Optim_Var_Flow_1(VAROPTM_LIST& used_list)
 
         if (the->IsJump())
         {
-            if (p->jmp.the_label == head_label_instr)
+            if (p->jmp.target_label == head_label_instr)
             {
                 used_list.erase(pos); //remove me
                 return true;    //跳到第一条了，可去掉
@@ -527,7 +511,7 @@ bool CFuncOptim::Optim_Var_Flow_1(VAROPTM_LIST& used_list)
 }
 bool CFuncOptim::Optim_Var_Flow(VAROPTM_LIST& used_list)
 {
-    //这些函数，都只允许删used_list中的项，不允许删instr_list中的项
+    //这些函数，都只允许 used_list中的项，不允许 instr_list中的项
     if (this->Optim_Var_Flow_1(used_list))
         return true;
     if (this->Optim_Var_Flow_2(used_list))
@@ -542,7 +526,7 @@ bool CFuncOptim::Optim_Var_Flow(VAROPTM_LIST& used_list)
 }
 
 
-st_VarOptm* Find_Instr(VAROPTM_LIST& used_list, INSTR * pinstr)
+st_VarOptm* Find_Instr(VAROPTM_LIST& used_list, Instruction * pinstr)
 {
     for (VAROPTM_LIST::iterator pos = used_list.begin(); pos!=used_list.end(); ++pos)
     {
@@ -567,7 +551,7 @@ bool CFuncOptim::SureNotUse_1(VAROPTM_LIST& used_list, st_VarOptm* the)
 
     if (the->bJxx)
     {
-        if (!SureNotUse_1(used_list, Find_Instr(used_list, the->pInstr->jmp.the_label)))
+        if (!SureNotUse_1(used_list, Find_Instr(used_list, the->pInstr->jmp.target_label)))
             return false;
     }
 
@@ -606,24 +590,24 @@ bool CFuncOptim::Optim_Var_Flow_5(VAROPTM_LIST& used_list)
 }
 bool CFuncOptim::Optim_Var_Flow_4(VAROPTM_LIST& used_list)
 {
-    //空的下跳，要删
-    //空的上跳，要删
-    //没人用的Label，要删
+    //空的下跳，要
+    //空的上跳，要
+    //没人用的Label，要
 
     VAROPTM_LIST::iterator last_pos;
-    INSTR * last_jmp = NULL;
-    INSTR * last_label[256];
+    Instruction * last_jmp = NULL;
+    Instruction * last_label[256];
     int n_label = 0;
 
     for (VAROPTM_LIST::iterator pos = used_list.begin(); pos!=used_list.end(); ++pos)
     {
         st_VarOptm* the = *pos;
-        INSTR * p = the->pInstr;
+        Instruction * p = the->pInstr;
         if (the->IsJump())
         {
             for (int i=0; i<n_label; i++)
             {
-                if (last_label[i] != NULL && p->jmp.the_label == last_label[i])
+                if (last_label[i] != NULL && p->jmp.target_label == last_label[i])
                 {
                     used_list.erase(pos); //remove me
                     return true;
@@ -635,7 +619,7 @@ bool CFuncOptim::Optim_Var_Flow_4(VAROPTM_LIST& used_list)
         }
         else if (p->type == i_Label)
         {
-            if (last_jmp != NULL && last_jmp->jmp.the_label == p)
+            if (last_jmp != NULL && last_jmp->jmp.target_label == p)
             {
                 used_list.erase(last_pos);
                 return true;
@@ -648,22 +632,22 @@ bool CFuncOptim::Optim_Var_Flow_4(VAROPTM_LIST& used_list)
             n_label = 0;
         }
     }
-    //没人用的空的label要删掉
+    //没人用的空的label要 掉
     for (VAROPTM_LIST::iterator pos = used_list.begin(); pos!=used_list.end(); ++pos)
     {
         st_VarOptm* the = *pos;
-        INSTR * p = the->pInstr;
+        Instruction * p = the->pInstr;
         if (p->type == i_Label)
         {
             bool used = false;
             for (VAROPTM_LIST::iterator pos1 = used_list.begin(); pos1!=used_list.end(); ++pos1)
             {
                 st_VarOptm* the1 = *pos1;
-                INSTR * p1 = the1->pInstr;
+                Instruction * p1 = the1->pInstr;
                 if (!the1->IsJump())
                     continue;
 
-                if (p1->jmp.the_label == p)
+                if (p1->jmp.target_label == p)
                 {
                     used = true;
                     break;
@@ -684,11 +668,9 @@ std::string CFuncOptim::Get_var_finger_NT(VAROPTM_LIST& volist, M_t* pvar)
 {
     std::string tbl_c;
     VAROPTM_LIST::iterator pos = volist.begin();
-    while (pos!=volist.end())
+    for(;pos!=volist.end();++pos)
     {
-        char b = HowVarUse_Char(*pos);
-        tbl_c += b;
-        ++pos;
+        tbl_c += HowVarUse_Char(*pos);
     }
     return tbl_c;
 }
@@ -697,7 +679,7 @@ char HowVarUse_Char(st_VarOptm* the)
     if (the->bJxx)
         return 'J';
 
-    INSTR * pinstr = the->pInstr;
+    Instruction * pinstr = the->pInstr;
     BYTE rw = the->rw;
     if (pinstr->type == i_Label) return 'L';
     if (pinstr->type == i_Return) return 'E';
@@ -715,30 +697,30 @@ char HowVarUse_Char(st_VarOptm* the)
     }
     if (rw >= 4) return 'u';
     assert(0);
-    return 'U'; //不应该到这里
+    return 'U'; //Should not reach here
 }
+//SuperC_func: used only in <CFuncOptim::Optim_var_NT>
 bool CFuncOptim::Optim_var_flow_NT(VAROPTM_LIST& volist, M_t* pvar)
-//SuperC_func: 只在＜CFuncOptim::Optim_var_NT＞中使用
 {
     int n = 0;
     char tbl_c[256];
-    INSTR * tbl_pinstr[256];
+    Instruction * tbl_pinstr[256];
 
     VAROPTM_LIST::iterator pos = volist.begin();
     while (pos!=volist.end())
     {
         st_VarOptm* the = *pos;
         ++pos;
-        char b = HowVarUse_Char(the);
-        tbl_c[n] = b; tbl_c[n+1] = '\0';
+        tbl_c[n] = HowVarUse_Char(the);
+        tbl_c[n+1] = '\0';
         tbl_pinstr[n] = the->pInstr;
         n++;
 
         if (n >= 1)
         {
             const char* pb = tbl_c + n - 1;
-            INSTR ** pi = tbl_pinstr + n - 1;
-            if (strcmp(pb, "7") == 0 && pi[0]->va_r1.pao == NULL)
+            Instruction ** pi = tbl_pinstr + n - 1;
+            if (strcmp(pb, "7") == 0 && pi[0]->va_r1.pao == NULL) // the is Assign[Read and Write]
             {//自己assign自己
                 g_CStrategy.AddOne_CanDelete(pvar, pi[0], "assiang self, delete it");
                 return true;
@@ -747,7 +729,7 @@ bool CFuncOptim::Optim_var_flow_NT(VAROPTM_LIST& volist, M_t* pvar)
         if (n >= 2)
         {
             const char* pb = tbl_c + n - 2;
-            INSTR ** pi = tbl_pinstr + n - 2;
+            Instruction ** pi = tbl_pinstr + n - 2;
             if (strcmp(pb, "2E") == 0 || strcmp(pb, "3E") == 0 || strcmp(pb, "6E") == 0
                 || strcmp(pb, "7E") == 0)
             {
@@ -784,7 +766,7 @@ bool CFuncOptim::Optim_var_flow_NT(VAROPTM_LIST& volist, M_t* pvar)
             if (fpt[2] == '6' || fpt[2] == '2')
                 fpt[2] = 'E';
 
-            INSTR ** pi = tbl_pinstr + n - 3;
+            Instruction ** pi = tbl_pinstr + n - 3;
             if (strcmp(fpt, "25E") == 0 && pi[1]->va_r1.pao == NULL)
             {
                 g_CStrategy.AddOne_CanEliminate_25E(pvar,pi[0],pi[1],"25E");
@@ -799,7 +781,7 @@ bool CFuncOptim::Optim_var_flow_NT(VAROPTM_LIST& volist, M_t* pvar)
             {
                 if (pi[1]->va_r1.pao == NULL || pi[1]->va_r1.pao->type != IA_GetAddress)
                 {
-                    //如果 A=3, B=&A显然不能变成 A=&3
+                    //If A = 3, B = & A obviously can not become A = & 3
                     g_CStrategy.AddOne_CanEliminate_63(pvar,pi[0],pi[1],"65E");
                     return true;
                 }
@@ -827,7 +809,7 @@ bool CFuncOptim::Optim_var_flow_NT(VAROPTM_LIST& volist, M_t* pvar)
         if (n >= 4)
         {
             const char* pb = tbl_c + n - 4;
-            INSTR ** pi = tbl_pinstr + n - 4;
+            Instruction ** pi = tbl_pinstr + n - 4;
 
             char fpt[5];    //finger point
             strcpy(fpt,pb);
@@ -848,9 +830,9 @@ bool CFuncOptim::Optim_var_flow_NT(VAROPTM_LIST& volist, M_t* pvar)
                         d = -d;
                     pi[1]->var_r2.d += d;
                     pi[2]->var_r2.d += d;
-                    INSTR_LIST::iterator to_erase=std::find(Q->m_instr_list.begin(),Q->m_instr_list.end(),pi[0]);
-                    assert(to_erase!=Q->m_instr_list.end());
-                    Q->m_instr_list.erase(to_erase);
+                    INSTR_LIST::iterator to_erase=std::find(m_my_func->m_instr_list.begin(),m_my_func->m_instr_list.end(),pi[0]);
+                    assert(to_erase!=m_my_func->m_instr_list.end());
+                    m_my_func->m_instr_list.erase(to_erase);
                     return true;
                 }
             }
@@ -858,19 +840,19 @@ bool CFuncOptim::Optim_var_flow_NT(VAROPTM_LIST& volist, M_t* pvar)
     }
     return false;
 }
+//SuperC_func: Used only in <CFuncOptim::optim_once_new>
+//Attempt to optimize the var
 bool CFuncOptim::Optim_var_NT(M_t* pvar)
-//SuperC_func: 只在＜CFuncOptim::optim_once_new＞中使用
-//试图对这个var优化
 {
     if (pvar == NULL)
         return false;
 
     VAROPTM_LIST used_list;
-        //分析过的instr
+    //Parsed instr
 
     Get_Var_Use_Flow(used_list, pvar);
-        //先得到变量使用图
-        //先优化，再分
+    //Variables used by the first graph
+    //First optimized, and then divided
     if (Optim_var_flow_NT(used_list, pvar))
     {
         prt_var_uselist(used_list);
@@ -894,7 +876,7 @@ void CFuncOptim::TryDistinguishVar_1( VAROPTM_LIST& volist, M_t* pvar, VAROPTM_L
         st_VarOptm* the = *pos;
         if (the->bJxx)
         {
-            st_VarOptm* plabel = used_list_Find(the->pInstr->jmp.the_label, volist);
+            st_VarOptm* plabel = used_list_Find(the->pInstr->jmp.target_label, volist);
             assert(plabel != 0);
             VAROPTM_LIST::iterator it_found=std::find(volist.begin(),volist.end(),plabel);
             assert(it_found!=volist.end());
@@ -1021,14 +1003,14 @@ void CFuncOptim::Replace_Var_vo(VAROPTM_LIST& volist, int step, M_t* pvar, M_t* 
     }
 }
 const char * my_itoa(int i);
-bool CFuncOptim::TryDistinguishVar(VAROPTM_LIST& volist, M_t* pvar)
 //看看能不能把一个var从逻辑上分为两个
 //开始写写varstep_r和varstep_w
+bool CFuncOptim::TryDistinguishVar(VAROPTM_LIST& volist, M_t* pvar)
 {
     if (pvar->type != MTT_reg)
-        return false;   //先只处理reg类型
+        return false;   //Only the first type of processing reg
 
-    if (strcmp("ESI",pvar->GetName()) == 0)
+    if (pvar->GetName().compare("ESI") == 0)
         pvar->GetName();
 
     static_n = 0;
@@ -1050,23 +1032,21 @@ bool CFuncOptim::TryDistinguishVar(VAROPTM_LIST& volist, M_t* pvar)
     for (int i=1; i<step+1; i++)
     {
         if (IfAnyThisStep(i, volist))
-        {
             tblstep[n++] = i;
         }
-    }
     if (n > 1)
     {
         log_prtl("find var distinguish");
         for (int i=0; i<n; i++)
         {
             if (i == 0)
-                continue;   //保留第一个
+                continue;   //keep the first one
 
             M_t* pnew = new M_t;
             *pnew = *pvar;
-            strcat(pnew->namestr, "_");
-            strcat(pnew->namestr, my_itoa(i));
-            this->Q->m_exprs->vList->push_back(pnew);
+            pnew->namestr +="_";
+            pnew->namestr +=my_itoa(i);
+            this->m_my_func->m_exprs->vList->push_back(pnew);
             Replace_Var_vo(volist, tblstep[i], pvar, pnew);
         }
         return true;
@@ -1078,14 +1058,14 @@ bool CFuncOptim::TryDistinguishVar(VAROPTM_LIST& volist, M_t* pvar)
 void CFuncOptim::Get_Var_Use_Flow(VAROPTM_LIST& used_list, M_t* pvar)
 {
     //Write only used_list.pInstr the used_list.rw, do not write varstep_r and varstep_w
-    INSTR * tbl_label[728];
+    Instruction * tbl_label[728];
     int num = 0;
 
-    INSTR_LIST &list = this->Q->m_instr_list;
+    INSTR_LIST &list = this->m_my_func->m_instr_list;
     POSITION pos = list.begin();
     for( ;pos!=list.end();++pos)
     {
-        INSTR * p = *pos;
+        Instruction * p = *pos;
         BYTE c = GetVarFinger_INSTR(pvar, p);
         if (c != 0 || p->type == i_Label || p->type == i_Return)
         {//These are my only concern
@@ -1099,7 +1079,7 @@ void CFuncOptim::Get_Var_Use_Flow(VAROPTM_LIST& used_list, M_t* pvar)
         }
         if (p->type == i_Jump)
         {
-            tbl_label[num++] = p->jmp.the_label;
+            tbl_label[num++] = p->jmp.target_label;
 
             st_VarOptm* the = new st_VarOptm;
 
@@ -1109,8 +1089,6 @@ void CFuncOptim::Get_Var_Use_Flow(VAROPTM_LIST& used_list, M_t* pvar)
 
             used_list.push_back(the);
 
-            //这样，一条jump可能会加两次，前一次是它用到了本变量cmp(v,?)
-            //后一条是它jxx了
             // In this way, a jump may be added twice,
             // the first one is that it uses the variable cmp (v,?)
             // After one of its jxx
@@ -1125,7 +1103,7 @@ void CFuncOptim::Get_Var_Use_Flow(VAROPTM_LIST& used_list, M_t* pvar)
 
 void CFuncOptim::Prt_Var_Flow(const char * varname)
 {
-    M_t* pvar = this->Q->m_exprs->GetVarByName(varname);
+    M_t* pvar = this->m_my_func->m_exprs->GetVarByName(varname);
     if (pvar == NULL)
     {
         log_prtl("var: %s not found ", varname);
@@ -1139,4 +1117,252 @@ void CFuncOptim::Prt_Var_Flow(const char * varname)
     std::string s = Get_var_finger_NT(used_list, pvar);
 
     log_prtl("%s", s.c_str());
+}
+bool CFuncOptim::DataType_Check(VAR_ADDON* pva, FuncType* pftype)
+{
+    M_t* pvar = pva->pv->thevar;
+    if (pvar->m_DataTypeID == 0)
+        return false;
+    assert(pvar);
+    if (!pftype->m_varpar)
+    {
+        int i1 = GG_VarType_ID2Size(pvar->m_DataTypeID);
+        int i2 = pftype->para_total_size();
+        if (pva->pao == NULL)
+        {
+            assert(i1 == i2);
+        }
+        else if (pva->pao->type == IA_GetAddress)
+        {
+            assert(i2 == 4);
+        }
+    }
+    //这是把i_CallPara的参数的数据类型改了
+    for(POSITION pos=m_my_func->m_instr_list.begin(); pos != m_my_func->m_instr_list.end(); ++pos)
+    {
+        Instruction * p = *pos;
+        if (p->var_w.thevar == pvar && p->type == i_Assign)
+        {
+            if (p->var_r1.thevar != NULL
+                    && g_VarTypeManage->is_simple(p->var_r1.thevar->m_DataTypeID)
+                    )
+            {
+                VarTypeID id;
+                if (p->var_w.part_flag == 0)
+                {//说明只有一个参数
+                    assert(pftype->m_args == 1);
+                    id = pftype->m_partypes[0];
+                }
+                else
+                {
+                    id = pftype->SearchPara(p->var_w.part_flag - 1);
+                }
+                if (id != 0)
+                {
+                    if (p->va_r1.pao == NULL)
+                    {
+                        if (p->var_r1.thevar->type != MTT_immed)
+                        {
+                            int size1 = p->var_r1.thevar->size;
+                            int size2 = GG_VarType_ID2Size(id);
+                            assert(size1 == size2);
+                        }
+                        VarTypeID oldid = p->var_r1.thevar->m_DataTypeID;
+                        p->var_r1.thevar->m_DataTypeID = id;
+
+                        log_prtl("1: %s datatype %s -> %s",
+                                 p->var_r1.thevar->GetName().c_str(),
+                                 ::GG_VarType_ID2Name(oldid).c_str(),
+                                 ::GG_VarType_ID2Name(id).c_str()
+                                 );
+
+                        return true;
+                    }
+                    else if (p->va_r1.pao->type == IA_GetAddress)
+                    {
+                        VarTypeID oldid = p->var_r1.thevar->m_DataTypeID;
+                        VarTypeID id2 = g_VarTypeManage->GetPointTo(id);
+
+                        p->var_r1.thevar->m_DataTypeID = id2;
+
+                        UINT size1 = p->var_r1.thevar->size;    //原来的size
+                        UINT size2 = GG_VarType_ID2Size(id2);   //新的size
+                        if (size1 < size2)
+                        {//变大了
+                            p->var_r1.thevar->size = size2;
+                            this->m_my_func->m_exprs->Enlarge_Var(p->var_r1.thevar, m_my_func->m_instr_list);
+                        }
+
+                        log_prtl(this->m_my_func->Instr_prt_simple(p).c_str());
+                        log_prtl("& X = TYPE *, so X = TYPE");
+
+                        log_prtl("2: %s datatype %s -> %s",
+                                 p->var_r1.thevar->GetName().c_str(),
+                                 ::GG_VarType_ID2Name(oldid).c_str(),
+                                 ::GG_VarType_ID2Name(id2).c_str());
+
+                        return true;
+                    }
+                }
+            }
+        }
+    }
+    return false;
+}
+bool CFuncOptim::SetParaType(UINT offset, UINT sizepara, enum_CallC conv,const std::string & paraname, VarTypeID paraid)
+{
+    if (conv == enum_cdecl || conv == enum_stdcall)
+    {
+        UINT par_off = offset + 4;  //对不对呢
+        M_t* pmt = this->m_my_func->m_exprs->SearchMT(MTT_par, par_off);
+        if (pmt == NULL)
+            return false;
+        if (pmt->m_DataTypeID != 0 && !g_VarTypeManage->is_simple(pmt->m_DataTypeID))
+            return false;   //Already have the type, do reason to do it again
+        pmt->namestr = paraname;
+        //Now, make pmt-> m_DataType for the paratype
+        if (pmt->size == GG_VarType_ID2Size(paraid))
+        {
+            pmt->m_DataTypeID = paraid;
+        }
+        else
+        {
+            M_t* pnew = new M_t;    //new_M_t
+            *pnew = *pmt;
+            pnew->m_DataTypeID = paraid;
+
+            m_my_func->m_exprs->vList->push_back(pnew);
+
+            this->m_my_func->m_exprs->Enlarge_Var(pnew, m_my_func->m_instr_list);
+
+            assert(pnew->size == GG_VarType_ID2Size(paraid));
+        }
+        return true;
+    }
+    else
+        assert(0);
+    return false;
+}
+bool CFuncOptim::VarDataType_analysis_mydefine()
+{//I already have a function definition, parameter names and types from which to take
+    if (this->m_my_func->m_functype == NULL)
+        return false;
+    FuncType* pftype = this->m_my_func->m_functype;
+
+    UINT sizepara = pftype->para_total_size();
+    int offset = 0;
+    for (int i=0; i<pftype->m_args; i++)
+    {
+        if (this->SetParaType(offset,sizepara, this->m_my_func->m_functype->m_callc,pftype->m_parnames[i],pftype->m_partypes[i]))
+            return true;
+        offset += GG_VarType_ID2Size(pftype->m_partypes[i]);
+        while (offset % 4)
+            offset++;
+    }
+
+    return false;
+}
+bool CFuncOptim::VarDataType_analysis()
+{
+    for(POSITION pos=m_my_func->m_instr_list.begin(); pos != m_my_func->m_instr_list.end(); ++pos)
+    {
+        Instruction * p = *pos;
+        if (p->type == i_CallThis)
+        {
+            Instruction * pcall = p->call_addon.p_thecall;
+            assert(pcall);
+            if (pcall->type == i_Call)
+            {
+                FuncType* pft = pcall->call.call_func->m_functype;
+                assert(pft != NULL);
+                assert(pft->m_class != NULL);
+
+                if (p->var_r1.thevar != NULL && g_VarTypeManage->is_simple(p->var_r1.thevar->m_DataTypeID) )
+                {
+                    VarTypeID id = g_VarTypeManage->Class2VarID(pft->m_class);
+                    VarTypeID oldid = p->var_r1.thevar->m_DataTypeID;
+                    if (p->va_r1.pao == NULL)
+                    {
+                        id = g_VarTypeManage->GetAddressOfID(id);
+                        p->var_r1.thevar->m_DataTypeID = id;
+                    }
+                    else if (p->va_r1.pao->type == IA_GetAddress)
+                    {
+                        p->var_r1.thevar->m_DataTypeID = id;
+                    }
+                    log_prtl("3: %s datatype %s -> %s",
+                             p->var_r1.thevar->GetName().c_str(),
+                             ::GG_VarType_ID2Name(oldid).c_str(),
+                             ::GG_VarType_ID2Name(id).c_str());
+
+                    return true;
+                }
+            }
+        }
+        if (p->type == i_CallPara)
+        {
+            Instruction * pcall = p->call_addon.p_thecall;
+            assert(pcall);
+            if (pcall->type == i_CallApi)
+            {
+                FuncType* pft = pcall->call.papi->m_functype;
+                if (pft != NULL)
+                    if (this->DataType_Check(&p->va_r1, pft))
+                        return true;
+            }
+            if (pcall->type == i_Call)
+            {
+                FuncType* pft = pcall->call.call_func->m_functype;
+                if (pft != NULL)
+                    if (this->DataType_Check(&p->va_r1, pft))
+                        return true;
+            }
+        }
+        if (p->type == i_CallRet)
+        {
+            Instruction * pcall = p->call_addon.p_thecall;
+            assert(pcall);
+            if (pcall->type == i_Call)
+            {
+                FuncType* pdf = pcall->call.call_func->m_functype;
+                if (pdf != NULL
+                        && p->var_w.thevar != NULL
+                        && g_VarTypeManage->is_simple(p->var_w.thevar->m_DataTypeID)
+                        )
+                {
+                    VarTypeID oldid = p->var_w.thevar->m_DataTypeID;
+                    VarTypeID id = pdf->m_retdatatype_id;
+                    p->var_w.thevar->m_DataTypeID = pdf->m_retdatatype_id;
+
+                    log_prtl("4: %s datatype %s -> %s",
+                             p->var_w.thevar->GetName().c_str(),
+                             ::GG_VarType_ID2Name(oldid).c_str(),
+                             ::GG_VarType_ID2Name(id).c_str());
+
+                    return true;
+                }
+            }
+            if (pcall->type == i_CallApi)
+            {
+                Api* papi = pcall->call.papi;
+                VarTypeID retid = papi->m_functype->m_retdatatype_id;
+                assert(retid);
+                if (p->var_w.thevar != NULL
+                        && g_VarTypeManage->is_simple(p->var_w.thevar->m_DataTypeID)
+                        )
+                {
+                    VarTypeID oldid = p->var_w.thevar->m_DataTypeID;
+                    p->var_w.thevar->m_DataTypeID = retid;
+
+                    log_prtl("5: %s datatype %s -> %s",
+                             p->var_w.thevar->GetName().c_str(),
+                             ::GG_VarType_ID2Name(oldid).c_str(),
+                             ::GG_VarType_ID2Name(retid).c_str());
+
+                    return true;
+                }
+            }
+        }
+    }
+    return false;
 }

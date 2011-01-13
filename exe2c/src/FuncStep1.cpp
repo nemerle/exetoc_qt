@@ -1,15 +1,14 @@
 // Copyright(C) 1999-2005 LiuTaoTao，bookaa@rorsoft.com
 
-//#include "stdafx.h"
 #include	"CISC.h"
 #include "exe2c.h"
 #include "FuncStep1.h"
 
 static void	Add_in_order(EALIST *list, ea_t i)
 {
-    if (list->size()==0)
+    if (list->empty())
     {
-        list->push_back(i);
+        list->push_front(i);
         return;
     }
     for(EALIST::iterator pos = list->begin();pos!=list->end();++pos)
@@ -59,10 +58,9 @@ void    CFuncStep1::check_if_switch_case(ea_t cur_off, CaseList* pcaselist,EALIS
 
         ea_t break_off = 0;	//	下面，要确定break_off的值 //Next, to determine the value of break_off
         EALIST::iterator pos = pjxxlist->begin();
-        while (pos!=pjxxlist->end())
+        for (;pos!=pjxxlist->end(); ++pos)
         {
             ea_t ea = *pos;
-            ++pos;
             if (ea > cur_off)
             {
                 break_off = ea;
@@ -102,10 +100,9 @@ void    CFuncStep1::check_if_switch_case(ea_t cur_off, CaseList* pcaselist,EALIS
 static bool	any_free_ea(EALIST *jxxlist, EALIST *usedlist, ea_t* pea)
 {
     EALIST::iterator pos = jxxlist->begin();
-    while (pos!=jxxlist->end())
+    for (;pos!=jxxlist->end();++pos)
     {
         ea_t ea = *pos;//jxxlist->;
-        ++pos;
         if (std::find(usedlist->begin(),usedlist->end(),ea)==usedlist->end())
         {
             *pea = ea;
@@ -864,10 +861,10 @@ void CFuncLL::GetVarRange(signed int& VarRange_L, signed int& VarRange_H)
     signed int L = 0;
     signed int H = 0;
 
-    AsmCodeList::iterator pos = this->m_asmlist->begin();
-    for( ; pos!=this->m_asmlist->end(); ++pos)
+    AsmCodeList::iterator iter = this->m_asmlist->begin();
+    for( ; iter!=this->m_asmlist->end(); ++iter)
     {
-        AsmCode* pasm = *pos;
+        AsmCode* pasm = *iter;
         signed int last = pasm->esp_level;
         signed int here = pasm->esp_level_next;
         if (pasm->xcpu.opcode == C_SUB || pasm->xcpu.opcode == C_ADD)
@@ -897,6 +894,7 @@ std::string VarLL::size_to_ptr_name(int size)
     case 4:
         return "DWORD ptr";
     }
+    return "UNKOWN ptr";
 }
 
 void VarLL::prtout(XmlOutPro* out)
@@ -904,11 +902,11 @@ void VarLL::prtout(XmlOutPro* out)
     int curlevel = 0;
     int maxlevel = this->m_VarRange_H - this->m_VarRange_L;
 
-    VarLL_LIST::iterator pos = this->m_varll_list.begin();
+    VarLL_LIST::iterator iter = this->m_varll_list.begin();
     VarLL_LIST::iterator iter_end = this->m_varll_list.end();
-    for(;pos!=iter_end; ++pos)
+    for(;iter!=iter_end; ++iter)
     {
-        st_VarLL* p = *pos;
+        st_VarLL* p = *iter;
         if (curlevel > p->off)
         {
             out->prtl("error, var collapse!!!");
@@ -931,7 +929,7 @@ void VarLL::prtout(XmlOutPro* out)
         out->XMLend(XT_Symbol);
         out->prtt("equ");
         out->prtspace();
-        out->prtt(size_to_ptr_name(p->size == 1));
+        out->prtt(size_to_ptr_name(p->size));
         out->prtspace();
         if (p->array != 1)
         {

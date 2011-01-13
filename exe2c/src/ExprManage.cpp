@@ -33,7 +33,6 @@ void ExprManage::DeleteUnuse_VarList(MLIST* vlist)
 
 uint32_t	regindex_2_regoff(uint32_t regindex)
 {
-    //	把reg也批定一个offset，用struct的概念来处理al,ax的问题
     // Set the reg also approved an offset, the concept of using struct to deal with al, ax the question
     switch (regindex)
     {
@@ -157,9 +156,8 @@ const char * ExprManage::BareVarName(const VAR* v)
 {
     if (v->type == v_Tem)
     {//That is, do not replace
-        const char * retn = v->thevar->GetName();
         //IsBadReadPtr(retn,1);
-        return retn;
+        return v->thevar->GetName().c_str();
     }
     const char * retn = VarName(v);
     //IsBadReadPtr(retn,1);
@@ -172,12 +170,11 @@ M_t* ExprManage::GetVarByName_1(MLIST* list, const char * varname)
     for (;pos!=list->end(); ++pos)
     {
         M_t* p = *pos;
-        if (strcmp(varname, p->namestr) == 0)
+        if (p->namestr.compare(varname) == 0)
             return p;
     }
     return NULL;
 }
-//当前，仅支持par,var,reg三种类型
 //Currently, only support par, var, reg three types of
 M_t* ExprManage::GetVarByName(const char * varname)
 {
@@ -347,19 +344,19 @@ const char * ExprManage::VarName(const VAR* v)
                 if (typesize == p->size)
                     nop();
             }
-            return p->namestr;
+            return p->namestr.c_str();
         }
         if (v->part_flag != 0 && g_VarTypeManage->is_class(p->m_DataTypeID) != NULL)
         {
             static char buf[180];
-            sprintf(buf, "%s.%s", p->namestr,
+            sprintf(buf, "%s.%s", p->namestr.c_str(),
                     g_VarTypeManage->is_class(p->m_DataTypeID)->getclassitemname(v->part_flag - 1));
             return buf;
         }
         else
         {
             static char buf[180];
-            sprintf(buf, "%s.part", p->namestr);
+            sprintf(buf, "%s.part", p->namestr.c_str());
             return buf;
         }
     case v_Immed:
@@ -499,11 +496,11 @@ M_t* ExprManage::AddRef_tem(uint32_t temno, uint32_t size)
             return p;
         }
     }
-    //没找到，就new一个
+    // not found, a new
     M_t* pnew = new M_t;    //new_M_t
     pnew->type = MTT_tem;
     pnew->tem.temno = temno;
-    sprintf(pnew->namestr, "t_%x", temno);
+    pnew->namestr = QString("t_%1").arg(temno,0,16).toStdString();
     pnew->size = size;
     pnew->m_DataTypeID = g_VarTypeManage->NewSimpleVarType(pnew->size);
 
@@ -541,7 +538,7 @@ M_t* ExprManage::AddRef_with_name(en_MTTYPE type, uint32_t off, uint32_t size, c
 
     this->Enlarge_Var(pnew, ::g_Cur_Func->m_instr_list);
 
-    strcpy(pnew->namestr, tj_name);
+    pnew->namestr = tj_name;
 
     return pnew;
 }
@@ -659,7 +656,6 @@ signed int varoff2stack(UINT off)
 
 
 int g_newtemno = 737;
-//每次使用都加2，这样就把偶数的值留出来了
 //Add 2 each time you use are so put out even the value of the left
 M_t* ExprManage::CreateNewTemVar(UINT size)
 {
@@ -669,7 +665,8 @@ M_t* ExprManage::CreateNewTemVar(UINT size)
 
     pnew->tem.temno = g_newtemno;
     g_newtemno += 2;
-    sprintf(pnew->namestr, "tem_%x", pnew->tem.temno);
+
+    pnew->namestr = QString("tem_%1").arg(pnew->tem.temno,0,16).toStdString();
     pnew->m_DataTypeID = g_VarTypeManage->NewSimpleVarType(pnew->size);
 
     vList->push_back(pnew);
@@ -700,7 +697,7 @@ void Replace_Var(INSTR_LIST& instr_list, M_t* pvar, M_t* thevar)
     INSTR_LIST::iterator pos = instr_list.begin();
     for (;pos!=instr_list.end();++pos)
     {
-        INSTR * p = *pos;
+        Instruction * p = *pos;
         Replace_Var_1(&p->var_w,pvar,thevar);
         Replace_Var_1(&p->var_r1,pvar,thevar);
         Replace_Var_1(&p->var_r2,pvar,thevar);
@@ -708,7 +705,6 @@ void Replace_Var(INSTR_LIST& instr_list, M_t* pvar, M_t* thevar)
 }
 void ExprManage::Enlarge_Var(M_t* thevar, INSTR_LIST& instr_list)
 {
-    //下面，要删被我占了的var
     //The following should be deleted by my account of the var
 
     MLIST*	list = vList;

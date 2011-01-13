@@ -64,6 +64,16 @@ void Exe2C_MainWindow::onOptim()
         displayCurrentFunction();
     }
 }
+void Exe2C_MainWindow::onOptim10()
+{
+    for(int i=0; i<10; i++)
+        g_EXE2C->analysis_Once();
+	emit functionListChanged();
+	if(m_last_diplay==g_EXE2C->GetCurFuncHandle())
+	{
+		displayCurrentFunction();
+	}
+}
 void Exe2C_MainWindow::onOpenFile_Action()
 {
     QFileDialog dlg;

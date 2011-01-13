@@ -20,6 +20,7 @@ public:
     void prt_log(const char * str);
 public slots:
     void onOptim();
+    void onOptim10();
     void onOpenFile_Action();
     void displayCurrentFunction();
 signals:
