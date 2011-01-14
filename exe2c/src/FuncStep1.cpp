@@ -1,5 +1,11 @@
 // Copyright(C) 1999-2005 LiuTaoTao，bookaa@rorsoft.com
 
+#include <boost/lambda/lambda.hpp>
+#include <boost/lambda/construct.hpp>
+#include <boost/lambda/bind.hpp>
+using namespace boost::lambda;
+#include <set>
+
 #include	"CISC.h"
 #include "exe2c.h"
 #include "FuncStep1.h"
@@ -24,10 +30,9 @@ static void	Add_in_order(EALIST *list, ea_t i)
     }
     list->push_back(i);
 }
-
-void    CFuncStep1::check_if_switch_case(ea_t cur_off, CaseList* pcaselist,EALIST* pjxxlist,
-                                         XCPUCODE* pxcpu)
-{//static function
+//static function
+void    CFuncStep1::check_if_switch_case(ea_t cur_off, CaseList* pcaselist,EALIST* pjxxlist, XCPUCODE* pxcpu)
+{
         if (pxcpu->opcode != C_JMP)
                 return;
         if (pxcpu->op[0].mode != OP_Address)
@@ -46,17 +51,17 @@ void    CFuncStep1::check_if_switch_case(ea_t cur_off, CaseList* pcaselist,EALIS
         ea_t ptbl = pxcpu->op[0].addr.off_value;
         //alert_prtf("table is %x",ptbl);
         if (! IfInWorkSpace(ptbl))
-                return;		//	确认这个table有效
+                return;		//	Confirm this table is valid
 
         //alert("switch case find 2");
 
         ea_t d = Peek_D(ptbl);
         if (! IfInWorkSpace(d))
-                return;		//	确认第一条有效
+                return;		//	Confirm the first is valid
 
         //alert("switch case find 3");
 
-        ea_t break_off = 0;	//	下面，要确定break_off的值 //Next, to determine the value of break_off
+        ea_t break_off = 0;	//Next, to determine the value of break_off
         EALIST::iterator pos = pjxxlist->begin();
         for (;pos!=pjxxlist->end(); ++pos)
         {
@@ -68,7 +73,7 @@ void    CFuncStep1::check_if_switch_case(ea_t cur_off, CaseList* pcaselist,EALIS
             }
         }
         if (break_off == 0)
-                return;		//	没找到条件跳?不对劲
+                return;		//	Jump condition not found? something wrong
 
         //alert("switch case find 4");
 
@@ -76,11 +81,11 @@ void    CFuncStep1::check_if_switch_case(ea_t cur_off, CaseList* pcaselist,EALIS
         //if (pjxx->jmp.jmp_type != JMP_ja)
         //	return;		//	不是ja,也不对
         if (d < cur_off || d > break_off)
-                return;		//	第一个就没对准，不行
+                return;		//	Alignment of the first one, not in range (conditon .. break target) -> will not work
 
         //alert("switch case find 5");
 
-        //alert("rreally switch case");
+        //alert("really switch case");
         CASE_t *pnew = new CASE_t;
         pnew->jxx_opcode = cur_off;
         pnew->caselist = new EALIST;
@@ -97,13 +102,15 @@ void    CFuncStep1::check_if_switch_case(ea_t cur_off, CaseList* pcaselist,EALIS
         }
 }
 
-static bool	any_free_ea(EALIST *jxxlist, EALIST *usedlist, ea_t* pea)
+static bool	any_free_ea(EALIST *jxxlist, std::set<ea_t> &visited_set, ea_t* pea)
 {
     EALIST::iterator pos = jxxlist->begin();
+    // find jxxlist entry that is not in usedlist already
     for (;pos!=jxxlist->end();++pos)
     {
         ea_t ea = *pos;//jxxlist->;
-        if (std::find(usedlist->begin(),usedlist->end(),ea)==usedlist->end())
+
+        if (visited_set.find(ea)==visited_set.end())
         {
             *pea = ea;
             return true;
@@ -132,7 +139,7 @@ void CFuncStep1::CheckIfJustSwitchCase(CaseList& caselist, ea_t ea)
                 pnew->xcpu.opcode = C_JCASE;
                 pnew->xcpu.op[0].mode = OP_Near;
                 pnew->xcpu.op[0].nearptr.offset = case_ea;
-                this->m_asmlist->push_back(pnew);
+                m_asmlist->push_back(pnew);
                 //alert("insert 1 C_JCAES");
             }
             break;	//	only one can be true
@@ -162,8 +169,7 @@ bool	CFuncStep1::Step_1(ea_t head_off)
 
         CaseList caselist;
         EALIST jxxlist;
-        EALIST usedlist;
-
+        std::set<ea_t> visited_set;
 
         ea_t ea = head_off;
         assert(ea < 0x10000000);
@@ -171,11 +177,11 @@ bool	CFuncStep1::Step_1(ea_t head_off)
 
         jxxlist.push_front(ea);
 
-        while (any_free_ea(&jxxlist,&usedlist,&ea))
+        while (any_free_ea(&jxxlist,visited_set,&ea))
         {	//	Travell(/ed?) all the jxx
             for (;;)
             {
-                Add_in_order(&usedlist,ea);
+                visited_set.insert(ea);
 
                 CDisasm the;
                 the.Disasm_OneCode(ea); //ea will be incremented
@@ -190,21 +196,20 @@ bool	CFuncStep1::Step_1(ea_t head_off)
                 }
                 if (the.get_xcpu()->opcode == C_RET || the.get_xcpu()->opcode == C_JMP )
                     break;
-                if (std::find(usedlist.begin(),usedlist.end(),ea)!=usedlist.end())
-                    break;
+                if(visited_set.find(ea)!=visited_set.end())
+                    break; // we've visited this ea already, next please
             }
         }
 
-        EALIST::iterator pos = usedlist.begin();
-        while (pos!=usedlist.end())
-        {	//	生成asm opcode list
-            if (this->m_asmlist == NULL)
-            {
-                this->m_asmlist = new AsmCodeList;
-            }
+        std::set<ea_t>::iterator pos = visited_set.begin();
 
-            ea_t ea = *pos;//usedlist.;
-            ++pos;
+        if(!visited_set.empty())
+            if (m_asmlist == NULL)
+                m_asmlist = new AsmCodeList; //	Create asm opcode list
+
+        while (pos!=visited_set.end())
+        {
+            ea_t ea = *(pos++);
             AsmCode *p = AsmCode::new_AsmCode();
             p->linear = ea;
 
@@ -212,13 +217,13 @@ bool	CFuncStep1::Step_1(ea_t head_off)
             p->opsize = the.Disasm_OneCode(ea);
             p->xcpu = *the.get_xcpu();
 
-            this->m_asmlist->push_back(p);
+            m_asmlist->push_back(p);
 
-                //	查找是不是刚过一个swith case
-        this->CheckIfJustSwitchCase(caselist, ea);
+            //	查找是不是刚过一个swith case
+            this->CheckIfJustSwitchCase(caselist, ea);
         }
 
-        AsmCode *pasm = *this->m_asmlist->rbegin();
+        AsmCode *pasm = *m_asmlist->rbegin();
         m_end_off = pasm->linear + pasm->opsize;
         return true;
 }
@@ -226,29 +231,23 @@ bool	CFuncStep1::Step_1(ea_t head_off)
 //==========================================
 
 static bool	isLeave(AsmCode* p)
-{	//	如果是leave或mov esp,??之类的指令，则当前stack状态对后面没有影响
-    //If leave or mov esp,?? or similar instructions, then the current stack state has no effect on the back
+{
+    //If (leave) or (mov esp,??) or similar instructions, then the current stack state has no effect afterwards
         if (p->xcpu.opcode == C_LEAVE)
                 return true;
-        if (p->xcpu.opcode == C_MOV
-                && (p->xcpu.op[0].mode == OP_Register)
-                && (p->xcpu.op[0].reg.reg_index == _ESP_)	//mov esp,ebp
-                )
+        if (p->xcpu.opcode == C_MOV && p->xcpu.op[0].isRegOp(_ESP_))	//mov esp,ebp //Nem, actually mov esp,??
                 return true;
         return false;
 }
 
 AsmCode* CFuncLL::ea2pasm(ea_t ea)
 {
-    AsmCodeList::iterator pos = m_asmlist->begin();
-    while (pos!=m_asmlist->end())
-    {
-        AsmCode* p = *pos;//m_asmlist->;
-        ++pos;
-        if (p->linear == ea)
-            return p;
-    }
-    assert(!"whye here");
+    //todo: provide a map<ea,AsmCode *> to speed this up
+    AsmCodeList::iterator biter = std::find_if(m_asmlist->begin(), m_asmlist->end(),
+                                               boost::lambda::bind<ea_t>(&AsmCode::linear,_1)==ea);
+    if(biter!=m_asmlist->end())
+        return *biter;
+    assert(!"address not found in instruction list");
     return NULL;
 }
 bool	CFuncLL::stack_stack(AsmCode* p0, AsmCode* p1)
@@ -257,7 +256,6 @@ bool	CFuncLL::stack_stack(AsmCode* p0, AsmCode* p1)
     signed int & esp0_next = p0->esp_level_next;
     signed int & esp1 = p1->esp_level;
 
-    //	首先，是p0自身的建设-------
     // First of all check for p0 construct
     if (isLeave(p0))
     {
@@ -301,13 +299,7 @@ bool	CFuncLL::stack_stack(AsmCode* p0, AsmCode* p1)
                 return true;
             }
         }
-        if (esp0 != ESP_UNKNOWN
-                && esp0_next != ESP_UNKNOWN
-                && p0->xcpu.opcode == C_CALL
-                && p0->xcpu.op[0].mode == OP_Address
-                && p0->xcpu.op[0].addr.base_reg_index == _NOREG_
-                && p0->xcpu.op[0].addr.off_reg_index == _NOREG_
-                )
+        if (esp0 != ESP_UNKNOWN && esp0_next != ESP_UNKNOWN && p0->xcpu.opcode == C_CALL && p0->xcpu.op[0].isStaticOffset())
         {
             ea_t address = p0->xcpu.op[0].addr.off_value;
             Api *papi = g_ApiManage->get_api(address);	//find it
@@ -379,114 +371,102 @@ bool	CFuncLL::stack_stack(AsmCode* p0, AsmCode* p1)
     }
     return false;
 }
-ea_t FindApiAddress_Reg(uint32_t regindex, XCPUCODE* pxcpu1, AsmCodeList* asmlist)
+ea_t FindApiAddress_Reg(uint32_t called_reg_index, XCPUCODE* pxcpu1, AsmCodeList* asmlist)
 {
-    //意思是，我要正确处理call eax
-    //到前面去找一个mov eax, [405070]
+    // If I want to correctly handle (call eax)
+    // I must look for the preceding (mov eax, [405070])
+
+    //Nem
+    //TODO: this function might be buggy, since it only scans lineary through instructions, and considers the closest
+    //mov reg,val the authoritative information about the call's target
     ea_t retn = 7;
 
+    //Nem
+    //TODO: more efficient approach would be to scan backwards from the call insn through the list
+
     AsmCodeList::iterator pos = asmlist->begin();
-        while (pos!=asmlist->end())
-        {
-                AsmCode* p = *pos;//asmlist->;
-                ++pos;
+    while (pos!=asmlist->end())
+    {
+        AsmCode* p = *pos;//asmlist->;
+        ++pos;
         XCPUCODE* pxcpu = &p->xcpu;
-                if (pxcpu == pxcpu1)
-                        return retn;
-        if (pxcpu->opcode == C_MOV
-            && pxcpu->op[0].mode == OP_Register
-            && pxcpu->op[0].reg.reg_index == regindex)
+        if (pxcpu == pxcpu1)
+            return retn;
+        if (pxcpu->opcode == C_MOV && pxcpu->op[0].isRegOp(called_reg_index) )
         {
-            if (pxcpu->op[1].mode == OP_Address
-                && pxcpu->op[1].addr.base_reg_index == _NOREG_
-                && pxcpu->op[1].addr.off_reg_index == _NOREG_
-                )   //call [405070]
+            // MOV %REG,
+            //call [405070]
+            if (pxcpu->op[1].isStaticOffset())
             {
-                ea_t address = pxcpu->op[1].addr.off_value;
-                retn = address;
+                // MOV %REG, [offset]
+                retn = pxcpu->op[1].addr.off_value;
             }
         }
-        }
+    }
     return retn;
 }
 bool	CFuncLL::Asm_Code_Change_ESP(int &esp, XCPUCODE* pxcpu)
-{//算出来esp,就return true
-        //	让我们假定一个func中只出现一次mov ebp,esp
-        if (pxcpu->opcode == C_MOV
-        && (pxcpu->op[0].mode == OP_Register)
-        && (pxcpu->op[0].reg.reg_index == _ESP_)
-        && (pxcpu->op[1].mode == OP_Register)
-        && (pxcpu->op[1].reg.reg_index == _EBP_))
+{
+    //Calculated esp, to return true
+    //This assumes that stack setup [mov ebp, esp] only occurs once a func
+    switch(pxcpu->opcode)
     {
-        if (this->m_EBP_base != Not_EBP_based
-            && esp == ESP_UNKNOWN)
+    case C_MOV:
+        if(pxcpu->op[0].isRegOp(_ESP_) && pxcpu->op[1].isRegOp(_EBP_))
         {
-            esp = this->m_EBP_base;	//mov esp,ebp
-            return true;
-        }
-    }
-        if (pxcpu->opcode == C_MOV
-        && (pxcpu->op[0].mode == OP_Register)
-        && (pxcpu->op[0].reg.reg_index == _EBP_)
-        && (pxcpu->op[1].mode == OP_Register)
-        && (pxcpu->op[1].reg.reg_index == _ESP_))
-    {
-        if (esp != ESP_UNKNOWN
-            && this->m_EBP_base == Not_EBP_based)
-        {
-            this->m_EBP_base = esp;		//mov ebp,esp
-            return true;
-        }
-    }
-
-        if (pxcpu->opcode == C_LEAVE)
-        {
-                esp = m_EBP_base;	//	mov	esp,ebp
-                esp += 4;		//	pop	ebp
-        }
-        if (pxcpu->opcode == C_PUSH)
-                esp -= 4;
-        if (pxcpu->opcode == C_POP)
-                esp += 4;
-        if (pxcpu->opcode == C_SUB)
-                if (pxcpu->op[0].mode == OP_Register)
-                        if (pxcpu->op[0].reg.reg_index == _ESP_)
-                                if (pxcpu->op[1].mode == OP_Immed)
-                                {
-                                        esp -= pxcpu->op[1].immed.immed_value;
-                                }
-        if (pxcpu->opcode == C_ADD)
-                if (pxcpu->op[0].mode == OP_Register)
-                        if (pxcpu->op[0].reg.reg_index == _ESP_)
-                                if (pxcpu->op[1].mode == OP_Immed)
-                                {
-                                        esp += pxcpu->op[1].immed.immed_value;
-                                }
-
-        if (pxcpu->opcode == C_CALL)
-        {
-            if (pxcpu->op[0].mode == OP_Near)
+            if (m_EBP_base != Not_EBP_based && esp == ESP_UNKNOWN)
             {
-                Func* pfunc = g_Cexe2c->GetFunc(pxcpu->op[0].nearptr.offset);
-                if (pfunc == NULL)
-                    return false;
-                if (pfunc->m_IfLibFunc)
-                {
-                    //esp += pfunc->m_stack_purge;
-                    assert(pfunc->m_functype);
-                    esp += pfunc->m_functype->get_stack_purge();
-                    return true;
-                }
-                if (pfunc->m_nStep < STEP_IDA_1)
-                    return false;
-                esp += pfunc->m_stack_purge;
+                esp = m_EBP_base;	//mov esp,ebp
                 return true;
             }
-        if (pxcpu->opcode == C_CALL &&
-            pxcpu->op[0].mode == OP_Address &&
-            pxcpu->op[0].addr.base_reg_index == _NOREG_ &&
-            pxcpu->op[0].addr.off_reg_index == _NOREG_
-            )   //call [405070]
+        }
+        if(pxcpu->op[0].isRegOp(_EBP_) && pxcpu->op[1].isRegOp(_ESP_))
+        {
+            if (esp != ESP_UNKNOWN && m_EBP_base == Not_EBP_based)
+            {
+                m_EBP_base = esp;		//mov ebp,esp
+                return true;
+            }
+        }
+        break;
+    case C_LEAVE:
+        esp = m_EBP_base;	//	mov	esp,ebp
+        esp += 4;		//	pop	ebp
+        break;
+    //TODO: fix for PUSH ax etc
+    case C_PUSH:
+        esp -= 4;
+        break;
+    case C_POP:
+        esp += 4;
+        break;
+    case C_SUB:
+        if(pxcpu->op[0].isRegOp(_ESP_) && (pxcpu->op[1].mode == OP_Immed))
+            esp -= pxcpu->op[1].immed.immed_value;
+        break;
+    case C_ADD:
+        if(pxcpu->op[0].isRegOp(_ESP_) && (pxcpu->op[1].mode == OP_Immed))
+            esp += pxcpu->op[1].immed.immed_value;
+        break;
+    case C_CALL:
+        if (pxcpu->op[0].mode == OP_Near)
+        {
+            Func* pfunc = g_Cexe2c->GetFunc(pxcpu->op[0].nearptr.offset);
+            if (pfunc == NULL)
+                return false;
+            if (pfunc->m_IfLibFunc)
+            {
+                //esp += pfunc->m_stack_purge;
+                assert(pfunc->m_functype);
+                esp += pfunc->m_functype->get_stack_purge();
+                return true;
+            }
+            if (pfunc->m_nStep < STEP_IDA_1)
+                return false;
+            esp += pfunc->m_stack_purge;
+            return true;
+        }
+        if (pxcpu->op[0].isStaticOffset()) //call [405070]
         {
             ea_t address = pxcpu->op[0].addr.off_value;
             Api* papi = g_ApiManage->get_api(address);//,stacksub))	//find it
@@ -496,11 +476,9 @@ bool	CFuncLL::Asm_Code_Change_ESP(int &esp, XCPUCODE* pxcpu)
                 return true;
             }
         }
-        if (pxcpu->opcode == C_CALL &&
-            pxcpu->op[0].mode == OP_Register
-            )   //call eax
+        if (pxcpu->op[0].mode == OP_Register )   //call %reg
         {
-            ea_t address = FindApiAddress_Reg(pxcpu->op[0].reg.reg_index, pxcpu, this->m_asmlist);
+            ea_t address = FindApiAddress_Reg(pxcpu->op[0].reg.reg_index, pxcpu, m_asmlist);
             Api* papi = g_ApiManage->get_api(address);//,stacksub))	//find it
             if (papi)
             {
@@ -509,119 +487,116 @@ bool	CFuncLL::Asm_Code_Change_ESP(int &esp, XCPUCODE* pxcpu)
             }
         }
         return false;
-        }
+    }
     if (esp == ESP_UNKNOWN)
         return false;
-        return true;
-        //	影响stack的有这几种情况：
-        //	enter leave
-        //	push ebp,mov ebp,esp,.....,mov esp,ebp,pop ebp
-        //	push,pop
-        //	call near
-        //	ret时检查是否已平衡
-        //	对call	[immed]等，暂不考虑s
+    return true;
+    //	stack has these types of situations:
+    //	enter leave
+    //	push ebp,mov ebp,esp,.....,mov esp,ebp,pop ebp
+    //	push,pop
+    //	call near
+    //	ret is checked whether it has balanced
+    //	for call [immed], etc., will not consider s
 }
 
 
 
 void CFuncLL::AddRemoveSomeInstr()
 {
+    Func* pfunc;
+    XCPUCODE* pxcpu;
+    AsmCode* pasm;
+    AsmCode* pnew;
     AsmCodeList::iterator pos = m_asmlist->begin();
+    //Nem
+    //This inserts BP_based function prologue into all full-specified library functions
+    // Why is this needed ?
     while (pos!=m_asmlist->end())
     {
-        AsmCode* pasm = *pos;//m_asmlist->;
-        ++pos;
+        pasm = *(pos++);
         if (pasm->iAddRemove != 0)
             continue;
 
-        XCPUCODE* pxcpu = &pasm->xcpu;
-        if (pxcpu->opcode == C_CALL && pxcpu->op[0].mode == OP_Near)
-        {
-            Func* pfunc = g_Cexe2c->GetFunc(pxcpu->op[0].nearptr.offset);
-            if (pfunc == NULL)
-                continue;
-            if (pfunc->m_IfLibFunc && pfunc->m_functype != NULL)
-            {
-                FuncType* fctype = pfunc->m_functype;
-                if (!fctype->m_internal_name.compare("_EH_prolog"))
-                {
-                    // ??strcmp(fctype->m_internal_name, "_EH_prolog");
-                    pasm->iAddRemove = 1;
+        pxcpu = &pasm->xcpu;
+        if (!pxcpu->IsCallNear())
+            continue;
+        pfunc = g_Cexe2c->GetFunc(pxcpu->op[0].nearptr.offset);
+        if (pfunc == NULL) // couldn't get that function
+            continue;
+        if ( !pfunc->m_IfLibFunc || pfunc->m_functype == NULL) // fully specified lib function
+            continue;
+        FuncType* fctype = pfunc->m_functype;
+        if (fctype->m_internal_name.compare("_EH_prolog"))
+            continue;
+        // ??strcmp(fctype->m_internal_name, "_EH_prolog");
+        pasm->iAddRemove = 1;
 
-                    AsmCode* pnew;
-                    //push ebp
-                    pnew = AsmCode::new_AsmCode();
-                    pnew->iAddRemove = 2;
-                    pnew->xcpu.opcode = C_PUSH;
-                    pnew->xcpu.op[0].mode = OP_Register;
-                    pnew->xcpu.op[0].opersize = 4;
-                    pnew->xcpu.op[0].reg.reg_index = _EBP_;
-                    m_asmlist->insert(pos, pnew);
+        //push ebp
+        pnew = AsmCode::new_AsmCode();
+        pnew->iAddRemove = 2;
+        pnew->xcpu.opcode = C_PUSH;
+        pnew->xcpu.op[0] = OPERITEM::createReg(_EBP_,4);
+        m_asmlist->insert(pos, pnew);
 
-                    //mov ebp, esp
-                    pnew = AsmCode::new_AsmCode();
-                    pnew->iAddRemove = 2;
-                    pnew->xcpu.opcode = C_MOV;
-                    pnew->xcpu.op[0].mode = OP_Register;
-                    pnew->xcpu.op[0].opersize = 4;
-                    pnew->xcpu.op[0].reg.reg_index = _EBP_;
-                    pnew->xcpu.op[1].mode = OP_Register;
-                    pnew->xcpu.op[1].opersize = 4;
-                    pnew->xcpu.op[1].reg.reg_index = _ESP_;
-                    m_asmlist->insert(pos, pnew);
-
-                }
-            }
-        }
+        //mov ebp, esp
+        pnew = AsmCode::new_AsmCode();
+        pnew->iAddRemove = 2;
+        pnew->xcpu.opcode = C_MOV;
+        pnew->xcpu.op[0] = OPERITEM::createReg(_EBP_,4);
+        pnew->xcpu.op[1] = OPERITEM::createReg(_ESP_,4);
+        m_asmlist->insert(pos, pnew);
     }
 }
+//call this function once again to prepare functions
 void CFuncLL::Prepare_CallFunc()
-{//把本函数中call到的函数都prepare一遍
-    //Put this function call to the function of all prepare again
+{
+    Func* pfunc;
+    AsmCode* pasm;
+    XCPUCODE* pxcpu;
     AsmCodeList::iterator pos = m_asmlist->begin();
     while (pos!=m_asmlist->end())
     {
-        AsmCode* pasm = *pos;//m_asmlist->;
-        ++pos;
-        XCPUCODE* pxcpu = &pasm->xcpu;
-        if (pxcpu->opcode == C_CALL && pxcpu->op[0].mode == OP_Near)
-        {
-            Func* pfunc = g_Cexe2c->GetFunc(pxcpu->op[0].nearptr.offset);
-            if (pfunc == NULL)
-                continue;
+        pasm = *(pos++);
+        pxcpu = &pasm->xcpu;
+        if ( !pxcpu->IsCallNear() )
+            continue;
+
+        pfunc = g_Cexe2c->GetFunc(pxcpu->op[0].nearptr.offset);
+        if (pfunc)
             pfunc->PrepareFunc();
-        }
     }
 }
 bool	CFuncLL::Fill_Stack_1()
-{//Why is it always true ?
+{
+    //Why is it always true ?
     AsmCodeList::iterator pos = m_asmlist->begin();
-        AsmCode* pasm = 0;
-        if (pos!=m_asmlist->end())
-        {
-            pasm = *pos;//m_asmlist->;
-            ++pos;
-        }
-        while (pos!=m_asmlist->end())
-        {
-                AsmCode* p0 = pasm;
-                pasm = *pos;//m_asmlist->;
-                ++pos;
-                if (stack_stack(p0,pasm))
-                        return true;
-        }
-        return false;
+    AsmCode* pasm = 0;
+    AsmCode* p0 = 0;
+    if (pos!=m_asmlist->end())
+    {
+        p0 = *pos;//m_asmlist->;
+        ++pos;
+    }
+    while (pos!=m_asmlist->end())
+    {
+        pasm = *(pos++);
+        if (stack_stack(p0,pasm))
+            return true;
+        p0 = pasm;
+    }
+    return false;
 }
 
+//	Checks if the function stack is balanced
 bool	CFuncLL::Check_Stack()
-//	检查该函数的stack是否平衡
 {
-    AsmCodeList::iterator pos = this->m_asmlist->begin();
+    AsmCode* p;
+    AsmCodeList::iterator pos = m_asmlist->begin();
     signed int lastesp = 0;
-    while (pos!=this->m_asmlist->end())
+    while (pos!=m_asmlist->end())
     {
-        AsmCode* p = *pos;
-        ++pos;
+        p = *(pos++);
         signed int esp = p->esp_level;
         if (esp == ESP_UNKNOWN)
             return false;
@@ -638,7 +613,7 @@ bool	CFuncLL::Check_Stack()
         if (p->xcpu.opcode == C_RET)
         {
             if (esp != 0)
-                return false;
+                return false; // unbalanced stack at return.
         }
         lastesp = p->esp_level_next;
     }
@@ -647,21 +622,20 @@ bool	CFuncLL::Check_Stack()
 
 bool	CFuncLL::Fill_Stack_Info()
 {
-    AsmCode* pasm = *this->m_asmlist->begin();
-    if (pasm->linear == 0x401150)
-    {
-        pasm->linear = 0x401150;
-    }
+    AsmCode* pasm = *m_asmlist->begin();
     pasm->esp_level = 0;	// I know the first one
 
-    for (int i=0;;i++)
-    { //这里会死循环
-        if ((i % 1000) == 0)
-            nop();
-        if ( Fill_Stack_1() )
-            continue;
-        break;
-    }
+    while(Fill_Stack_1())
+        ;
+//    for (int i=0;;i++)
+//    {
+//        //This will loop
+//        if ((i % 1000) == 0)
+//            nop();
+//        if ( Fill_Stack_1() )
+//            continue;
+//        break;
+//    }
 
     if (! Check_Stack())
         return false;
@@ -669,36 +643,35 @@ bool	CFuncLL::Fill_Stack_Info()
     return true;
 }
 
-int CFuncLL::Get_Ret_Purge()
 //return -1 for fail
+int CFuncLL::Get_Ret_Purge()
 {
-        int retn = -1;
-        AsmCodeList::iterator pos = this->m_asmlist->begin();
-        while (pos!=this->m_asmlist->end())
-        {
-                AsmCode* pasm = *pos;
-                ++pos;
-                XCPUCODE* pxcpu = &pasm->xcpu;
-                if (pxcpu->opcode == C_RET) //找到了ret语句
-                {
-                        int r = 0;
-                        if (pxcpu->op[0].mode == OP_Immed)	// means RET n
-                        {
-                                r = pxcpu->op[0].immed.immed_value;
-                        }
+    AsmCode* pasm;
+    XCPUCODE* pxcpu;
+    int retn = -1;
+    AsmCodeList::iterator pos = m_asmlist->begin();
+    while (pos!=m_asmlist->end())
+    {
+        pasm = *(pos++);
+        pxcpu = &pasm->xcpu;
+        if (pxcpu->opcode != C_RET)
+            continue;
 
-                        if (retn == -1)
-                                retn = r;
-                        else if (retn != r) //两个Ret不一致？
-                                return -1;
-                }
-        }
+        //Found the ret statement
+        int r = 0;
+        if (pxcpu->op[0].mode == OP_Immed)	// means RET n
+            r = pxcpu->op[0].immed.immed_value;
         if (retn == -1)
-        {
-                //alert_prtf("why not find RET ? func = %x", this->m_head_off);
-                //myexit(2);
-                //return false;
-        }
+            retn = r;
+        else if (retn != r) //inconsistent RETs ?
+            return -1;
+    }
+    if (retn == -1)
+    {
+        //alert_prtf("why not find RET ? func = %x", this->m_head_off);
+        //myexit(2);
+        //return false;
+    }
     return retn;
 }
 
@@ -750,8 +723,8 @@ void	CFuncLL::prtout_asm_1(VarLL* pvarll, XmlOutPro* out)
     //	按运行代码以ASM显示func，对其中的GAP能指出来
     //Display by running the code to ASM func, GAP of them can point to
     ea_t last = 0xffffffff;
-    AsmCodeList::iterator pos = this->m_asmlist->begin();
-    while (pos!=this->m_asmlist->end())
+    AsmCodeList::iterator pos = m_asmlist->begin();
+    while (pos!=m_asmlist->end())
     {
         AsmCode* pasm = *pos;
         ++pos;
@@ -793,8 +766,7 @@ void	CFuncLL::prtout_asm_1(VarLL* pvarll, XmlOutPro* out)
                     st_VarLL* p = pvarll->LookUp_VarLL(level- pvarll->m_VarRange_L);
                     if (p != NULL)
                     {
-                        idaout.Par1Str += '.';
-                        idaout.Par1Str += p->Name;
+                        idaout.Par1Str += '.' + p->Name;
                     }
                 }
             }
@@ -810,8 +782,7 @@ void	CFuncLL::prtout_asm_1(VarLL* pvarll, XmlOutPro* out)
                     st_VarLL* p = pvarll->LookUp_VarLL(level- pvarll->m_VarRange_L);
                     if (p != NULL)
                     {
-                        idaout.Par2Str += '.';
-                        idaout.Par2Str += p->Name;
+                        idaout.Par2Str += '.' + p->Name;
                     }
                 }
             }
@@ -861,8 +832,8 @@ void CFuncLL::GetVarRange(signed int& VarRange_L, signed int& VarRange_H)
     signed int L = 0;
     signed int H = 0;
 
-    AsmCodeList::iterator iter = this->m_asmlist->begin();
-    for( ; iter!=this->m_asmlist->end(); ++iter)
+    AsmCodeList::iterator iter = m_asmlist->begin();
+    for( ; iter!=m_asmlist->end(); ++iter)
     {
         AsmCode* pasm = *iter;
         signed int last = pasm->esp_level;
@@ -900,10 +871,10 @@ std::string VarLL::size_to_ptr_name(int size)
 void VarLL::prtout(XmlOutPro* out)
 {
     int curlevel = 0;
-    int maxlevel = this->m_VarRange_H - this->m_VarRange_L;
+    int maxlevel = m_VarRange_H - m_VarRange_L;
 
-    VarLL_LIST::iterator iter = this->m_varll_list.begin();
-    VarLL_LIST::iterator iter_end = this->m_varll_list.end();
+    VarLL_LIST::iterator iter = m_varll_list.begin();
+    VarLL_LIST::iterator iter_end = m_varll_list.end();
     for(;iter!=iter_end; ++iter)
     {
         st_VarLL* p = *iter;
@@ -920,7 +891,7 @@ void VarLL::prtout(XmlOutPro* out)
         /*asm_prtl("%s equ %s %x", p->Name,
                  (p->size == 1) ? "BYTE ptr" :
                  (p->size == 2) ? "WORD ptr" :
-                 (p->size == 4) ? "uint32_t ptr" : "",
+                 (p->size == 4) ? "DWORD ptr" : "",
                  p->off); */
 
         out->prtspace(4);
@@ -954,8 +925,8 @@ void VarLL::prtout(XmlOutPro* out)
 }
 st_VarLL* VarLL::LookUp_VarLL(int off)
 {
-    VarLL_LIST::iterator pos = this->m_varll_list.begin();
-    while (pos!=this->m_varll_list.end())
+    VarLL_LIST::iterator pos = m_varll_list.begin();
+    while (pos!=m_varll_list.end())
     {
         st_VarLL* p = *pos;
         ++pos;
@@ -966,12 +937,12 @@ st_VarLL* VarLL::LookUp_VarLL(int off)
 }
 void VarLL::AddRef(signed int level, int opersize)
 {
-    if (level < this->m_VarRange_H && level >= this->m_VarRange_L)
+    if (level < m_VarRange_H && level >= m_VarRange_L)
     {
     }
     else
         return;
-    int off = level - this->m_VarRange_L; //这个是>=0的
+    int off = level - m_VarRange_L; //this is >=0 since we know that level > m_VarRange_L
     st_VarLL* pnew = this->LookUp_VarLL(off);
     if (pnew != NULL)
         return;
@@ -980,51 +951,52 @@ void VarLL::AddRef(signed int level, int opersize)
     pnew->size = opersize;
     sprintf(pnew->Name, "v_%x", off);
 
-    if (this->m_varll_list.empty())
+    if (m_varll_list.empty())
     {
-        this->m_varll_list.push_back(pnew);
+        m_varll_list.push_back(pnew);
     }
     else
-    {//有序列表
-        VarLL_LIST::iterator pos = this->m_varll_list.begin();
-        while (pos!=this->m_varll_list.end())
+    {//An ordered list
+        VarLL_LIST::iterator pos = m_varll_list.begin();
+        while (pos!=m_varll_list.end())
         {
             st_VarLL* p = *pos;
             if (p->off > off)
             {
-                this->m_varll_list.insert(pos, pnew);
+                m_varll_list.insert(pos, pnew);
                 return;
             }
             ++pos;
         }
-        this->m_varll_list.push_back(pnew);
+        m_varll_list.push_back(pnew);
     }
 
 }
+//Nem
+//This function most likely has to find/mark stack variable references in OPERITEM
+// [0x0+ESP] [0x0+0+1*ESP] and such
 void CFuncLL::VarLL_Analysis_1(VarLL* pvarll, OPERITEM* op, AsmCode* pasm)
 {
     if (op->mode != OP_Address)
         return;
-        if (op->addr.base_reg_index == _ESP_
-        || (op->addr.base_reg_index == _NOREG_
-                        && op->addr.off_reg_index == _ESP_
-                        && op->addr.off_reg_scale == 1))
+    if (op->addr.base_reg_index == _ESP_
+            || (op->addr.base_reg_index == _NOREG_ && op->addr.off_reg_index == _ESP_ && op->addr.off_reg_scale == 1))
     {
         signed int level = pasm->esp_level + op->addr.off_value;
         pvarll->AddRef(level, op->opersize);
     }
-        if (op->addr.base_reg_index == _EBP_)
+    if (op->addr.base_reg_index == _EBP_)
     {
-        //怎么写？
+        //How to write ?
     }
 }
 void CFuncLL::VarLL_Analysis(VarLL* pvarll)
 {
-    AsmCodeList::iterator pos = this->m_asmlist->begin();
-    while (pos!=this->m_asmlist->end())
+    AsmCode* pasm;
+    AsmCodeList::iterator pos = m_asmlist->begin();
+    while (pos!=m_asmlist->end())
     {
-        AsmCode* pasm = *pos;
-        ++pos;
+        pasm = *(pos++);
         if (pasm->xcpu.op[0].mode == OP_Address)
             this->VarLL_Analysis_1(pvarll, &pasm->xcpu.op[0], pasm);
         if (pasm->xcpu.op[1].mode == OP_Address)
@@ -1034,47 +1006,48 @@ void CFuncLL::VarLL_Analysis(VarLL* pvarll)
 
 AsmCode* ea2pasm(ea_t ea, AsmCodeList* m_asmlist)
 {
+    AsmCode* p;
     AsmCodeList::iterator pos = m_asmlist->begin();
     while (pos!=m_asmlist->end())
     {
-        AsmCode* p = *pos;
-        ++pos;
+        p = *(pos++);
         if (p->linear == ea)
             return p;
     }
-    assert(!"whye here");
+    assert(!"why here");
     return NULL;
 }
 
 void CJxxLabel::Label_Analysis()
 {
-    AsmCodeList::iterator pos = this->m_asmlist->begin();
-    while (pos!=this->m_asmlist->end())
+    ea_t jmpto;
+    AsmCode* plabel;
+    AsmCode* p;
+    AsmCodeList::iterator pos = m_asmlist->begin();
+    while (pos!=m_asmlist->end())
     {
-        AsmCode* p = *pos;
-        ++pos;
+        p = *(pos++);
         assert(p->h.type == i_Nothing);  //以前没对h分析过//Not previously analyzed for h
 
-        if (p->xcpu.IsJxx() || p->xcpu.IsJmpNear())
+        if(! (p->xcpu.IsJxx() || p->xcpu.IsJmpNear()))
+            continue;
+        jmpto   = p->xcpu.op[0].nearptr.offset;
+        plabel  = ea2pasm(jmpto, m_asmlist);
+
+        p->h.type = i_Jump;
+        if (p->xcpu.IsJmpNear())
+            p->h.jmp.jmp_type = JMP_jmp;
+        p->h.jmp.the_label = plabel;
+
+        if (plabel->h.label.ref_j == NULL)
         {
-            ea_t jmpto = p->xcpu.op[0].nearptr.offset;
-            AsmCode* plabel = ea2pasm(jmpto, m_asmlist);
-
-            p->h.type = i_Jump;
-            if (p->xcpu.IsJmpNear())
-                p->h.jmp.jmp_type = JMP_jmp;
-            p->h.jmp.the_label = plabel;
-
-            if (plabel->h.label.ref_j == NULL)
-            {
-                plabel->h.label.ref_j = p;
-                sprintf(plabel->h.label.label_name, "loc_%lx", plabel->linear);
-            }
-            else
-            {
-                p->h.jmp.next_ref_of_this_label = plabel->h.label.ref_j;
-                plabel->h.label.ref_j = p;
-            }
+            plabel->h.label.ref_j = p;
+            sprintf(plabel->h.label.label_name, "loc_%lx", plabel->linear);
+        }
+        else
+        {
+            p->h.jmp.next_ref_of_this_label = plabel->h.label.ref_j;
+            plabel->h.label.ref_j = p;
         }
     }
 }

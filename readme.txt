@@ -35,4 +35,5 @@ vaguely resembling English, anyone reading Chinese/writing English is
 very welcome to take a stab at translating original comments ( those can be
 found in original sources ).
 
+Precompiled win32 version of the project is available at http://www.nemerle.eu/exetoc_qt.zip
 

@@ -8,17 +8,17 @@
 
 class CFuncStep1
 {
-        AsmCodeList* m_asmlist;
+    AsmCodeList* m_asmlist;
 
-        ea_t	m_end_off;
+    ea_t	m_end_off;
 
-        typedef	std::list<ea_t>	EALIST;
-        struct CASE_t
-        {
-                ea_t	jxx_opcode;
-                EALIST*	caselist;
-        };
-        typedef std::list<CASE_t*> CaseList;
+    typedef	std::list<ea_t>	EALIST;
+    struct CASE_t
+    {
+        ea_t	jxx_opcode;
+        EALIST*	caselist;
+    };
+    typedef std::list<CASE_t*> CaseList;
 
     void CheckIfJustSwitchCase(CaseList& caselist, ea_t ea);
     static void    check_if_switch_case(ea_t cur_off, CaseList* pcaselist,EALIST* pjxxlist, XCPUCODE* pxcpu);
@@ -27,12 +27,12 @@ public:
     {
         this->m_asmlist = asmlist;
     }
-    bool	Step_1(ea_t head_off);	// 找到函数结束地址
-        ea_t Get_end_off()
-        {
-                return this->m_end_off;
-        }
-        void CreateNewFunc_if_CallNear();
+    bool	Step_1(ea_t head_off);	// The end of address to find the functions
+    ea_t Get_end_off()
+    {
+        return this->m_end_off;
+    }
+    void CreateNewFunc_if_CallNear();
 };
 
 class CFuncLL

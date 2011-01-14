@@ -72,6 +72,29 @@ bool	XCPUCODE::IsJmpNear()
 		return true;
 	return false;
 }
+bool XCPUCODE::IsCallNear()
+{
+	return (this->opcode == C_CALL) && (this->op[0].mode == OP_Near);
+}
+
+bool OPERITEM::isRegOp(uint32_t reg_idx)
+{
+	return (mode==OP_Register)&&(reg.reg_index==reg_idx);
+}
+bool OPERITEM::isStaticOffset() //! return true if this is OP_Address and it does not depend on other regs e.x. [0x11212]
+{
+	return (mode == OP_Address) && (addr.base_reg_index == _NOREG_) && (addr.off_reg_index == _NOREG_);
+}
+OPERITEM OPERITEM::createReg(int reg_idx,int width)
+{
+	OPERITEM result;
+	result.mode=OP_Register;
+	result.reg.reg_index=reg_idx;
+	result.opersize=width;
+	return result;
+}
+
+
 // To make a disassembly, pos auto-increment, the results remain xcpu
 BYTE	 CDisasm::Disasm_OneCode(ea_t &pos)
 {

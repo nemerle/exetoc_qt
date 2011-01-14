@@ -31,7 +31,7 @@ struct st_LINE_SYNTAX
     int colorindex; // displayed color
     void* handle;   // This is something, for something unknown, or nonsense, this is zero
 };
-//ESP_IGNORE 只用于esp_level_next，表明上下stack无关
+//ESP_IGNORE used only for esp_level_next, that has nothing to do with top to bottom stack
 
 struct AsmCode
 {
@@ -41,7 +41,7 @@ struct AsmCode
     signed int	esp_level_next;	//esp level next instr should be
     XCPUCODE	xcpu;
 
-    int iAddRemove; //0是原来的，1是删掉的，2是新加的
+    int iAddRemove; //0 is the original, 1 is deleted, 2 added new
 
     struct t_h
     {
@@ -60,7 +60,7 @@ struct AsmCode
             {
                 JxxType	jmp_type;	//JMP_???
                 AsmCode* the_label;
-                AsmCode* next_ref_of_this_label;	//这里组成个链，用来保存对一个label的所有ref
+                AsmCode* next_ref_of_this_label;	//Formed a chain here, a (label) used to save all the (ref)
             } jmp;					//for type = i_Jump only
         };
         struct
@@ -107,7 +107,7 @@ enum em_STEP
     STEP_6 = 7,
     STEP_7 = 8,
 
-    STEP_100 = 100,
+    STEP_100 = 100
 };
 
 struct st_VarLL

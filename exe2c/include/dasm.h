@@ -272,6 +272,9 @@ struct OPERITEM
                         uint32_t   offset;
                 }   farptr;		//for OP_Far
         };
+        bool isRegOp(uint32_t reg_idx); //! returns true if this is a Register operand with requested reg_index
+        bool isStaticOffset(); //! return true if this is OP_Address and it does not depend on other regs e.x. [0x11212]
+		static OPERITEM createReg(int reg_idx,int width); //! create an Register operand of given width
 };
 
 typedef struct XCPUCODE
@@ -280,9 +283,9 @@ typedef struct XCPUCODE
         BYTE        lockflag;	// for LOCK prefix
         BYTE        repeatflag;	// for REPZ/REPNZ prefix
         OPERITEM    op[3];
-
     bool	IsJxx();
     bool	IsJmpNear();
+    bool    IsCallNear();
 } *PXCPUCODE;
 
 
