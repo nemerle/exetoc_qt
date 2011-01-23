@@ -7,6 +7,8 @@
 #include <boost/bimap.hpp>
 #include <boost/bimap/unordered_set_of.hpp>
 
+typedef	uint32_t	H_NAMEID;
+
 struct st_NameID
 {
 	H_NAMEID id;

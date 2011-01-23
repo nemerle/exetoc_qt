@@ -1,5 +1,5 @@
 // Copyright(C) 1999-2005 LiuTaoTao，bookaa@rorsoft.com
-
+#include <QDebug>
 #include <boost/lambda/lambda.hpp>
 #include <boost/lambda/construct.hpp>
 #include <boost/lambda/bind.hpp>
@@ -186,14 +186,11 @@ bool	CFuncStep1::Step_1(ea_t head_off)
                 CDisasm the;
                 the.Disasm_OneCode(ea); //ea will be incremented
 
-                if (the.get_xcpu()->IsJxx() || the.get_xcpu()->IsJmpNear())
-                {
-                    Add_in_order(&jxxlist, the.get_xcpu()->op[0].nearptr.offset);
-                }
-                else
-                {
-                    check_if_switch_case(ea,&caselist,&jxxlist, the.get_xcpu());
-                }
+				if (the.get_xcpu()->IsJxx() || the.get_xcpu()->IsJmpNear())
+					Add_in_order(&jxxlist, the.get_xcpu()->op[0].nearptr.offset);
+				else
+					check_if_switch_case(ea,&caselist,&jxxlist, the.get_xcpu());
+
                 if (the.get_xcpu()->opcode == C_RET || the.get_xcpu()->opcode == C_JMP )
                     break;
                 if(visited_set.find(ea)!=visited_set.end())
@@ -302,7 +299,7 @@ bool	CFuncLL::stack_stack(AsmCode* p0, AsmCode* p1)
         if (esp0 != ESP_UNKNOWN && esp0_next != ESP_UNKNOWN && p0->xcpu.opcode == C_CALL && p0->xcpu.op[0].isStaticOffset())
         {
             ea_t address = p0->xcpu.op[0].addr.off_value;
-            Api *papi = g_ApiManage->get_api(address);	//find it
+            Api *papi = ApiManage::get()->get_api(address);	//find it
             if (papi)
             {
                 if (esp0_next != esp0 + papi->m_stack_purge)
@@ -311,7 +308,7 @@ bool	CFuncLL::stack_stack(AsmCode* p0, AsmCode* p1)
             else
             {	//not find, insert it
                 alert_prtf("error not find api %x", address);
-                g_ApiManage->new_api(address,esp0_next - esp0);
+                ApiManage::get()->new_api(address,esp0_next - esp0);
                 return true;
             }
         }
@@ -355,16 +352,12 @@ bool	CFuncLL::stack_stack(AsmCode* p0, AsmCode* p1)
         esp0_next = esp1;
         return true;
     }
-    if (esp0_next != ESP_UNKNOWN
-            && esp0_next != ESP_IGNORE
-            && esp1 == ESP_UNKNOWN)
+    if (esp0_next != ESP_UNKNOWN && esp0_next != ESP_IGNORE && esp1 == ESP_UNKNOWN)
     {
         esp1 = esp0_next;
         return true;
     }
-    if (esp0_next != ESP_UNKNOWN
-            && esp0_next != ESP_IGNORE
-            && esp1 != ESP_UNKNOWN)
+    if (esp0_next != ESP_UNKNOWN && esp0_next != ESP_IGNORE && esp1 != ESP_UNKNOWN)
     {	//do some check
         if (esp0_next != esp1)
             return false;
@@ -469,7 +462,7 @@ bool	CFuncLL::Asm_Code_Change_ESP(int &esp, XCPUCODE* pxcpu)
         if (pxcpu->op[0].isStaticOffset()) //call [405070]
         {
             ea_t address = pxcpu->op[0].addr.off_value;
-            Api* papi = g_ApiManage->get_api(address);//,stacksub))	//find it
+            Api* papi = ApiManage::get()->get_api(address);//,stacksub))	//find it
             if (papi)
             {
                 esp += papi->m_stack_purge;
@@ -479,7 +472,7 @@ bool	CFuncLL::Asm_Code_Change_ESP(int &esp, XCPUCODE* pxcpu)
         if (pxcpu->op[0].mode == OP_Register )   //call %reg
         {
             ea_t address = FindApiAddress_Reg(pxcpu->op[0].reg.reg_index, pxcpu, m_asmlist);
-            Api* papi = g_ApiManage->get_api(address);//,stacksub))	//find it
+            Api* papi = ApiManage::get()->get_api(address);//,stacksub))	//find it
             if (papi)
             {
                 esp += papi->m_stack_purge;
@@ -591,30 +584,28 @@ bool	CFuncLL::Fill_Stack_1()
 //	Checks if the function stack is balanced
 bool	CFuncLL::Check_Stack()
 {
-    AsmCode* p;
-    AsmCodeList::iterator pos = m_asmlist->begin();
-    signed int lastesp = 0;
-    while (pos!=m_asmlist->end())
-    {
-        p = *(pos++);
-        signed int esp = p->esp_level;
-        if (esp == ESP_UNKNOWN)
-            return false;
-        if (lastesp != ESP_UNKNOWN && lastesp != ESP_IGNORE && esp != lastesp)
-            return false;
+	signed int esp;
+	ea_t jmpto;
+	AsmCode* p;
+	AsmCodeList::iterator pos = m_asmlist->begin();
+	signed int lastesp = 0;
+	while (pos!=m_asmlist->end())
+	{
+		p = *(pos++);
+		esp = p->esp_level;
+		if (esp == ESP_UNKNOWN)
+			return false;
+		if (lastesp != ESP_UNKNOWN && lastesp != ESP_IGNORE && esp != lastesp)
+			return false;
 
         if (p->xcpu.IsJxx() || p->xcpu.IsJmpNear())
         {
-            ea_t jmpto = p->xcpu.op[0].nearptr.offset;
-            AsmCode* p = ea2pasm(jmpto);
-            if (esp != p->esp_level)
+            jmpto = p->xcpu.op[0].nearptr.offset;
+            if (esp != ea2pasm(jmpto)->esp_level)
                 return false;
         }
-        if (p->xcpu.opcode == C_RET)
-        {
-            if (esp != 0)
-                return false; // unbalanced stack at return.
-        }
+        if ((p->xcpu.opcode == C_RET)&&(esp != 0))
+            return false; // unbalanced stack at return.
         lastesp = p->esp_level_next;
     }
     return true;
@@ -627,16 +618,6 @@ bool	CFuncLL::Fill_Stack_Info()
 
     while(Fill_Stack_1())
         ;
-//    for (int i=0;;i++)
-//    {
-//        //This will loop
-//        if ((i % 1000) == 0)
-//            nop();
-//        if ( Fill_Stack_1() )
-//            continue;
-//        break;
-//    }
-
     if (! Check_Stack())
         return false;
 
@@ -750,9 +731,7 @@ void	CFuncLL::prtout_asm_1(VarLL* pvarll, XmlOutPro* out)
                 ea_t linear = pxcpu->op[0].nearptr.offset;
                 std::string labelname = this->GetLabelName(linear);
                 if (labelname.size()!=0)
-                {
                     idaout.Par1Str = labelname;
-                }
             }
             else if (pxcpu->op[0].mode == OP_Address)
             {
@@ -829,28 +808,30 @@ void CFuncLL::GetVarRange(signed int& VarRange_L, signed int& VarRange_H)
     0 401010 SUB    ESP,00000190
   190 401016 LEA    ECX,[ESP+v_00]
     */
-    signed int L = 0;
-    signed int H = 0;
-
+    signed int Low = 0;
+    signed int High = 0;
+    signed int last;
+    signed int here;
+    AsmCode* pasm;
     AsmCodeList::iterator iter = m_asmlist->begin();
     for( ; iter!=m_asmlist->end(); ++iter)
     {
-        AsmCode* pasm = *iter;
-        signed int last = pasm->esp_level;
-        signed int here = pasm->esp_level_next;
+        pasm = *iter;
+        last = pasm->esp_level;
+        here = pasm->esp_level_next;
         if (pasm->xcpu.opcode == C_SUB || pasm->xcpu.opcode == C_ADD)
         {
-            if (last - here > H - L)
+            if (last - here > High - Low)
             {
-                H = last;
-                L = here;
+                High = last;
+                Low = here;
             }
         }
     }
-    if (H - L > 0)
+    if (High > Low)
     {
-        VarRange_H = H;
-        VarRange_L = L;
+        VarRange_H = High;
+        VarRange_L = Low;
     }
 }
 
@@ -937,11 +918,9 @@ st_VarLL* VarLL::LookUp_VarLL(int off)
 }
 void VarLL::AddRef(signed int level, int opersize)
 {
-    if (level < m_VarRange_H && level >= m_VarRange_L)
-    {
-    }
-    else
-        return;
+	if (level < m_VarRange_L || level >= m_VarRange_H ) // not in var range
+		return;
+
     int off = level - m_VarRange_L; //this is >=0 since we know that level > m_VarRange_L
     st_VarLL* pnew = this->LookUp_VarLL(off);
     if (pnew != NULL)
@@ -956,7 +935,8 @@ void VarLL::AddRef(signed int level, int opersize)
         m_varll_list.push_back(pnew);
     }
     else
-    {//An ordered list
+    {
+        //An ordered list
         VarLL_LIST::iterator pos = m_varll_list.begin();
         while (pos!=m_varll_list.end())
         {
@@ -979,14 +959,14 @@ void CFuncLL::VarLL_Analysis_1(VarLL* pvarll, OPERITEM* op, AsmCode* pasm)
 {
     if (op->mode != OP_Address)
         return;
-    if (op->addr.base_reg_index == _ESP_
-            || (op->addr.base_reg_index == _NOREG_ && op->addr.off_reg_index == _ESP_ && op->addr.off_reg_scale == 1))
+    if (op->addr.base_reg_index == _ESP_ || (op->addr.base_reg_index == _NOREG_ && op->addr.off_reg_index == _ESP_ && op->addr.off_reg_scale == 1))
     {
         signed int level = pasm->esp_level + op->addr.off_value;
         pvarll->AddRef(level, op->opersize);
     }
     if (op->addr.base_reg_index == _EBP_)
     {
+        qDebug()<<"Unhandled _EBP_[] ref";
         //How to write ?
     }
 }

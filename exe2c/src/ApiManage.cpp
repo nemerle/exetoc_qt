@@ -6,21 +6,15 @@
 #include "CISC.h"
 #include "exe2c.h"
 
-ApiManage* g_ApiManage = NULL;
-
-class CApiManage_cpp
+ApiManage *ApiManage::s_self=0;
+ApiManage * ApiManage::get()
 {
-public:
-    CApiManage_cpp();
-    ~CApiManage_cpp(){}
-};
-
-CApiManage_cpp myself;
-
-CApiManage_cpp::CApiManage_cpp()
-{
-    g_ApiManage = new ApiManage;   //new_CApiManage
+    //WARN: Poor man's singleton, not thread safe
+    if(!s_self)
+        s_self = new ApiManage();
+    return s_self;
 }
+
 //	--------------------------------------------------
 
 
@@ -80,7 +74,7 @@ const char * check_if_jmp_api(PCBYTE phead)
 
     uint32_t d = *(uint32_t *)phead;
 
-    Api* papi = g_ApiManage->get_api((ea_t)d);
+    Api* papi = ApiManage::get()->get_api((ea_t)d);
     if (papi == NULL)
     {
         alert_prtf("error!!! %x", d);
@@ -90,5 +84,10 @@ const char * check_if_jmp_api(PCBYTE phead)
     char * name = papi->name;
     //alert_prtf("I find jmp api %s",name);
     return name;
+}
+
+Api::Api()
+{
+    m_stack_purge = INVALID_STACK;
 }
 

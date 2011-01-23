@@ -11,7 +11,8 @@ ESP_UNKNOWN=11,
 ESP_IGNORE=13
 };
 #define	Not_EBP_based	11
-#define	INVALID_STACK	11
+static const uint32_t INVALID_STACK=11;
+
 
 typedef	uint32_t	ea_t;
 

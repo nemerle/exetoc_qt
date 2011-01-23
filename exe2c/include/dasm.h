@@ -8,54 +8,64 @@
 #include <sstream>
 #define BIT16	0
 #define	BIT32	1
+enum enum_Register
+{
+    _EAX_ = 0,
+    _ECX_ = 1,
+    _EDX_ = 2,
+    _EBX_ = 3,
+    _ESP_ = 4,
+    _EBP_ = 5,
+    _ESI_ = 6,
+    _EDI_ = 7,
+    _AX_ = 0,
+    _CX_ = 1,
+    _DX_ = 2,
+    _BX_ = 3,
+    _SP_ = 4,
+    _BP_ = 5,
+    _SI_ = 6,
+    _DI_ = 7,
+    _AL_ = 0,
+    _CL_ = 1,
+    _DL_ = 2,
+    _BL_ = 3,
+    _AH_ = 4,
+    _CH_ = 5,
+    _DH_ = 6,
+    _BH_ = 7,
+    _NOREG_ = 100
+};
+enum enum_SegmentReg
+{
+    _ES_ = 0,
+    _CS_ = 1,
+    _SS_ = 2,
+    _DS_ = 3,
+    _FS_ = 4,
+    _GS_ = 5,
+    _NOSEG_ = 100
+};
 
-#define	_EAX_	0
-#define	_ECX_	1
-#define	_EDX_	2
-#define	_EBX_	3
-#define	_ESP_	4
-#define	_EBP_	5
-#define	_ESI_	6
-#define	_EDI_	7
-#define	_AX_	0
-#define	_CX_	1
-#define	_DX_	2
-#define	_BX_	3
-#define	_SP_	4
-#define	_BP_	5
-#define	_SI_	6
-#define	_DI_	7
-#define	_AL_	0
-#define	_CL_	1
-#define	_DL_	2
-#define	_BL_	3
-#define	_AH_	4
-#define	_CH_	5
-#define	_DH_	6
-#define	_BH_	7
-#define	_NOREG_	100
+enum enum_ErrorKind
+{
+    ERR_NOERROR = 0,
+    ERR_INVALIDCODE = 1,
+};
 
-#define	_ES_	0
-#define	_CS_	1
-#define	_SS_	2
-#define	_DS_	3
-#define	_FS_	4
-#define	_GS_	5
-#define	_NOSEG_	100
-
-#define	ERR_NOERROR			0
-#define	ERR_INVALIDCODE		1
-
-#define	NOPREFIX			0
-#define	REPZ_PREFIX			1
-#define	REPNZ_PREFIX		2
-
-
-#define	OPER_UNKNOWN	0
-#define OPER_READ		1
-#define	OPER_WRITE		2
-#define	OPER_ACCESS		3
-
+enum enum_InsnPrefix
+{
+    NOPREFIX = 0,
+    REPZ_PREFIX = 1,
+    REPNZ_PREFIX = 2
+};
+enum enum_OperAccess
+{
+    OPER_UNKNOWN = 0,
+    OPER_READ = 1,
+    OPER_WRITE = 2,
+    OPER_ACCESS = 3
+};
 enum OP_TYPE
 {
         OP_Invalid	=	0,
@@ -274,7 +284,7 @@ struct OPERITEM
         };
         bool isRegOp(uint32_t reg_idx); //! returns true if this is a Register operand with requested reg_index
         bool isStaticOffset(); //! return true if this is OP_Address and it does not depend on other regs e.x. [0x11212]
-		static OPERITEM createReg(int reg_idx,int width); //! create an Register operand of given width
+        static OPERITEM createReg(int reg_idx,int width); //! create an Register operand of given width
 };
 
 typedef struct XCPUCODE
@@ -368,6 +378,15 @@ struct st_IDA_OUT
     }
     void output(std::ostringstream &buf);
 };
+enum enum_SizeKind
+{
+    SIZE_B = 1,
+    SIZE_W = 2,
+    SIZE_V = 3,
+    SIZE_D = 4,
+    SIZE_P = 5,
+    SIZE_A = 6
+};
 
 class CDisasm
 {
@@ -397,7 +416,7 @@ class CDisasm
     uint32_t Global_FARPTR(char * outbuf,unsigned char * codebuf,OPERITEM *op);
     void	OpSizePrefix();
     void	AdrSizePrefix();
-    BYTE Global_GetSize(uint32_t srcsize);
+    BYTE Global_GetSize(enum_SizeKind srcsize);
     uint32_t	ProcessOpdata(uint32_t opdata,OPERITEM *op,char * outbuf,uint32_t codepos);
     void	SetError(uint32_t errcode);
     void	DisassemblerOne();

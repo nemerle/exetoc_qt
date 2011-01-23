@@ -21,7 +21,7 @@ FileLoader* g_FileLoader = NULL;
 FileLoader::FileLoader(void)
 {
     efile=0;
-    exetype=0;
+    exetype=UNKNOWN_EXE;
     fbuff=NULL;
 }
 
@@ -50,7 +50,7 @@ void FileLoader::get_exetype()
     uint32_t num;
     uint32_t pe_offset=0;
 
-    exetype = 0;
+    exetype = UNKNOWN_EXE;
     num=fread(mzhead,1,2,efile);
     if (num != 2)
         return;
@@ -65,11 +65,16 @@ void FileLoader::get_exetype()
         }
         if ( fread(exthead,1,2,efile)==2 )
         {
-            if ( ((short int *)exthead)[0]==0x4550 )exetype=PE_EXE;
-            else if ( ((short int *)exthead)[0]==0x454e )exetype=NE_EXE;
-            else if ( ((short int *)exthead)[0]==0x454c )exetype=LE_EXE;
-            else if ( ((short int *)exthead)[0]==0x584c )exetype=OS2_EXE;
-            else exetype=MZ_EXE;
+            if ( ((short int *)exthead)[0]==0x4550 )
+                exetype=PE_EXE;
+            else if ( ((short int *)exthead)[0]==0x454e )
+                exetype=NE_EXE;
+            else if ( ((short int *)exthead)[0]==0x454c )
+                exetype=LE_EXE;
+            else if ( ((short int *)exthead)[0]==0x584c )
+                exetype=OS2_EXE;
+            else
+                exetype=MZ_EXE;
         }
     }
 }
@@ -120,7 +125,7 @@ bool FileLoader::load(const char * fname)
         reados2file();
         fclose(efile);
         efile=0;
-        exetype=0;
+        exetype=UNKNOWN_EXE;
         return FALSE; // at the moment;
     case COM_EXE:
         readcomfile(fsize);
@@ -132,7 +137,7 @@ bool FileLoader::load(const char * fname)
         readlefile();
         fclose(efile);
         efile=0;
-        exetype=0;
+        exetype=UNKNOWN_EXE;
         return FALSE; // at the moment;
     case NE_EXE:
         readnefile(pe_offset);
@@ -140,7 +145,7 @@ bool FileLoader::load(const char * fname)
     default:
         fclose(efile);
         efile=0;
-        exetype=0;
+        exetype=UNKNOWN_EXE;
         return FALSE;
     }
     return TRUE;

@@ -153,7 +153,7 @@ int	RelocImportTable(PEHEADER* peh)
                         log_prtl("impapi is %s , %x",apiname,apiaddr);	// + 2byte
 
                         *p2 = apiaddr;	//fill imp table with api address
-                        g_ApiManage->New_ImportAPI(apiname, ptr2ea((BYTE *)p2));
+                        ApiManage::get()->New_ImportAPI(apiname, ptr2ea((BYTE *)p2));
                         p2++;
                 }
         }

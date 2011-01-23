@@ -11,19 +11,23 @@ enum enum_EXEType
 {
         enum_PE_exe		= 1,
         enum_PE_dll		= 2,
-        enum_PE_sys		= 3,
+        enum_PE_sys		= 3
 };
 
 extern enum_EXEType g_EXEType;
 
-#define PE_EXE 1
-#define MZ_EXE 2
-#define OS2_EXE 3
-#define COM_EXE 5
-#define NE_EXE 6
-#define SYS_EXE 7
-#define LE_EXE 8
-#define BIN_EXE 9
+enum enum_EXEFormat
+{
+    UNKNOWN_EXE=0,
+    PE_EXE=1,
+    MZ_EXE=2,
+    OS2_EXE=3,
+    COM_EXE=5,
+    NE_EXE=6,
+    SYS_EXE=7,
+    LE_EXE=8,
+    BIN_EXE=9
+};
 
 struct MZHEADER
 {
@@ -177,7 +181,7 @@ struct perelocheader
 class FileLoader
 {
 private:
-        int exetype;
+        enum_EXEFormat exetype;
         FILE *efile;
         BYTE *fbuff;
         BYTE *rawdata;
@@ -231,9 +235,9 @@ public:
         uint32_t offs;				 //offset
 
 public:
-        lptr(){};
+        lptr(){}
         lptr(WORD seg,uint32_t off);
-        ~lptr(){};
+        ~lptr(){}
         void assign(WORD seg,uint32_t off);
         bool operator==(lptr loc2);
         bool operator<=(lptr loc2);
@@ -253,6 +257,6 @@ extern const lptr nlptr;
 
 bool	if_valid_ea(ea_t ea);
 
-#define GNAME_MAXLEN 40
+//#define GNAME_MAXLEN 40
 
 #endif	//	FileLoad_H

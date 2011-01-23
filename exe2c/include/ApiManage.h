@@ -6,9 +6,7 @@
 #pragma once
 #include <list>
 #include "DataType.h"
-#define	INVALID_STACK	11
 
-typedef	uint32_t	H_NAMEID;
 class Api
 {
 public:
@@ -18,11 +16,7 @@ public:
 
 	FuncType* m_functype;
 
-    Api()
-    {
-        m_stack_purge = INVALID_STACK;
-    }
-
+    Api();
     ~Api(){}
 };
 
@@ -30,19 +24,19 @@ typedef	std::list<Api*> API_LIST;
 
 class ApiManage
 {
+	static ApiManage *s_self;
+protected:
+	ApiManage(){ this->apilist = new API_LIST;}    //new_API_LIST
+	~ApiManage(){ delete this->apilist; }
 public:
 	API_LIST*	apilist;
 
-	ApiManage(){ this->apilist = new API_LIST;}    //new_API_LIST
-	~ApiManage(){ delete this->apilist; }
 
 	bool	new_api(ea_t address,int stacksub);
 	Api*	get_api(ea_t address);
 
 	void New_ImportAPI(const std::string & pstr, uint32_t apiaddr);
+	static ApiManage *get();
 };
-
-extern	ApiManage* g_ApiManage;
-
 
 #endif // __ApiManage__H

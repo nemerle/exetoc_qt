@@ -32,14 +32,6 @@ typedef union SIB
     };
 } *PSIB;
 
-#define	SIZE_B		1
-#define	SIZE_W		2
-#define	SIZE_V		3
-#define	SIZE_D		4
-#define	SIZE_P		5
-#define	SIZE_A		6
-
-
 const char * SegReg[8]={
 "ES","CS","SS","DS","FS","GS","??","??"
 };
@@ -929,7 +921,7 @@ void	CDisasm::SetError(uint32_t errcode)
 // Global Function
 // Set all of the field(s) of OPERITEM except **RWFLAG** and **SEG_INDEX**
 
-BYTE CDisasm::Global_GetSize(uint32_t srcsize)
+BYTE CDisasm::Global_GetSize(enum_SizeKind srcsize)
 {
         switch(srcsize)
         {

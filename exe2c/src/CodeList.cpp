@@ -12,9 +12,9 @@ void CodeList::CreateInstrList_raw(AsmCodeList* asmlist, int EBP_base)
 
     Instruction * p_begin = new Instruction(i_Begin);     //new_INSTR
     Instruction * p_end = new Instruction(i_End);		//new_INSTR	总是同时new //new_INSTR	 is always the same time, new
-    p_begin->begin.m_end = p_end;			//	指向它 //Point to it
+    p_begin->begin.m_end = p_end;			//	point at it
 
-    InstrAddTail(p_begin);	// 在前面加一条i_Begin //In front plus a i_Begin
+    InstrAddTail(p_begin);	// preceded by i_Begin
 
     signed int esp_level = 3;
     AsmCodeList::iterator pos = this->m_asmlist->begin();
@@ -282,7 +282,7 @@ void	CodeList_Maker::AddTail_Cur_Opcode()
                 pxcpu->op[0].addr.off_reg_index == _NOREG_)
             {
                 ea_t address = pxcpu->op[0].addr.off_value;
-                Api* papi = g_ApiManage->get_api(address);	//find it
+                Api* papi = ApiManage::get()->get_api(address);	//find it
                 if (papi)
                 {
                     Instruction *	p = new Instruction(i_CallApi);  //new_INSTR
@@ -301,7 +301,7 @@ void	CodeList_Maker::AddTail_Cur_Opcode()
         else if (pxcpu->op[0].mode == OP_Register)
         {
             ea_t address = FindApiAddress_Reg(pxcpu->op[0].reg.reg_index, pxcpu, this->Q->m_asmlist);
-            Api* papi = g_ApiManage->get_api(address);	//find it
+            Api* papi = ApiManage::get()->get_api(address);	//find it
             if (papi)
             {
                 Instruction *	p = new Instruction(i_CallApi);  //new_INSTR
