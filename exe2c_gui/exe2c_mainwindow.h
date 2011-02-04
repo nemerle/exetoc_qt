@@ -27,6 +27,9 @@ signals:
     void functionListChanged();
 protected:
     void changeEvent(QEvent *e);
+private slots:
+    void on_actionExit_triggered();
+
 private:
     FunctionViewWidget *m_asm_view;
 //  FunctionViewWidget *m_internal_view;

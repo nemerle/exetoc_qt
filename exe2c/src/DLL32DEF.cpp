@@ -64,7 +64,7 @@ std::string DLLDEF_Get_ApiName_from_ord(char * pDLLname, WORD ord)
     if (strcmp(pDLLname,"MFC42.DLL") == 0)
     {
         if (ord == 0x628)
-            nop();
+            ; //TODO: nop();
         //return "AfxWinMain";
         //return NULL;
     }
@@ -167,7 +167,7 @@ void Def_BuildList(ORD_LIST & list, char * pbuf, SIZEOF len)
         ord_st pnew;
         pnew.ord = (WORD)d;
         if (d == 0x9d0)
-            nop();
+            ; //TODO: nop();
         pnew.name = name;
         int llen = pnew.name.size();
         assert(llen<130);

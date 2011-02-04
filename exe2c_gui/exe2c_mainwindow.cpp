@@ -97,3 +97,8 @@ void Exe2C_MainWindow::prt_log(const char *v)
 {
     qDebug()<<v;
 }
+
+void Exe2C_MainWindow::on_actionExit_triggered()
+{
+    qApp->exit(0);
+}

@@ -880,7 +880,9 @@ void	CFunc_Prt::prt_instr(const Instruction * p, POSITION &nextpos, XmlOutPro* o
 
     g_PrtOut.SetHline(p);
     if (p->var_w.type == v_Tem)
-        nop();
+    {
+        //nop();
+    }
     switch (p->type)
     {
     case i_CplxBegin:

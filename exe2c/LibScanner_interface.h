@@ -14,17 +14,11 @@ typedef unsigned char BYTE;
 typedef signed char CHAR;
 //#include "..\I_KSUNKNOWN\KsFrame.h"
 
-#define	IID_LIBSCANNER				0x00003a91
-#define	LIBSCANNER_INITORDER		0x80000000
-#define	LIBSCANNER_PARENT_IID		NULL
-#define	LIBSCANNER_PRIORITY			0x80000000
-#pragma warning(disable:4200)
-
 typedef struct REFSYMBOL
 {
-        char    RefSymbol[4096];	//引用符号
+        char    RefSymbol[4096];	//Referenced symbol
         WORD	RefType;    //such as IMAGE_REL_I386_REL32
-        unsigned long	RefOffset;				//引用在函数中的偏移
+        unsigned long	RefOffset;				//Offset in the referenced function
 } *PREFSYMBOL;
 
 typedef struct tagFUNCTION_SYMBOL
@@ -33,8 +27,8 @@ typedef struct tagFUNCTION_SYMBOL
         BYTE*		FunRawData;
         char		ObjName[4096];
         char		FunctionName[4096]; // was MAX_PATH
-        unsigned long		RefCount;			//引用的符号次数
-        REFSYMBOL	RefInfo[];			//引用信息
+        unsigned long		RefCount;			//Number of referenced symbols
+        REFSYMBOL	RefInfo[];			//Reference Information
 }FUNCTION_SYMBOL,* PFUNCTION_SYMBOL;
 #pragma pack(2)
 typedef struct _IMAGE_RELOCATION {
@@ -47,17 +41,12 @@ typedef struct _IMAGE_RELOCATION {
 } IMAGE_RELOCATION;
 #pragma pack()
 typedef IMAGE_RELOCATION *PIMAGE_RELOCATION;
-#pragma warning(default:4200)
 
 typedef const BYTE* PCBYTE;
 
 class I_LIBSCANNER //: public I_KSUNKNOWN
 {
 public:
-        //Add interface here
-        virtual bool	test() = 0;	//Test interface
-        //Add interface here
-
         virtual bool ScanLib(const char * szLib)=0;
         //virtual PFUNCTION_SYMBOL GetFunctionInfo(const char * szFun)=0;
     virtual std::string CheckIfLibFunc(PCBYTE phead) = 0;
@@ -67,6 +56,6 @@ public:
 
 #endif	// _LIBSCANNER_H_
 
-/*	这里放接口函数的详细解释
-
+/*
+ Put detailed explanation of interface functions here.
 */

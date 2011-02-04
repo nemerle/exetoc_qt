@@ -14,8 +14,6 @@ set(exe2c_SOURCES
     src/FuncPrt.cpp
     src/FuncStep1.cpp
     src/FuncType.cpp
-    src/MyString.cpp
-    src/NameID.cpp
     src/ComplexInstr.cpp
     src/Strategy.cpp
     src/XmlList.cpp
@@ -31,37 +29,34 @@ set(exe2c_SOURCES
     src/optim.cpp
     src/PEload.cpp
     src/PUB.cpp
-    src/standard.cpp
     src/strparse.cpp
     src/SVarType.cpp
     src/XmlType.cpp
     src/LibScanner.cpp
 )
 set(exe2c_HEADERS
+    include/00000.h
     include/ApiManage.h
     include/Cbuf.h
+    include/CISC.h
     include/ClassManage.h
     include/CodeList.h
-    include/EnumMng.h
-    include/exe2c.h
-    include/CISC.h
-    include/ExprManage.h
-    include/Func.h
-    include/LibScanner.h
-    include/MyString.h
-    include/Strategy.h
-    include/NameID.h
     include/ComplexInstr.h
-    include/XmlPrt.h
-    include/DataType.h
     include/dasm.h
+    include/DataType.h
+    include/EnumMng.h
     include/enum.h
+    include/exe2c.h
     include/EXPR.h
+    include/ExprManage.h
     include/FileLoad.h
+    include/Func.h
+    include/hpp.h
     include/INSTR.h
-    include/ParseHead.h
+    include/LibScanner.h
+    include/Strategy.h
+    include/XmlPrt.h
     include/proto.h
-    include/standard.h
     include/strparse.h
     include/types.h
     exe2c_interface.h
