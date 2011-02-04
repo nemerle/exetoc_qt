@@ -18,7 +18,7 @@ void CodeList::CreateInstrList_raw(AsmCodeList* asmlist, int EBP_base)
 
     signed int esp_level = 3;
     AsmCodeList::iterator pos = this->m_asmlist->begin();
-    for (;pos!=this->m_asmlist->end();++pos)
+    for (;pos!=m_asmlist->end();++pos)
     {
         AsmCode* cur = *pos;
         assert(cur);
@@ -69,14 +69,14 @@ void	set_address(const OPERITEM* op,Instruction * p)
     {
         p->var_r1.type = v_Reg;
         p->var_r1.opsize = BIT32_is_4;
-        p->var_r1.reg = regindex_2_regoff(op->addr.base_reg_index);
+        p->var_r1.reg = regindex_2_regoff(op->addr.base_reg_index,0);
     }
 
     if (op->addr.off_reg_index != _NOREG_)
     {
         p->var_r2.type = v_Reg;
         p->var_r2.opsize = BIT32_is_4;
-        p->var_r2.reg = regindex_2_regoff(op->addr.off_reg_index);
+        p->var_r2.reg = regindex_2_regoff(op->addr.off_reg_index,0);
     }
 
     p->i1 = op->addr.off_reg_scale;
@@ -100,9 +100,9 @@ void	CodeList_Maker::AddTail_Cur_Opcode()
             OPERITEM* op0 = &pxcpu->op[0];
             OPERITEM* op1 = &pxcpu->op[1];
 //            OPERITEM* op2 = &this->cur->xcpu.op[2];
+            *((llvm::MCOperand *)op1) = llvm::MCOperand::CreateImm(1);
             op1->mode = OP_Immed;
             op1->opersize = op0->opersize;
-            op1->immed.immed_value = 1;
         }
 
         Code_general(enum_AR, i_Add);    // Added 2005.2.1
@@ -112,19 +112,20 @@ void	CodeList_Maker::AddTail_Cur_Opcode()
             OPERITEM* op0 = &pxcpu->op[0];
             OPERITEM* op1 = &pxcpu->op[1];
 //            OPERITEM* op2 = &this->cur->xcpu.op[2];
+            *((llvm::MCOperand *)op1) = llvm::MCOperand::CreateImm(1);
             op1->mode = OP_Immed;
             op1->opersize = op0->opersize;
-            op1->immed.immed_value = 1;
         }
 
-        Code_general(enum_AR, i_Sub);    //2005.2.1加
+        Code_general(enum_AR, i_Sub);    //Added 2005.2.1
         {
+        assert(false);
             OPERITEM* op0 = &pxcpu->op[0];
             OPERITEM* op1 = &pxcpu->op[1];
 //            OPERITEM* op2 = &this->cur->xcpu.op[2];
+            *((llvm::MCOperand *)op1) = llvm::MCOperand::CreateImm(0);
             op1->mode = OP_Immed;
             op1->opersize = op0->opersize;
-            op1->immed.immed_value = 0;
             Code_general(enum_RR, i_Cmp);
         }
         break;
@@ -168,9 +169,10 @@ void	CodeList_Maker::AddTail_Cur_Opcode()
             OPERITEM* op0 = &pxcpu->op[0];
             OPERITEM* op1 = &pxcpu->op[1];
 //            OPERITEM* op2 = &this->cur->xcpu.op[2];
+            *((llvm::MCOperand *)op1) = llvm::MCOperand::CreateImm(0);
             op1->mode = OP_Immed;
             op1->opersize = op0->opersize;
-            op1->immed.immed_value = 0;
+
             Code_general(enum_RR, i_Cmp);
         }
         break;
@@ -299,7 +301,7 @@ void	CodeList_Maker::AddTail_Cur_Opcode()
         }
         else if (pxcpu->op[0].mode == OP_Register)
         {
-            ea_t address = FindApiAddress_Reg(pxcpu->op[0].reg.reg_index, pxcpu, this->Q->m_asmlist);
+            ea_t address = FindApiAddress_Reg(pxcpu->op[0].getReg(), pxcpu, this->Q->m_asmlist);
             Api* papi = ApiManage::get()->get_api(address);	//find it
             if (papi)
             {
@@ -480,17 +482,19 @@ void    CodeList_Maker::TransVar_op_addr(VAR &pvar,OPERITEM *op)
 void	CodeList_Maker::TransVar_(VAR &pvar,int no)
 {
     OPERITEM* op = &this->cur->xcpu.op[no];
+    if(op->mode==OP_Register)
+        assert(op->isReg());
     switch (op->mode)
     {
     case OP_Register:
         pvar.type = v_Reg;
         pvar.opsize = op->opersize;
-        pvar.reg = regindex_2_regoff(op->reg.reg_index);
+        pvar.reg = regindex_2_regoff(op->getReg(),op->opersize);
         return;
     case OP_Immed:
         pvar.type = v_Immed;
         pvar.opsize = op->opersize;
-        pvar.d = op->immed.immed_value;
+        pvar.d = op->getImm();
         return;
     case OP_Address:
         TransVar_op_addr(pvar,op);

@@ -68,7 +68,7 @@ bool	IfValideFuncName(const char * pname);
 
 const char *	hlcode_name(HLType t);
 //---------------------------------------------
-uint32_t	regindex_2_regoff(uint32_t regindex);
+uint32_t	regindex_2_regoff(uint32_t regindex,int group);
 
 //---------------------------------------------
 //	CFunc_CreateInstrList.cpp

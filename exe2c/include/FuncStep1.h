@@ -22,7 +22,7 @@ class CFuncStep1
     typedef std::list<CASE_t*> CaseList;
 
     void CheckIfJustSwitchCase(CaseList& caselist, ea_t ea);
-    static void    check_if_switch_case(ea_t cur_off, CaseList* pcaselist,EALIST* pjxxlist, XCPUCODE* pxcpu);
+    static void    check_if_switch_case(ea_t cur_off, CaseList* pcaselist,std::set<ea_t> &orderd_ea_set,EALIST* pjxxlist, XCPUCODE* pxcpu);
 public:
     CFuncStep1(AsmCodeList* asmlist)
     {

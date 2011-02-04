@@ -24,5 +24,5 @@ QT4_WRAP_CPP(gui_MOC_SRC ${gui_MOC_HEADERS})
 
 qt4_automoc(${gui_SOURCES})
 ADD_EXECUTABLE(exetoc ${gui_SOURCES} ${gui_MOC_SRC} ${gui_UI_H})
-TARGET_LINK_LIBRARIES(exetoc exe2c_lib ${QT_LIBRARIES} ${Boost_LIBRARIES})
+TARGET_LINK_LIBRARIES(exetoc exe2c_lib ${QT_LIBRARIES} ${Boost_LIBRARIES} ${REQ_LLVM_LIBRARIES})
 ADD_DEPENDENCIES(exetoc exe2c_lib)

@@ -73,7 +73,15 @@ XCPUCODE* Disasm::get_xcpu()
 
 
 //**************************************
+struct INSTRUCTION
+{
 
+    OPCODETYPE	Opcode;
+    const char *	InstName;
+    OPDATATYPE	Opdata1;
+    OPDATATYPE	Opdata2;
+    OPDATATYPE	Opdata3;
+};
 
 static const INSTRUCTION grouptable1[8] =
 {
@@ -1114,19 +1122,17 @@ uint32_t Disasm::Global_MODRM(char * outbuf,BYTE * codebuf,OPERITEM *op)
         if (modrm.mod==3)
         {
                 op->mode = OP_Register;
-                if (op->opersize == 1)
+                const char ** register_name_table;
+                switch(op->opersize)
                 {
-                        strcpy(outbuf,RegByte[modrm.rm]);
+                case 1: register_name_table=RegByte; break;
+                case 2: register_name_table=RegWord; break;
+                case 4:
+                default:
+                    register_name_table=RegDWord; break;
                 }
-                else if (op->opersize == 2)
-                {
-                        strcpy(outbuf,RegWord[modrm.rm]);
-                }
-                else
-                {
-                        strcpy(outbuf,RegDWord[modrm.rm]);
-                }
-                op->reg.reg_index=modrm.rm;
+                strcpy(outbuf,register_name_table[modrm.rm]);
+                *((llvm::MCOperand *)op) = llvm::MCOperand::CreateReg(modrm.rm);
                 return 1;
         }
         return Global_MEMORY(outbuf,codebuf,op);
@@ -1175,7 +1181,7 @@ uint32_t Global_REG(char * outbuf,BYTE * codebuf,OPERITEM *op)
         {
                 strcpy(outbuf,RegDWord[modrm.reg]);
         }
-        op->reg.reg_index=modrm.reg;
+        *((llvm::MCOperand *)op) = llvm::MCOperand::CreateReg(modrm.reg);
 
         return 0;
 }
@@ -1198,33 +1204,33 @@ uint32_t Global_IMMED(char * outbuf,BYTE * codebuf,OPERITEM *op)
 
         if (op->opersize == 1)
         {
-                op->immed.immed_value=(uint32_t)(int)(signed char)PeekB(codebuf);
-                sprintf(outbuf,"%02X",(BYTE)op->immed.immed_value);
+        *((llvm::MCOperand *)op) = llvm::MCOperand::CreateImm((uint64_t)(int)(signed char)PeekB(codebuf));
+        sprintf(outbuf,"%02X",(BYTE)op->getImm());
         }
         else if (op->opersize == 2)
         {
-                op->immed.immed_value=PeekW(codebuf);
-                sprintf(outbuf,"%04lX",op->immed.immed_value);
+        *((llvm::MCOperand *)op) = llvm::MCOperand::CreateImm(PeekW(codebuf));
+        sprintf(outbuf,"%04lX",op->getImm());
         }
         else
         {
-                op->immed.immed_value=PeekD(codebuf);
-                sprintf(outbuf,"%08lX",op->immed.immed_value);
+        *((llvm::MCOperand *)op) = llvm::MCOperand::CreateImm(PeekD(codebuf));
+        sprintf(outbuf,"%08lX",op->getImm());
         }
 
         return op->opersize;
 }
 
-uint32_t Global_SIGNEDIMMED(char * outbuf,BYTE * codebuf,OPERITEM *op)
+uint32_t Global_SIGNEDIMMED(char * outbuf,BYTE * codebuf,OPERITEM &op)
 {
-        op->mode = OP_Immed;
+        op.mode = OP_Immed;
 
         signed char by = (signed char)PeekB(codebuf);
         if (by < 0)
                 sprintf(outbuf,"-%02X",-by);
         else
                 sprintf(outbuf,"+%02X",by);
-        op->immed.immed_value=(uint32_t)(int)by;
+        ((llvm::MCOperand &)op) = llvm::MCOperand::CreateImm((uint64_t)(int)by);
 
         return 1;
 }
@@ -1322,7 +1328,7 @@ uint32_t	Disasm::ProcessOpdata(uint32_t opdata,OPERITEM *op,char * outbuf,uint32
 
         case D_SB:
                 op->opersize = Global_GetSize(SIZE_B);
-                return Global_SIGNEDIMMED(outbuf,UasmCode+codepos,op);
+                return Global_SIGNEDIMMED(outbuf,UasmCode+codepos,*op);
 
         case D_SW:
                 op->opersize = Global_GetSize(SIZE_W);
@@ -1370,51 +1376,33 @@ uint32_t	Disasm::ProcessOpdata(uint32_t opdata,OPERITEM *op,char * outbuf,uint32
                 break;
 
         case D_1:
+               *((llvm::MCOperand *)op) = llvm::MCOperand::CreateImm(1);
                 op->mode			= OP_Immed;
                 op->opersize		= 1;
-                op->immed.immed_value= 1;
                 strcpy(outbuf,"1");
                 break;
 
-        case D_AL:
-        case D_CL:
-        case D_DL:
-        case D_BL:
-        case D_AH:
-        case D_CH:
-        case D_DH:
-        case D_BH:
+        case D_AL: case D_CL: case D_DL: case D_BL:
+        case D_AH: case D_CH: case D_DH: case D_BH:
                 op->mode			= OP_Register;
                 op->opersize		= Global_GetSize(SIZE_B);
-                op->reg.reg_index	= opdata-D_AL;
+                *((llvm::MCOperand *)op) = llvm::MCOperand::CreateReg(opdata-D_AL);
                 strcpy(outbuf,RegByte[opdata-D_AL]);
                 break;
 
-        case D_AX:
-        case D_CX:
-        case D_DX:
-        case D_BX:
-        case D_SP:
-        case D_BP:
-        case D_SI:
-        case D_DI:
+        case D_AX: case D_CX: case D_DX: case D_BX:
+        case D_SP: case D_BP: case D_SI: case D_DI:
                 op->mode			= OP_Register;
                 op->opersize		= Global_GetSize(SIZE_W);
-                op->reg.reg_index	= opdata-D_AX;
+                *((llvm::MCOperand *)op) = llvm::MCOperand::CreateReg(opdata-D_AX);
                 strcpy(outbuf,RegWord[opdata-D_AX]);
                 break;
 
-        case D_AXV:
-        case D_CXV:
-        case D_DXV:
-        case D_BXV:
-        case D_SPV:
-        case D_BPV:
-        case D_SIV:
-        case D_DIV:
+        case D_AXV: case D_CXV: case D_DXV: case D_BXV:
+        case D_SPV: case D_BPV: case D_SIV: case D_DIV:
                 op->mode			= OP_Register;
                 op->opersize 		= Global_GetSize(SIZE_V);
-                op->reg.reg_index	= opdata-D_AXV;
+                *((llvm::MCOperand *)op) = llvm::MCOperand::CreateReg(opdata-D_AXV);
 
                 if (op->opersize == 2)
                         strcpy(outbuf,RegWord[opdata-D_AXV]);

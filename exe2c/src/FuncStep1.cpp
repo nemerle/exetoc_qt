@@ -30,18 +30,8 @@ static void	Add_in_order(EALIST *list, ea_t i)
     list->push_back(i);
 }
 //static function
-void    CFuncStep1::check_if_switch_case(ea_t cur_off, CaseList* pcaselist,EALIST* pjxxlist, XCPUCODE* pxcpu)
+void    CFuncStep1::check_if_switch_case(ea_t cur_off, CaseList* pcaselist,std::set<ea_t> &orderd_ea_set,EALIST* pjxxlist, XCPUCODE* pxcpu)
 {
-        if (pxcpu->opcode != C_JMP)
-                return;
-        if (pxcpu->op[0].mode != OP_Address)
-                return;
-        if (pxcpu->op[0].addr.base_reg_index != _NOREG_)
-                return;
-        if (pxcpu->op[0].addr.off_reg_index == _NOREG_)
-                return;
-        if (pxcpu->op[0].addr.off_reg_scale != 4)
-                return;
         if (pxcpu->op[0].addr.off_value <= 0x401000)
                 return;
         //alert("switch case find 1");
@@ -72,6 +62,11 @@ void    CFuncStep1::check_if_switch_case(ea_t cur_off, CaseList* pcaselist,EALIS
                 break;
             }
         }
+        std::set<ea_t>::iterator iter=orderd_ea_set.upper_bound(cur_off);
+        ea_t break_check=0;
+        if(iter!=orderd_ea_set.end())
+            break_check = *iter;
+        assert(break_check==break_off);
         if (break_off == 0)
                 return;		//	Jump condition not found? something wrong
 
@@ -97,12 +92,13 @@ void    CFuncStep1::check_if_switch_case(ea_t cur_off, CaseList* pcaselist,EALIS
 //		if (! IfInWorkSpace(d))
                 if (d < cur_off || d > break_off)
                         break;
+            orderd_ea_set.insert(d);
                 Add_in_order(pjxxlist,d);
                 pnew->caselist->push_back(d);
         }
 }
 
-static bool	any_free_ea(EALIST *jxxlist, std::set<ea_t> &visited_set, ea_t* pea)
+static bool	next_unvisited_location(EALIST *jxxlist,std::set<ea_t> &jxxlist_ea_set, std::set<ea_t> &visited_set, ea_t* pea)
 {
     EALIST::iterator pos = jxxlist->begin();
     // find jxxlist entry that is not in usedlist already
@@ -125,8 +121,10 @@ void CFuncStep1::CheckIfJustSwitchCase(CaseList& caselist, ea_t ea)
     while (pos1!=caselist.end())
     {
         p1 = *(pos1++);//caselist.;
-        if (p1->jxx_opcode == ea)	//	really
-        {	//	now, add some jcase instruction
+        if (p1->jxx_opcode != ea)
+            continue;
+        //	really
+        //	now, add some jcase instruction
             EALIST::iterator pos2 = p1->caselist->begin();
             while (pos2!=p1->caselist->end())
             {
@@ -145,7 +143,6 @@ void CFuncStep1::CheckIfJustSwitchCase(CaseList& caselist, ea_t ea)
             break;	//	only one can be true
         }
     }
-}
 
 void CFuncStep1::CreateNewFunc_if_CallNear()
 {
@@ -170,14 +167,16 @@ bool	CFuncStep1::Step_1(ea_t head_off)
         CaseList caselist;
         EALIST jxxlist;
         std::set<ea_t> visited_set;
+        std::set<ea_t> unvisited_set;
+        std::set<ea_t> jump_targets;
 
         ea_t ea = head_off;
         assert(ea < 0x10000000);
         assert(ea >= 0x400000);
 
         jxxlist.push_front(ea);
-
-        while (any_free_ea(&jxxlist,visited_set,&ea))
+        unvisited_set.insert(ea);
+        while (next_unvisited_location(&jxxlist,unvisited_set,visited_set,&ea))
         {	//	Travell(/ed?) all the jxx
             for (;;)
             {
@@ -190,10 +189,13 @@ bool	CFuncStep1::Step_1(ea_t head_off)
 				if (the.get_xcpu()->IsJxx() || the.get_xcpu()->IsJmpNear())
                 {
 					Add_in_order(&jxxlist, the.get_xcpu()->op[0].nearptr.offset);
+                    if(visited_set.find(the.get_xcpu()->op[0].nearptr.offset)!=visited_set.end())
+                        unvisited_set.insert(the.get_xcpu()->op[0].nearptr.offset);
+                    jump_targets.insert(the.get_xcpu()->op[0].nearptr.offset);
 				}
-				else
+                else if(the.get_xcpu()->IsJmpMemIndexed())
 				{
-					check_if_switch_case(ea,&caselist,&jxxlist, the.get_xcpu());
+                    check_if_switch_case(ea,&caselist,unvisited_set,&jxxlist, the.get_xcpu());
 				}
 
                 if (the.get_xcpu()->opcode == C_RET || the.get_xcpu()->opcode == C_JMP )
@@ -203,12 +205,10 @@ bool	CFuncStep1::Step_1(ea_t head_off)
             }
         }
 
-        std::set<ea_t>::iterator pos = visited_set.begin();
-
-        if(!visited_set.empty())
-            if (m_asmlist == NULL)
+        if(!visited_set.empty() && (m_asmlist == NULL))
                 m_asmlist = new AsmCodeList; //	Create asm opcode list
 
+        std::set<ea_t>::iterator pos = visited_set.begin();
         while (pos!=visited_set.end())
         {
             ea_t ea = *(pos++);
@@ -223,7 +223,8 @@ bool	CFuncStep1::Step_1(ea_t head_off)
             //	Lookup a swith case are not just after
             this->CheckIfJustSwitchCase(caselist, ea);
         }
-
+        if(visited_set.empty())
+            return false;
         AsmCode *pasm = *m_asmlist->rbegin();
         m_end_off = pasm->linear + pasm->opsize;
         return true;
@@ -439,11 +440,11 @@ bool	FuncLL::Asm_Code_Change_ESP(int &esp, XCPUCODE* pxcpu)
         break;
     case C_SUB:
         if(pxcpu->op[0].isRegOp(_ESP_) && (pxcpu->op[1].mode == OP_Immed))
-            esp -= pxcpu->op[1].immed.immed_value;
+            esp -= pxcpu->op[1].getImm();
         break;
     case C_ADD:
         if(pxcpu->op[0].isRegOp(_ESP_) && (pxcpu->op[1].mode == OP_Immed))
-            esp += pxcpu->op[1].immed.immed_value;
+            esp += pxcpu->op[1].getImm();
         break;
     case C_CALL:
         if (pxcpu->op[0].mode == OP_Near)
@@ -475,7 +476,7 @@ bool	FuncLL::Asm_Code_Change_ESP(int &esp, XCPUCODE* pxcpu)
         }
         if (pxcpu->op[0].mode == OP_Register )   //call %reg
         {
-            ea_t address = FindApiAddress_Reg(pxcpu->op[0].reg.reg_index, pxcpu, m_asmlist);
+			ea_t address = FindApiAddress_Reg(pxcpu->op[0].getReg(), pxcpu, m_asmlist);
             Api* papi = ApiManage::get()->get_api(address);//,stacksub))	//find it
             if (papi)
             {
@@ -647,7 +648,7 @@ int FuncLL::Get_Ret_Purge()
         //Found the ret statement
         int r = 0;
         if (pxcpu->op[0].mode == OP_Immed)	// means RET n
-            r = pxcpu->op[0].immed.immed_value;
+            r = pxcpu->op[0].getImm();
         if (retn == -1)
             retn = r;
         else if (retn != r) //inconsistent RETs ?

@@ -30,9 +30,11 @@ void ExprManage::DeleteUnuse_VarList(MLIST &var_list)
 }
 
 
-uint32_t	regindex_2_regoff(uint32_t regindex)
+uint32_t	regindex_2_regoff(uint32_t regindex,int group)
 {
     // Set the reg also approved an offset, the concept of using struct to deal with al, ax the question
+    if(group==0 || group==4)
+    {
     switch (regindex)
     {
     case _EAX_:	return enum_EAX;
@@ -44,7 +46,8 @@ uint32_t	regindex_2_regoff(uint32_t regindex)
     case _ESI_:	return enum_ESI;
     case _EDI_:	return enum_EDI;
     }
-
+    }
+	assert(false);
     switch (regindex)
     {
     case _AX_:	return enum_AX;

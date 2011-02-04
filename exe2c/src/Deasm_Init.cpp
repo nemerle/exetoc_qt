@@ -105,7 +105,7 @@ bool XCPUCODE::IsCallNear() const
 
 bool OPERITEM::isRegOp(uint32_t reg_idx)
 {
-    return (mode==OP_Register)&&(reg.reg_index==reg_idx);
+	return (mode==OP_Register)&&(getReg()==reg_idx);
 }
 bool OPERITEM::isStaticOffset() //! return true if this is OP_Address and it does not depend on other regs e.x. [0x11212]
 {
@@ -114,8 +114,8 @@ bool OPERITEM::isStaticOffset() //! return true if this is OP_Address and it doe
 OPERITEM OPERITEM::createReg(int reg_idx,int width)
 {
 	OPERITEM result;
+	((llvm::MCOperand &)result) = llvm::MCOperand::CreateReg(reg_idx);
 	result.mode=OP_Register;
-	result.reg.reg_index=reg_idx;
 	result.opersize=width;
 	return result;
 }

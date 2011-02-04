@@ -8,6 +8,8 @@
 #include <cassert>
 #include <QString>
 #include <cstring>
+#include <algorithm>
+#include <QDebug>
 #include "00000.h"
 #include "FileLoad.h"
 #include "ApiManage.h"
@@ -22,7 +24,7 @@ uint32_t	Peek_D(ea_t pos);
 
 //#include "Deasm_Init.h"
 
-bool	PELoad_isMFC = false;
+static bool	PELoad_isMFC = false;
 
 int RelocationPE(PEHEADER* peh);
 int	RelocImportTable(PEHEADER* peh);
@@ -309,7 +311,7 @@ void OneItem_Init(ea_t ea)
         if (p[0] != 0xb9 || p[5] != 0xe9)
                 return;
 
-        ea_t theapp = *(uint32_t *)(p+1);
+    //ea_t theapp = *(uint32_t *)(p+1);
 
         //alert_prtf("theapp = %x",theapp);
 

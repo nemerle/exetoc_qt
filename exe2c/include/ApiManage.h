@@ -10,7 +10,7 @@
 class Api
 {
 public:
-	BYTE	m_stack_purge;	//7 for invalid
+    int 	m_stack_purge;	//7 for invalid
 	ea_t	m_address;
 	char name[80];
 

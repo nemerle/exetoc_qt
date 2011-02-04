@@ -6,6 +6,9 @@
 #include <string>
 #include <stdint.h>
 #include <sstream>
+#include <llvm/MC/MCInst.h>
+#include <llvm/MC/MCExpr.h>
+
 #define BIT16	0
 #define	BIT32	1
 class QString;
@@ -245,10 +248,9 @@ enum OPCODETYPE
 
 typedef	uint32_t	ea_t;
 
-struct OPERITEM
+struct OPERITEM : public llvm::MCOperand
 {
         OP_TYPE mode;		//OP_Register, ...
-        BYTE    rwflag;		//0:Unknown	1:Read 2:Write 3:Access
         BYTE    opersize;	//1:BYTE, 2:WORD, 4:uint32_t, 8:double uint32_t
         union
         {
@@ -261,18 +263,11 @@ struct OPERITEM
                         BYTE    off_reg_scale;
                         uint32_t   off_value;
                 }   addr;		//for OP_Address
-                struct
-                {
-                        uint32_t   reg_index;  //_ESP_
-                }   reg;		//for OP_Register
+        //reg_index -> _ESP_
                 struct
                 {
                         uint32_t   sreg_index;
                 }   sreg;		//for OP_Segment
-                struct
-                {
-                        uint32_t   immed_value;
-                }   immed;		//for OP_Immed
                 struct
                 {
                         ea_t   offset;
@@ -288,7 +283,7 @@ struct OPERITEM
         static OPERITEM createReg(int reg_idx,int width); //! create an Register operand of given width
 };
 
-struct XCPUCODE
+struct XCPUCODE  : public llvm::MCInst
 {
         enum OPCODETYPE        opcode;		//	C_MOV...
         BYTE        lockflag;	// for LOCK prefix
@@ -300,47 +295,6 @@ struct XCPUCODE
     bool    IsCallNear() const;
     bool    IsCalculatedJmp() const;
 };
-
-
-
-#define	X_EAX		0x0000
-#define	X_ECX		0x0004
-#define	X_EDX		0x0008
-#define	X_EBX		0x000C
-#define	X_ESP		0x0010
-#define	X_EBP		0x0014
-#define	X_ESI		0x0018
-#define	X_EDI		0x001C
-
-#define	X_ES		0x0020
-#define	X_CS		0x0024
-#define	X_SS		0x0028
-#define	X_DS		0x002C
-#define	X_FS		0x0030
-#define	X_GS		0x0034
-
-#define	X_EFLAGS	0x0038
-#define	X_EIP		0x003C
-
-#define	X_TEMP1		0x0040
-
-#define	X_AX		0x0000
-#define	X_CX		0x0004
-#define	X_DX		0x0008
-#define	X_BX		0x000C
-#define	X_SP		0x0010
-#define	X_BP		0x0014
-#define	X_SI		0x0018
-#define	X_DI		0x001C
-
-#define	X_AL		0x0000
-#define	X_AH		0x0001
-#define	X_CL		0x0004
-#define	X_CH		0x0005
-#define	X_DL		0x0008
-#define	X_DH		0x0009
-#define	X_BL		0x000C
-#define	X_BH		0x000D
 
 // The list of the types of Opdata1, Opdata2, Opdata3
 enum OPDATATYPE
@@ -399,18 +353,8 @@ enum OPDATATYPE
     D_V,			// Used for PUSHA/POPA, PUSHF/POPF, SHAF/LAHF
     D_XB,D_XV		// Used for ( MOVS, LODS, OUTS, ... )
 };
-
-struct INSTRUCTION
-{
-
-    OPCODETYPE	Opcode;
-        const char *	InstName;
-    OPDATATYPE	Opdata1;
-    OPDATATYPE	Opdata2;
-    OPDATATYPE	Opdata3;
-};
-
 //Define a structure similar to the IDA of the ASM output
+struct INSTRUCTION;
 struct st_IDA_OUT
 {
     std::string LockName;

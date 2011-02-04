@@ -8,12 +8,11 @@
 #include "00000.h"
 #include "FileLoad.h"
 
-#define	SEG0	0x1000
-#define	Load_Resources	0
-#define	Load_Debug	0
-#define	Load_Data	1
+//#define	SEG0	0x1000
+//static const int Load_Resources=0;
+//static const int Load_Debug=0;
+//static const int Load_Data=1;
 
-enum_EXEType g_EXEType = (enum_EXEType)0;
 
 FileLoader* g_FileLoader = NULL;
 
@@ -103,14 +102,6 @@ bool FileLoader::load(const char * fname)
     fread(fbuff,1,fsize,efile);
 
     pe_offset = *(uint32_t *)(fbuff+0x3c);
-    //DialogBox(hInst,MAKEINTRESOURCE(D_checktype),mainwindow,(DLGPROC)checktypebox);
-    //if(!SEG0)
-    //{
-    //SEG0=0x1000;
-    // MessageBox(mainwindow,"Sorry - Can't use a zero segment base.\nSegment Base has been set to 0x1000"
-    //  ,"Borg Message",MB_OK);
-    //}
-    //dsm.dissettable();
     switch ( exetype )
     {
     case BIN_EXE:
