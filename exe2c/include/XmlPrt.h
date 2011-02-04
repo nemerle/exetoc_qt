@@ -7,7 +7,6 @@
 #include <string>
 #include <QString>
 #include "XmlList.h"
-#include "MyString.h"
 class I_XmlOut
 {
 public:
@@ -19,7 +18,7 @@ public:
 class XmlPrt : public I_XmlOut
 {
         XmlList* 	m_xmllist;
-        MyString*	m_str;
+        QString	m_str;
 
         XMLTYPE m_curword_type;
         void *	m_curword_p;
@@ -46,7 +45,7 @@ public:
         int MoveHome(int nLine);
         int MoveLeftWord(int x, int y);
         int MoveRightWord(int x, int y);
-        int WordToLeft(int x, int y);
+        int WordToLeft(size_t x, int y);
         int WordToRight(int x, int y);
     std::string GetText(int y1, int x1, int y2, int x2);
 
@@ -92,15 +91,15 @@ public:
             this->m_out->prtt(" ");
         fHasSpace = false;
 
-        this->m_out->prtt(s);
+        m_out->prtt(s);
     }
     void prtt(const QString &s)
     {
         if (fHasSpace)
-            this->m_out->prtt(" ");
+            m_out->prtt(" ");
         fHasSpace = false;
 
-        this->m_out->prtt(s.toStdString());
+        m_out->prtt(s.toStdString());
     }
     void prtslen(const char * s, int len);
     void XMLbegin(enum XMLTYPE xmltype, void * p)

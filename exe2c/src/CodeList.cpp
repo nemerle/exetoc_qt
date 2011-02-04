@@ -1,6 +1,6 @@
 // Copyright(C) 1999-2005 LiuTaoTao，bookaa@rorsoft.com
 
-//#include "stdafx.h"
+#include <cassert>
 #include	"CISC.h"
 #include "exe2c.h"
 
@@ -30,14 +30,13 @@ void CodeList::CreateInstrList_raw(AsmCodeList* asmlist, int EBP_base)
         {	//The only exception, C_JCASE label without prior
             Instruction * p = new Instruction(i_Label);   //new_INSTR
             p->label.label_off = cur->linear;
-            //In front of each instruction preceded by a label
-            InstrAddTail(p);
+            InstrAddTail(p); //In front of each instruction preceded by a label
         }
 
         if (esp_level != 3 && esp_level < cur->esp_level)
         {
             //This is a pop
-            cur->xcpu.opcode;
+            //cur->xcpu.opcode;
             Instruction *	p = new Instruction(i_EspReport);  //new_INSTR
             p->espreport.esp_level = cur->esp_level;
             p->espreport.howlen = cur->esp_level - esp_level;
@@ -64,7 +63,7 @@ void CodeList::InstrAddTail(Instruction * p)
     m_instr_list.push_back(p);
 }
 
-void	set_address(OPERITEM* op,Instruction * p)
+void	set_address(const OPERITEM* op,Instruction * p)
 {
     if (op->addr.base_reg_index != _NOREG_)
     {
@@ -84,7 +83,7 @@ void	set_address(OPERITEM* op,Instruction * p)
     p->i2 = op->addr.off_value;
 }
 //-------------------------------------------------------
-void	set_address(OPERITEM* op,Instruction * p);
+void	set_address(const OPERITEM* op,Instruction * p);
 
 ea_t FindApiAddress_Reg(uint32_t regindex, XCPUCODE* pxcpu1, AsmCodeList* asmlist);
 
@@ -400,9 +399,9 @@ Instruction *	CodeList_Maker::Code_general(int type, HLType t)
         return p;
     default:
         alert("why here 325426");
-        return NULL;
     }
-    //return NULL;
+    delete p;
+        return NULL;
 }
 // translate asm operand to var
 void	CodeList_Maker::TransVar(VAR &pvar,int no)

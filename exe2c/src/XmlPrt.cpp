@@ -10,7 +10,6 @@
 XmlPrt::XmlPrt()
 {
     m_xmllist = XmlList::new_CXmlList(XT_invalid,NULL,0);
-    m_str = new MyString;
 
     m_curword_type = XT_invalid;
     m_curword_p = NULL;
@@ -20,20 +19,18 @@ XmlPrt::~XmlPrt()
 {
     delete m_xmllist;
     m_xmllist=0;
-    delete m_str;
-    m_str=0;
 }
 void XmlPrt::Clear()
 {
     this->~XmlPrt(); //TODO: fix this hack
 
     m_xmllist = XmlList::new_CXmlList(XT_invalid,NULL,0);
-    m_str = new MyString;
+    m_str.clear();
 }
 
 void XmlPrt::prtt(const char * str)
 {
-    this->m_str->strcat(str);
+    m_str+=str;
 }
 
 void XmlOutPro::prtslen(const char * s, int len)
@@ -137,14 +134,14 @@ void XmlOutPro::EOL()
 
 void XmlPrt::XMLbegin(XMLTYPE xmltype, void * p0)
 {
-    long pos = m_str->GetLength();
-    this->m_xmllist->XMLbegin(xmltype, p0, pos);
+    long pos = m_str.length();
+    m_xmllist->XMLbegin(xmltype, p0, pos);
 }
 
 void XmlPrt::XMLend(XMLTYPE xmltype)
 {
-    long pos = m_str->GetLength();
-    XMLTYPE type1 = this->m_xmllist->XMLend(xmltype, pos);
+    long pos = m_str.length();
+    XMLTYPE type1 = m_xmllist->XMLend(xmltype, pos);
 }
 
 
@@ -152,12 +149,12 @@ void XmlPrt::XMLend(XMLTYPE xmltype)
 
 void XmlPrt::Clicked(long x1, long x2)
 {
-    this->m_xmllist->Clicked(x1,x2);
+    m_xmllist->Clicked(x1,x2);
 
 }
 bool XmlPrt::GetCurWord(long curpos, long &posfrom, long &posto)
 {
-    if (NULL != this->m_xmllist->GetCurWord(curpos, posfrom, posto))
+    if (NULL != m_xmllist->GetCurWord(curpos, posfrom, posto))
         return TRUE;
     posfrom = curpos;
     posto = curpos+1;
@@ -182,11 +179,11 @@ bool XmlPrt::GetRightWord(long curpos, long &posfrom, long &posto)
 
 void	XmlPrt::prtprtout(XmlOutPro* prt)
 {
-    const char * pstr = this->m_str->GetString();
+    const char * pstr = m_str.toAscii().constData();
 
-    if (this->m_xmllist == NULL || this->m_xmllist->m_xmltype == XT_invalid)
+    if (m_xmllist == NULL || m_xmllist->m_xmltype == XT_invalid)
     {
-        prt->prtt(pstr);
+        prt->prtt(m_str);
         return;
     }
 
@@ -209,7 +206,7 @@ void	XmlPrt::prtprtout(XmlOutPro* prt)
 void XmlPrt::Display(I_COLOROUT* iColorOut)
 {
 
-    const char * pstr = this->m_str->GetString();
+    const char * pstr = m_str.toAscii().constData();
 
     if (this->m_xmllist == NULL || this->m_xmllist->m_xmltype == XT_invalid)
     {
@@ -236,35 +233,25 @@ void XmlPrt::Display(I_COLOROUT* iColorOut)
 
 std::string XmlPrt::GetString()
 {
-    return this->m_str->GetString();
+    return m_str.toStdString();
 }
 
 
 void XmlPrt::CommaLast()
 {//the last , replaced with ;
-    char * p = this->m_str->GetWritableString();
-    int len = strlen(p);
-    len -= 2;
-    if (len < 0)
-        len = 0;
-    p+=len;
-    if (*p == ',')
-    {
-        *p = ';';
+    int idx=m_str.lastIndexOf(',');
+    if(idx==-1)
         return;
-    }
-    p++;
-    if (*p == ',')
+    if(idx>=m_str.length()-2) // last or next to last char
     {
-        *p = ';';
-        return;
+        m_str[idx]=';';
     }
 }
 
 int XmlPrt::MoveHome(int nLine)
 {
     std::string str = this->GetLine(nLine);
-    for (int i=0; i<str.size(); i++)
+    for (size_t i=0; i<str.size(); i++)
     {
         if (str[i] != ' ')
             return i;
@@ -313,7 +300,7 @@ int XmlPrt::MoveRightWord(int x, int y)
     }
     return x;
 }
-int XmlPrt::WordToLeft(int x, int y)
+int XmlPrt::WordToLeft(size_t x, int y)
 {
     std::string str = this->GetLine(y);
     if (x >= str.size())
@@ -350,35 +337,30 @@ int XmlPrt::GetLineLength(int nLine)
 
 std::string XmlPrt::GetLine(int nLine)
 {
-    const char * pstr = this->m_str->GetString();
-    if (pstr == NULL)
+    if (m_str.isEmpty())
         return "";
 
     int n = 0;
+    int current_index=0;
+    int line_end_idx=-1;
     for (;;)
     {
-        const char * p = strchr(pstr,'\n');
-        if (p != NULL)
-        {
+        line_end_idx=m_str.indexOf('\n',current_index);
             if (n == nLine)
-            {
-                return std::string(pstr, p-pstr);
-            }
+            return m_str.mid(current_index,line_end_idx).toStdString();
+
+        if(line_end_idx==-1)
+            break;
+        current_index=line_end_idx+1;
             n++;
-            pstr = p+1;
-            continue;
         }
-        break;
-    }
-    if (n == nLine)
-        return pstr;
     return "";
 }
 
 int XmlPrt::GetPosXY(int x, int y)
 {
     //Enter the ranks of the second only, a only back to the pos
-    const char * pstr_org = this->m_str->GetString();
+    const char * pstr_org = m_str.toStdString().c_str();
     const char * pstr = pstr_org;
     if (pstr == NULL)
         return 0;
@@ -420,7 +402,7 @@ std::string XmlPrt::GetText(int y1, int x1, int y2, int x2)
     if (y1 > y2)
         return "";
 
-    const char * pstr = this->m_str->GetString();
+    const char * pstr = m_str.toStdString().c_str();
     if (pstr == NULL)
         return "";
 
@@ -464,7 +446,7 @@ std::string XmlPrt::GetText(int y1, int x1, int y2, int x2)
 }
 int XmlPrt::GetLineCount()
 {
-    const char * pstr = this->m_str->GetString();
+    const char * pstr = m_str.toStdString().c_str();
     if (pstr == NULL)
         return 0;
 
@@ -486,7 +468,7 @@ int XmlPrt::GetLineCount()
     return n;
 }
 
-size_t GetPosFromXY(const char * p0, int x, int y)
+static size_t GetPosFromXY(const char * p0, int x, int y)
 {
     const char * p = p0;
     while (y)
@@ -507,7 +489,7 @@ bool XmlPrt::SetCurWord(int x, int y)
     this->m_curword_type = XT_invalid;
     this->m_curword_p = 0;
 
-    size_t pos = GetPosFromXY(this->m_str->GetString(), x, y);
+    size_t pos = GetPosFromXY(m_str.toStdString().c_str(), x, y);
     long posfrom, posto;
     XmlList* p1 = this->m_xmllist->GetCurWord(pos, posfrom, posto);
     if (p1 == NULL)
