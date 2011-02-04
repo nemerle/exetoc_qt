@@ -7,7 +7,7 @@ typedef uint32_t	VarTypeID;
 
 //char *	new_str(const char * p);
 
-int		alert_prtf(const char * fmt, ...);
+void		alert_prtf(const char * fmt, ...);
 #define log_prtf
 #define alert
 #define log_prtt

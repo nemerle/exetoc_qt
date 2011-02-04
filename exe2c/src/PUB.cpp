@@ -19,7 +19,7 @@ void	alert(const char * msg)
     box.setIcon(QMessageBox::Warning);
     box.exec();
 }
-int		alert_prtf(const char * fmt,...)
+void	alert_prtf(const char * fmt,...)
 {
     va_list argptr;
     int cnt;
@@ -31,10 +31,9 @@ int		alert_prtf(const char * fmt,...)
 
         alert(buf);
 
-    return(cnt);
 }
 
-int log_prtf(const char * fmt,...)
+void log_prtf(const char * fmt,...)
 {
     va_list argptr;
     int cnt;
@@ -46,9 +45,8 @@ int log_prtf(const char * fmt,...)
 
         outstring_in_log(buf);
 
-    return(cnt);
 }
-int log_prtl(const char * fmt,...)
+void log_prtl(const char * fmt,...)
 {
     va_list argptr;
     int cnt;
@@ -61,12 +59,12 @@ int log_prtl(const char * fmt,...)
         outstring_in_log(buf);
         outstring_in_log("\n");
 
-    return(cnt);
+    //return(cnt);
 }
 
 
 
-void _warn(char * __cond, char * __file, int __line)
+void _warn(const char * __cond, const char * __file, int __line)
 {
         char	buf[280];
         sprintf(buf,"Warn condition %s, in file %s, at line %d",

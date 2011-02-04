@@ -14,7 +14,7 @@ void	Redraw_CurFunc();
 void	Redraw();
 //---------------------------------------------
 
-void _warn(char * __cond, char * __file, int __line);
+void _warn(const char * __cond, const char * __file, int __line);
 
 
 #ifdef NDEBUG
@@ -44,9 +44,9 @@ ea_t	Find_Main(ea_t start);
 
 char *	new_str(const char * p);
 
-int log_prtf(const char * fmt,...);
-int log_prtl(const char * fmt,...);
-int		alert_prtf(const char * fmt, ...);
+void	log_prtf(const char * fmt,...);
+void	log_prtl(const char * fmt,...);
+void	alert_prtf(const char * fmt, ...);
 void	error(const char * msg);
 void	alert(const char * msg);
 

@@ -249,7 +249,7 @@ bool LibScanner::ScanCOFFObject(COFFOBJECT_LIST &objs,BYTE * lpBuffer,uint32_t L
 }
 
 
-int log_prtl(const char * fmt,...);
+void log_prtl(const char * fmt,...);
 bool LibScanner::ScanLib(const char * szLib)
 {
     log_prtl("Loading %s", szLib);

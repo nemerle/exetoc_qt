@@ -3,8 +3,14 @@
 //	CApiManage.cpp
 
 #include <QString>
+#include <QDebug>
+#include <algorithm>
+#include <boost/lambda/lambda.hpp>
+#include <boost/lambda/construct.hpp>
+#include <boost/lambda/bind.hpp>
 #include "CISC.h"
 #include "exe2c.h"
+using namespace boost::lambda;
 
 ApiManage *ApiManage::s_self=0;
 ApiManage * ApiManage::get()
@@ -18,25 +24,33 @@ ApiManage * ApiManage::get()
 //	--------------------------------------------------
 
 
+ApiManage::ApiManage()
+{
+}
+ApiManage::~ApiManage()
+{
+    std::for_each(m_apilist.begin(),m_apilist.end(), boost::lambda::bind(delete_ptr(), _1));
+    m_apilist.clear();
+}
 bool ApiManage::new_api(ea_t address,int stacksub)
 {
     Api *p = new Api;     //new_CApi
-    p->address = address;
+    p->m_address = address;
     p->m_stack_purge = stacksub;
 
     sprintf(p->name,"api_%x",address);
 
-    this->apilist->push_front(p);
+    m_apilist.push_front(p);
     return true;
 }
 Api*	ApiManage::get_api(ea_t address)
 {
     //    uint32_t ptr = (uint32_t)ea2ptr(address);
-    API_LIST::iterator pos = this->apilist->begin();
-    for (;pos!=apilist->end(); ++pos)
+    lApi::iterator pos = this->m_apilist.begin();
+    for (;pos!=m_apilist.end(); ++pos)
     {
         Api* p = *pos;
-        if (p->address == address)
+        if (p->m_address == address)
             return p;
     }
     //assert(0);
@@ -56,17 +70,17 @@ void ApiManage::New_ImportAPI(const std::string &pstr, uint32_t apiaddr)
     if (pf == NULL)
         return;
     Api *p = new Api;     //new_CApi
-    p->address = apiaddr;
+    p->m_address = apiaddr;
     assert(pf);
     p->m_functype = pf;
     p->m_stack_purge = pf->get_stack_purge(); //g_FuncDefineMng.API_stack(pstr);
 
     strcpy(p->name, pstr.c_str()	);
 
-    this->apilist->push_front(p);
+    m_apilist.push_front(p);
 }
 typedef const BYTE* PCBYTE;
-const char * check_if_jmp_api(PCBYTE phead)
+const char * check_if_jmp_api(const BYTE* phead)
 {
     if (*(WORD *)phead != 0x25ff)
         return NULL;
@@ -86,8 +100,8 @@ const char * check_if_jmp_api(PCBYTE phead)
     return name;
 }
 
-Api::Api()
+Api::Api() : m_stack_purge(INVALID_STACK),m_address(~0),m_functype(0)
 {
-    m_stack_purge = INVALID_STACK;
+    name[0]=0;
 }
 
