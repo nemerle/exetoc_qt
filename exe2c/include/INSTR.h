@@ -140,18 +140,18 @@ typedef	std::list<Instruction *> INSTR_LIST;
 class InstrList
 {
     typedef INSTR_LIST::iterator POSITION;
-    bool	if_Ly_In(Instruction * p, POSITION firstpos, POSITION endpos);
+    bool	if_Ly_In(const Instruction * p, POSITION firstpos, POSITION endpos);
     bool    IsSwitchCase_multcomp(Instruction * begin);
     bool    IsSwitchCase(Instruction * begin);
-    bool	ifOneStatement(Instruction * pNode, POSITION firstpos, POSITION endpos);
+    bool	ifOneStatement(const Instruction * pNode, const POSITION &firstpos, const POSITION &endpos);
     bool	Flow_c(Instruction * pNode);
-    void	Flow_b(Instruction * pParentNode, POSITION firstpos, POSITION endpos);
-    bool	Flow_aa(Instruction * pNode, POSITION firstpos, POSITION endpos);
+    void	Flow_b(const Instruction * pParentNode, POSITION firstpos, POSITION endpos);
+    bool	Flow_aa(Instruction * pNode, POSITION firstpos, const POSITION &endpos);
     bool	Flow_cc(Instruction * pNode, POSITION firstpos, POSITION endpos);
     void	Add_Begin_End(POSITION firstpos, POSITION endpos, Instruction * begin, Instruction * end);
     void	Add_Begin_End_1(POSITION firstpos, POSITION endpos, Instruction * begin, Instruction * end);
 	void	RemoveNops();
-    INSTR_LIST &m_list; //要尽量把它private
+    INSTR_LIST &m_list; //To make it private
 public:
     InstrList(INSTR_LIST& p) : m_list (p)
     {
@@ -163,11 +163,11 @@ public:
 
 class InstrList_Finger
 {
-    QString	prt_partern(Instruction * phead);
+    QString	prt_partern(const Instruction * phead) const;
     static int search_and_add(intptr_t* buf,intptr_t val,int &pn);
-    static bool	finger_compare(char * f1,const char* f2);
-public:
+    static bool	finger_compare(const char * f1,const char* f2);
     INSTR_LIST & m_list; //要尽量把它private
+public:
     InstrList_Finger(INSTR_LIST &list) : m_list(list)
     {
     }

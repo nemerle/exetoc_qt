@@ -1,10 +1,11 @@
 // Copyright(C) 1999-2005 LiuTaoTao，bookaa@rorsoft.com
 
 #include <QDebug>
+#include <algorithm>
 #include	"CISC.h"
 bool g_f_Step_by_Step = false;
 bool g_any1_return_TRUE = false;
-bool Step_by_Step();
+bool Step_by_Step(void);
 
 
 const char finger_for[] 	= "0_jmp1_from2_0_from1_0_jxx3_0_jmp2_from3_";
@@ -30,7 +31,7 @@ int InstrList_Finger::search_and_add(intptr_t* buf,intptr_t val,int &pn)
     buf[pn++] = val;
     return pn;
 }
-bool	InstrList_Finger::finger_compare(char * f1,const char* f2)
+bool	InstrList_Finger::finger_compare(const char * f1,const char* f2)
 {//static function
     for (;;)
     {
@@ -50,7 +51,7 @@ bool	InstrList_Finger::finger_compare(char * f1,const char* f2)
         return false;
     }
 }
-bool	InstrList::if_Ly_In(Instruction * p, POSITION firstpos, POSITION endpos)
+bool	InstrList::if_Ly_In(const Instruction * p, POSITION firstpos, POSITION endpos)
 {
     //If the 'last' is the 'label', it also counts
     assert(endpos!=m_list.end());
@@ -58,7 +59,7 @@ bool	InstrList::if_Ly_In(Instruction * p, POSITION firstpos, POSITION endpos)
     while (pos!=m_list.end())
     {
         Instruction * pinstr = *(pos++);
-        if (pinstr == p)
+        if (p == pinstr)
             return true;
         if (pos == endpos)
         {
@@ -72,7 +73,7 @@ bool	InstrList::if_Ly_In(Instruction * p, POSITION firstpos, POSITION endpos)
     }
     return false;
 }
-bool	InstrList::ifOneStatement(Instruction * pNode, POSITION firstpos, POSITION endpos)
+bool	InstrList::ifOneStatement(const Instruction * pNode, const POSITION &firstpos, const POSITION &endpos)
 {
     //	do not include 'end'
     //	if the first is a label，allow call
@@ -145,7 +146,7 @@ Instruction *	instr_prev(const INSTR_LIST& list, const Instruction * p)
         return NULL;
     return *pos;
 }
-QString	InstrList_Finger::prt_partern(Instruction * phead)
+QString	InstrList_Finger::prt_partern(const Instruction * phead) const
 {
 
     if (phead->type != i_CplxBegin)
@@ -260,7 +261,7 @@ bool	InstrList_Finger::Finger_check_partern_for1(Instruction * p)
 bool	InstrList_Finger::Finger_check_partern(Instruction * p)
 {
     // check the pattern p
-    char buf[140]={};
+    char buf[140]={0};
     strcpy(buf,this->prt_partern(p).toStdString().c_str());
 
     if (finger_compare(buf, finger_if))
@@ -584,13 +585,12 @@ bool InstrList::IsSwitchCase_multcomp(Instruction * begin)
     POSITION iter = std::find(m_list.begin(),m_list.end(),begin);
     M_t* v;
 
-    int first = 0;
+    int first = 1;
+    ++iter; //	The first is certainly i_CplxBegin, do not need to read
     for(;iter!=m_list.end();++iter)
     {
         Instruction * p = *iter;
         first++;
-        if (first == 1)
-            continue;	//	The first is certainly i_CplxBegin, do not need to read
         if (first == 2)
         {				//	The first instruction must be jz sth == n
             if (p->type != i_Jump || p->jmp.jmp_type != JMP_jz || p->var_r1.type == 0)
@@ -647,7 +647,7 @@ bool InstrList::IsSwitchCase(Instruction * begin)
     }
     return false;
 }
-void	InstrList::Flow_b(Instruction * pParentNode, POSITION firstpos, POSITION endpos)
+void	InstrList::Flow_b(const Instruction * pParentNode, POSITION firstpos, POSITION endpos)
 {	//	compact analysis
 
 
@@ -670,8 +670,8 @@ void	InstrList::Flow_b(Instruction * pParentNode, POSITION firstpos, POSITION en
     Instruction * plast2 = instr_prev(m_list,plast);	//Previous instruction
 
     Instruction * pNode = begin;
-    pNode->begin.m_break = pParentNode->begin.m_break;	//	继承
-    pNode->begin.m_conti = pParentNode->begin.m_conti;	//	继承
+    pNode->begin.m_break = pParentNode->begin.m_break;	//	inherit
+    pNode->begin.m_conti = pParentNode->begin.m_conti;	//	inherit
 
     Instruction * pfirst = instr_next(m_list,begin);
     Instruction * psecond = instr_next(m_list,pfirst);
@@ -679,7 +679,7 @@ void	InstrList::Flow_b(Instruction * pParentNode, POSITION firstpos, POSITION en
     if (pfirst->type == i_Label
             || (pfirst->type == i_Jump && pfirst->jmp.jmp_type == JMP_jmp && psecond->type == i_Label)
             )
-    {	//	这是我认为 break 的条件 ！
+    {	//	This is my opinion, the conditions for break!
         Instruction * pconti;
         if (pfirst->type == i_Label)	//	如果是第一种情况
             pconti = pfirst;
@@ -765,7 +765,7 @@ bool Step_by_Step()
     g_any1_return_TRUE = true;
     return false;
 }
-bool	InstrList::Flow_aa(Instruction * pBlockHeadNode, POSITION firstpos, POSITION endpos)
+bool	InstrList::Flow_aa(Instruction * pBlockHeadNode, POSITION firstpos, const POSITION &endpos)
 {
     // Loose analysis
     // Return true that there has been progress analysis
@@ -812,6 +812,7 @@ bool	InstrList::Flow_aa(Instruction * pBlockHeadNode, POSITION firstpos, POSITIO
     if(pos==endpos || pos==m_list.end())
         return false;
     assert(pos!=m_list.end());
+    assert(0!=p);
     switch(p->type)
     {
     case i_Begin:
@@ -885,6 +886,8 @@ bool	InstrList::Flow_aa(Instruction * pBlockHeadNode, POSITION firstpos, POSITIO
             }
             //assert(pos1);
         }
+    default:
+        qDebug()<<"flow_aa: skipping opcode " << p->type;
     }
     return false;
 }

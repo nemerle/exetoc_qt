@@ -8,8 +8,10 @@
 #include <boost/lambda/lambda.hpp>
 #include <boost/lambda/construct.hpp>
 #include <boost/lambda/bind.hpp>
+
 #include "CISC.h"
 #include "exe2c.h"
+
 using namespace boost::lambda;
 
 ApiManage *ApiManage::s_self=0;
@@ -22,8 +24,6 @@ ApiManage * ApiManage::get()
 }
 
 //	--------------------------------------------------
-
-
 ApiManage::ApiManage()
 {
 }
@@ -61,12 +61,15 @@ void ApiManage::New_ImportAPI(const std::string &pstr, uint32_t apiaddr)
 {
     // Note that this time the apiaddr is actually a ptr rather than ea_t
     // Because then the function can not work properly ea2ptr
+
     QString frst(pstr.c_str());
     if (!frst.compare("RegisterClassExA",Qt::CaseInsensitive))
         log_prtl("New_ImportAPI %s 0x%x", pstr.c_str(), apiaddr);
 
 
     FuncType* pf = Get_FuncDefine_from_name(pstr);
+    qDebug()<<QString("Searching for imported function %1 at %2 - %3 :").arg(pstr.c_str())
+              .arg(apiaddr,0,16).arg(pf ? "found":"not found");
     if (pf == NULL)
         return;
     Api *p = new Api;     //new_CApi
@@ -82,11 +85,11 @@ void ApiManage::New_ImportAPI(const std::string &pstr, uint32_t apiaddr)
 typedef const BYTE* PCBYTE;
 const char * check_if_jmp_api(const BYTE* phead)
 {
-    if (*(WORD *)phead != 0x25ff)
+    if (*reinterpret_cast<const uint16_t *>(phead) != 0x25ff)
         return NULL;
     phead += 2;
 
-    uint32_t d = *(uint32_t *)phead;
+    uint32_t d = *(const uint32_t *)phead;
 
     Api* papi = ApiManage::get()->get_api((ea_t)d);
     if (papi == NULL)

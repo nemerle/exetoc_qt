@@ -30,7 +30,6 @@ void	alert_prtf(const char * fmt,...)
     va_end(argptr);
 
         alert(buf);
-
 }
 
 void log_prtf(const char * fmt,...)
@@ -44,7 +43,6 @@ void log_prtf(const char * fmt,...)
     va_end(argptr);
 
         outstring_in_log(buf);
-
 }
 void log_prtl(const char * fmt,...)
 {
