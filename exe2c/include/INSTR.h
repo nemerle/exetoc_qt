@@ -40,7 +40,7 @@ struct st_InstrAddOn
         if (pChild)
             delete pChild;
     }
-    static bool IsSame(st_InstrAddOn* p1, st_InstrAddOn* p2);
+    static bool IsSame(const st_InstrAddOn *const  p1,const st_InstrAddOn *const  p2);
 };
 typedef st_InstrAddOn* Pst_InstrAddOn;
 

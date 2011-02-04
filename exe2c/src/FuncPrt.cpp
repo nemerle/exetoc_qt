@@ -284,6 +284,9 @@ void	CFunc_Prt::prt_jxx_compare_false(Instruction * &pjxx, XmlOutPro* out)
                 case JMP_jl:	str = " >= ";	break;	//signed
                 case JMP_jng:	str = " > ";	break;	//signed
                 case JMP_jnl:	str = " < ";	break;	//signed
+        default:
+            assert( !"Not a Jxx jump.");
+            break;
                 }
                 out->prtt(str);
         this->prt_va(pjxx->va_r2, out);
@@ -328,29 +331,25 @@ void	CFunc_Prt::prt_switch_case(CasePrt_List* list, const Instruction* phead, Xm
 {
         out->prtl_ident("// list count = %d",list->size());
         CasePrt_List::iterator pos = list->begin();
-        while (pos!=list->end())
+		OneCase* p;
+    for (;pos!=list->end();++pos)
         {
-                OneCase* p = *pos;
-                ++pos;
-                if (pos == list->end())
-                {	//	this is default
-                        assert(p->case_n == 0xffffffff);
-                        out->prtl_ident("default:");
-                        prt_case(phead, p->thelabel, out);
-                        return;
-                }
+        p = *pos;
                 out->prtl_ident("case %d:", p->case_n);
 
                 CasePrt_List::iterator savpos = pos;
-                OneCase* pnext = *savpos;
+        OneCase* pnext = *(++savpos);
                 if (p->thelabel->label.label_off == pnext->thelabel->label.label_off)
                 {	//	Would not have printed the same
                         continue;
                 }
-
                 prt_case(phead, p->thelabel, out);
-
-        }
+    }
+    // default case
+    p = *pos;
+    assert(p->case_n == 0xffffffff);
+    out->prtl_ident("default:");
+    prt_case(phead, p->thelabel, out);
 }
 
 void	CFunc_Prt::prt_var_declares(XmlOutPro* out)
@@ -427,6 +426,9 @@ void	CFunc_Prt::prt_jxx_compare_true(Instruction * &pjxx, XmlOutPro* out)
         case JMP_jnl:	str = " >= ";	break;	//signed
         case JMP_jg:	str = " > ";	break;	//signed
         case JMP_jl:	str = " < ";	break;	//signed
+        default:
+            assert(!"Not a Jxx.");
+            break;
         }
         out->prtt(str);
         this->prt_va(pjxx->va_r2, out);
@@ -749,7 +751,8 @@ const char * CFunc_Prt::prt_iAddress(const Instruction * p)
         if (n)
             n += sprintf(s+n," + ");
         n += sprintf(s+n, "%s", prt_DWORD(p->i2));
-        n;
+        //FIXME: useless statement ?
+        //n;
     }
     return s;
 }
@@ -877,7 +880,7 @@ void CFunc_Prt::prt_instr_call(const Instruction * p, XmlOutPro* out)
 void	CFunc_Prt::prt_instr(const Instruction * p, POSITION &nextpos, XmlOutPro* out)
 {
     CFunc_InstrList instrl(m_my_func->m_instr_list);
-
+    Instruction * p1;
     g_PrtOut.SetHline(p);
     if (p->var_w.type == v_Tem)
     {
@@ -893,43 +896,38 @@ void	CFunc_Prt::prt_instr(const Instruction * p, POSITION &nextpos, XmlOutPro* o
         switch (p->begin.type)
         {
         case COMP_if:
-        {
             out->ident();
             out->XMLbegin(XT_Keyword, NULL);
             out->prtt("if");
             out->XMLend(XT_Keyword);
             out->prtt("(");
-            Instruction * p1 = instrl.instr_next_in_func(p);
+            p1 = instrl.instr_next_in_func(p);
             prt_jxx_compare_false(p1, out);
             out->prtl(")");
             p1 = instrl.instr_next_in_func(p1);
             prt_one_statement(p1, out);
-        }
         break;
         case COMP_long_if:
-        {
             out->ident();
             out->XMLbegin(XT_Keyword, NULL);
             out->prtt("if");
             out->XMLend(XT_Keyword);
             out->prtt("(");
-            Instruction * p1 = instrl.instr_next_in_func(p);
+            p1 = instrl.instr_next_in_func(p);
             prt_jxx_compare_true(p1, out);
             out->prtl(")");
             p1 = instrl.instr_next_in_func(p1);	//	skip the jxx
             p1 = instrl.instr_next_in_func(p1);	//	skip the jmp
             p1 = instrl.instr_next_in_func(p1);	//	skip the label
             prt_one_statement(p1, out);
-        }
         break;
-        case COMP_if_else:
-        {	// = "0_jxx1_0_jmp2_from1_0_from2_";
+        case COMP_if_else: // = "0_jxx1_0_jmp2_from1_0_from2_";
             out->ident();
             out->XMLbegin(XT_Keyword, NULL);
             out->prtt("if");
             out->XMLend(XT_Keyword);
             out->prtt("(");
-            Instruction * p1 = instrl.instr_next_in_func(p);
+            p1 = instrl.instr_next_in_func(p);
             prt_jxx_compare_false(p1, out);
             out->prtl(")");
 
@@ -947,17 +945,15 @@ void	CFunc_Prt::prt_instr(const Instruction * p, POSITION &nextpos, XmlOutPro* o
             p1 = instrl.instr_next_in_func(p1);				//the statement
 
             prt_one_statement(p1, out);
-        }
         break;
         case COMP_while:
-        {
             out->ident();
             out->XMLbegin(XT_Keyword, NULL);
             out->prtt("while");
             out->XMLend(XT_Keyword);
             out->prtt("(");
 
-            Instruction * p1 = instrl.instr_next_in_func(p);
+            p1 = instrl.instr_next_in_func(p);
             p1 = instrl.instr_next_in_func(p1);	//	skip the first, its label
             prt_jxx_compare_false(p1, out);
             out->prtl(")");
@@ -965,17 +961,15 @@ void	CFunc_Prt::prt_instr(const Instruction * p, POSITION &nextpos, XmlOutPro* o
             p1 = instrl.instr_next_in_func(p1);
             prt_one_statement(p1, out);
             //prtl_ident("//while end");
-        }
         break;
         case COMP_do_while:
-        {
             out->ident();
             out->XMLbegin(XT_Keyword, NULL);
             out->prtt("do");
             out->XMLend(XT_Keyword);
             out->endline();
 
-            Instruction * p1 = instrl.instr_next_in_func(p);
+            p1 = instrl.instr_next_in_func(p);
             p1 = instrl.instr_next_in_func(p1);	//	skip the first, its label
             prt_one_statement(p1, out);
 
@@ -989,7 +983,6 @@ void	CFunc_Prt::prt_instr(const Instruction * p, POSITION &nextpos, XmlOutPro* o
             prt_jxx_compare_true(p1, out);
             out->prtt(")");
             out->EOL();
-        }
         break;
         case COMP_for1:
         {
@@ -999,7 +992,7 @@ void	CFunc_Prt::prt_instr(const Instruction * p, POSITION &nextpos, XmlOutPro* o
             out->XMLend(XT_Keyword);
             out->prtt("(");
 
-            Instruction * p1 = instrl.instr_next_in_func(p);
+            p1 = instrl.instr_next_in_func(p);
 
             prt_statement_in_1_line(p1, out);
             assert(p1->type == i_Label);
@@ -1025,7 +1018,7 @@ void	CFunc_Prt::prt_instr(const Instruction * p, POSITION &nextpos, XmlOutPro* o
             out->XMLend(XT_Keyword);
             out->prtt("(");
 
-            Instruction * p1 = instrl.instr_next_in_func(p);
+            p1 = instrl.instr_next_in_func(p);
 
             prt_statement_in_1_line(p1, out);
             if (p1->type != i_Jump)
@@ -1054,10 +1047,10 @@ void	CFunc_Prt::prt_instr(const Instruction * p, POSITION &nextpos, XmlOutPro* o
         }
         break;
         case COMP_switch_case:
-        {	//	小心了，swith_case的显示很困难的
+        {	//	Careful, swith_case very difficult to display
             out->prtf_ident("switch (");
-            Instruction * p1 = instrl.instr_next_in_func(p);
-            assert(p1->type == i_Jump);		//	开头肯定是个条件跳
+            p1 = instrl.instr_next_in_func(p);
+            assert(p1->type == i_Jump);		//	Conditions must be a jump start
             //while (p1->type != i_JmpAddr)
             //{
             //	p1 = instrl.instr_next_in_func(p1);
@@ -1089,7 +1082,7 @@ void	CFunc_Prt::prt_instr(const Instruction * p, POSITION &nextpos, XmlOutPro* o
         case COMP_switch_case_multcomp:
         {	//	小心了，swith_case的显示很困难的
             out->prtf_ident("switch (");
-            Instruction * p1 = instrl.instr_next_in_func(p);
+            p1 = instrl.instr_next_in_func(p);
             assert(p1->type == i_Jump);		//	开头肯定是个条件跳
             //while (p1->type != i_JmpAddr)
             //{

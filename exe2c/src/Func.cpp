@@ -73,7 +73,7 @@ bool	Func::Func_FillCallParas()
                 p->var_r1.opsize = BIT32_is_4;
                 p->var_r1.reg = enum_ECX;
                 p->call_addon.p_thecall = pinstr;
-                m_instr_list.insert(pos, p); //在i_Call后面加i_CallPara
+                m_instr_list.insert(pos, p); // Appending i_CallPara at i_Call
             }
             if (pfctype != NULL && pfctype->m_args != 0)
             {
@@ -89,11 +89,12 @@ bool	Func::Func_FillCallParas()
                 p->var_r1.opsize = parasize;
                 p->var_r1.var_off = stack2varoff(pinstr->call.esp_level);
 
-                m_instr_list.insert(pos, p); //在i_Call后面加i_CallPara
+                m_instr_list.insert(pos, p); //Appending at i_Call i_CallPara
             }
-            //怎么说？call的返回值会影响eax
-            {//在每一个call后面加i_CallRet是没有问题的。如果这个函数没有返加值，
-                //这个i_CallRet肯定会被优化掉
+            //How to say? The return value of call eax
+            {
+                //In every call followed by i_CallRet is no problem. If this function does not return to value-added,
+                //This will certainly be optimized away i_CallRet
                 Instruction * p = new Instruction(i_CallRet);   //new_INSTR
 
                 p->call_addon.p_thecall = pinstr;
@@ -102,7 +103,7 @@ bool	Func::Func_FillCallParas()
                 p->var_w.opsize = BIT32_is_4;
                 p->var_w.reg = enum_EAX;
 
-                m_instr_list.insert(pos, p); //在i_Call后面加i_CallRet
+                m_instr_list.insert(pos, p); //i_Call followed by the i_CallRet
             }
         }
         if (pinstr->type != i_CallApi)
@@ -120,7 +121,7 @@ bool	Func::Func_FillCallParas()
                 p->var_r1.opsize = papi->m_functype->para_total_size();
                 p->var_r1.var_off = stack2varoff(pinstr->call.esp_level);
 
-                m_instr_list.insert(pos, p); //在i_Call后面加多个i_CallPara
+                m_instr_list.insert(pos, p); //i_Call followed by the multiple i_CallPara
             }
         }
         //关于返回值
