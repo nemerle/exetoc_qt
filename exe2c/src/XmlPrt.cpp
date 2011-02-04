@@ -339,13 +339,13 @@ std::string XmlPrt::GetLine(int nLine)
 {
     if (m_str.isEmpty())
         return "";
-
     int n = 0;
     int current_index=0;
     int line_end_idx=-1;
     for (;;)
     {
         line_end_idx=m_str.indexOf('\n',current_index);
+
             if (n == nLine)
             return m_str.mid(current_index,line_end_idx).toStdString();
 

@@ -6,56 +6,27 @@
 
 #include <cstdio>
 #include "DataType.h"
-#include "ParseHead.h"
 #include <QMessageBox>
-//#include	"CISC.h"
 
+//static bool exe2c_Init()
+//{
 
+//    if (true)//GetFileAttributes("e2c_define.h") != -1)
+//    {
+//        //CParseHead ph;
+//        //ph.ParseHeadFile("e2c_define.h");
 
-static bool exe2c_Init()
-{
-
-    if (true)//GetFileAttributes("e2c_define.h") != -1)
-    {
-        //CParseHead ph;
-        //ph.ParseHeadFile("e2c_define.h");
-
-//        g_FuncDefineMng.prtall();
-    }
-    else
-    {
-        QMessageBox box;
-        box.setText("not find e2c_define.h");
-        box.setIcon(QMessageBox::Warning);
-        box.exec();
-    }
-        return true;
-}
-
-
-static void exe2c_Exit()
-{
-}
-
-class CDataType_cpp
-{
-public:
-    CDataType_cpp()
-    {
-        exe2c_Init();
-    }
-    ~CDataType_cpp()
-    {
-        exe2c_Exit();
-    }
-};
-
-CDataType_cpp g_CDataType_cpp;
-
-
-int log_prtl(const char * fmt,...);
-
-
+//        //        g_FuncDefineMng.prtall();
+//    }
+//    else
+//    {
+//        QMessageBox box;
+//        box.setText("not find e2c_define.h");
+//        box.setIcon(QMessageBox::Warning);
+//        box.exec();
+//    }
+//    return true;
+//}
 
 const char * my_itoa(int i)
 {

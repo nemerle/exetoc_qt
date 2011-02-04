@@ -2,7 +2,7 @@
 
 //	XmlType.cpp
 
-////#include "stdafx.h"
+#include <QDebug>
 #include	"00000.h"
 #include "XMLTYPE.h"
 
@@ -88,13 +88,14 @@ const char * tbl_Key_Function[] =
 };
 void XML_Clicked(XMLTYPE xmltype, void * p)
 {
+    size_t key;
     switch (xmltype)
     {
     case XT_Function:
-    {
-        size_t key = PopUpKeys(tbl_Key_Function);
-    }
+        key = PopUpKeys(tbl_Key_Function);
         break;
+    default:
+        qDebug()<<"Unhandled xml click";
     }
 }
 
