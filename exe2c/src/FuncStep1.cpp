@@ -484,6 +484,9 @@ bool	FuncLL::Asm_Code_Change_ESP(int &esp, XCPUCODE* pxcpu)
             }
         }
         return false;
+    default:
+        qDebug() << "Asm_Code_Change_ESP: other insn";
+        break;
     }
     if (esp == ESP_UNKNOWN)
         return false;
@@ -930,7 +933,7 @@ void VarLL::AddRef(signed int level, int opersize)
     pnew = new st_VarLL;
     pnew->off = off;
     pnew->size = opersize;
-    sprintf(pnew->Name, "v_%x", off);
+    pnew->Name=QString("v_%1").arg(off,0,16);
 
     if (m_varll_list.empty())
     {

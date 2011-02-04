@@ -10,7 +10,7 @@
 #include "FuncType.h"
 #include "SVarType.h"
 
-FuncType::FuncType() : m_callc(),m_retdatatype_id(0),m_extern_c(false),m_varpar(0),m_args(0),
+FuncType::FuncType() : m_callc(enum_unknown),m_retdatatype_id(0),m_extern_c(false),m_varpar(0),m_args(0),
     m_partypes(0),m_class(0)
 {
 }
@@ -30,7 +30,7 @@ FuncType* FuncType::ft_clone()
     pnew->m_internal_name = m_internal_name;
 
     pnew->m_partypes = m_partypes; // vector contents COPIED here
-    if (this->m_args)
+    if (m_args)
     {
         //pnew->m_parnames.resize( = new char *[this->m_args];
         //memcpy(pnew->m_parnames, this->m_parnames,sizeof(char *) * this->m_args);
@@ -54,12 +54,12 @@ void FuncType::create_internal_funcname()
         }
         if (this->m_callc == enum_stdcall) //	stdcall is alos simple
                 sprintf(buf,"%s@%d",this->m_pname.c_str(),this->m_args * 4);
-        else if (this->m_callc == enum_fastcall) //	不知道怎么变，随便吧 //Do not know how to change it easily
+        else if (this->m_callc == enum_fastcall) //Do not know how to change it easily
                 sprintf(buf,"%s@@%d",this->m_pname.c_str(),this->m_args * 4);
         else if (this->m_callc == enum_cdecl)
                 sprintf(buf,"%s@%d",this->m_pname.c_str(),this->m_args * 4);
         else
-            assert(("I do not know how to convert it to internal funcname",0));
+            assert( !"I do not know how to convert it to internal funcname" );
         this->m_internal_name = buf;
 }
 

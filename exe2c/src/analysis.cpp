@@ -7,12 +7,12 @@
 #include "Strategy.h"
 extern bool g_f_Step_by_Step;
 extern bool g_any1_return_TRUE;
-bool Step_by_Step();
+//bool Step_by_Step(void);
 
 bool	Func::analysis_step_by_step()
 {
     // Let us show points of information
-    static Func* lastfunc = 0;
+    static const Func* lastfunc = 0;
     static int n = 0;
     if (this != lastfunc)
     {
@@ -96,12 +96,12 @@ bool	Func::analysis_once_1()
 }
 bool	Func::analysis_once()
 {
-	if(false==analysis_once_1())
+    if( !analysis_once_1() )
 		return false;
 	if (g_CStrategy.IfAny())
 	{
-		g_CStrategy.PrintIt(this->m_instr_list, this);
-		g_CStrategy.DoIt(this->m_instr_list, this->m_exprs);
+        g_CStrategy.PrintIt(m_instr_list, this);
+        g_CStrategy.DoIt(m_instr_list, m_exprs);
 	}
 	DeleteUnusedVar();
 	return true;
@@ -119,7 +119,8 @@ void Func::analysis()
 
 
 void	Func::ana_RetType()
-{	//	检查函数的返回值
+{
+    //	Check the return value
     VAR v;
     v.type = v_Reg;
     v.reg = enum_EAX;   //	enum_EAX = 0 = enum_AL = enum_AX
@@ -127,7 +128,7 @@ void	Func::ana_RetType()
 
     if (m_functype != NULL)
     {
-        int n = GG_VarType_ID2Size(this->m_functype->m_retdatatype_id);
+        SIZEOF n = GG_VarType_ID2Size(m_functype->m_retdatatype_id);
         if (n == 0)
             return;
         if (n == 2 || n == 4)

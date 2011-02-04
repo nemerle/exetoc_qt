@@ -59,7 +59,7 @@ CCbuf* ReadDefFile(const std::string & fname)
         fclose(f);
         return pInfo;
 }
-std::string DLLDEF_Get_ApiName_from_ord(char * pDLLname, WORD ord)
+std::string DLLDEF_Get_ApiName_from_ord(const char * pDLLname, WORD ord)
 {
     if (strcmp(pDLLname,"MFC42.DLL") == 0)
     {

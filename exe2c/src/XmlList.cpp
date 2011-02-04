@@ -1,8 +1,9 @@
 // Copyright(C) 1999-2005 LiuTaoTao，bookaa@rorsoft.com
 
+#include <cassert>
 #include	"00000.h"
 #include	"XmlList.h"
-#include <assert.h>
+
 
 XmlList* XmlList::new_CXmlList(XMLTYPE xmltype, void * p, size_t posfrom)
 {//static int
@@ -17,9 +18,7 @@ XmlList* XmlList::new_CXmlList(XMLTYPE xmltype, void * p, size_t posfrom)
 }
 XmlList::~XmlList()
 {
-        if (this->m_sub)
                 delete m_sub;
-        if (this->m_next)
                 delete m_next;
         this->m_sub = NULL;
         this->m_next = NULL;
@@ -124,9 +123,7 @@ XmlList* XmlList::GetCurWord(size_t curpos, long &posfrom, long &posto)
                         if (p1)
                                 return p1;
                 }
-                else if (curpos >= p->m_posfrom
-                        && curpos < p->m_posto
-                        && p->m_posto != -1)
+        else if (curpos >= p->m_posfrom && curpos < p->m_posto && p->m_posto != -1)
                 {
                         posfrom = p->m_posfrom;
                         posto = p->m_posto;
@@ -189,12 +186,12 @@ void XmlList::prtprtout(const char * str, XmlOutPro* prt)
 
         p = p->m_next;
     }
-    if (this->m_posto > k_pos)
-        prt->prtslen(str, this->m_posto - k_pos);
-    else if (this->m_posto == -1)
+    if (m_posto > k_pos)
+        prt->prtslen(str, m_posto - k_pos);
+    else if (m_posto == -1)
         prt->prtt(str);
 
-    prt->XMLend(this->m_xmltype);
+    prt->XMLend(m_xmltype);
 }
 void XmlList::Display(const char * pstr, I_COLOROUT* iColorOut, XMLTYPE curw_xmltype, void * curw_p)
 {
@@ -204,9 +201,9 @@ void XmlList::Display(const char * pstr, I_COLOROUT* iColorOut, XMLTYPE curw_xml
             iColorOut->SetBKColor(QColor(255,255,0));
         }
     QColor k_color = XmlType_2_Color(this->m_xmltype);
-    size_t k_pos = this->m_posfrom;
+    size_t k_pos = m_posfrom;
 
-    XmlList* p = this->m_sub;
+    XmlList* p = m_sub;
     while (p)
     {
         //	------------------------------------

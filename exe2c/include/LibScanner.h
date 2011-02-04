@@ -122,31 +122,23 @@ class LibScanner : public I_LIBSCANNER
     typedef std::vector<COFFSYMBOL>	COFFSYMBOL_LIST;
     typedef std::vector<PFUNCTION_SYMBOL> FUNCTION_LIST;
 public:
-    LibScanner(){};
+    LibScanner(){}
     ~LibScanner();
 
 public:
-    ///////////// DO NOT EDIT THIS //////////////
-    virtual bool	BaseInit();	//override the origin function, it's a class creator!
-    ///////////// DO NOT EDIT THIS //////////////
-
-    //Add interface here
-    virtual bool	 test();		//Test interface
-    //Add interface here
     virtual bool  ScanLib(const char * szLib);
     virtual PFUNCTION_SYMBOL  GetFunctionInfo(const char * szFun);
     virtual std::string  CheckIfLibFunc(PCBYTE phead);
 
 private:
     //Add member here
-    //Add member here
     FUNCTION_LIST m_funs;
     void ClearFunction();
-    void ClearCOFFObject(COFFOBJECT_LIST &objs);
-    const char *COFFGetName(const IMAGE_SYMBOL* coff_sym, const char* coff_strtab);
+    void ClearCOFFObject(COFFOBJECT_LIST &objs) const;
+    const char *COFFGetName(const IMAGE_SYMBOL &coff_sym, const char* coff_strtab);
     bool ScanCOFFObject(COFFOBJECT_LIST &objs,BYTE * lpBuffer,uint32_t Len);
-    PIMAGE_SECTION_HEADER FindSection(PCOFFOBJECT pObj,SHORT SectNumber);
-    PCOFFSYMBOL FindSymbol(COFFSYMBOL_LIST &syms,int symIndx);
+    PIMAGE_SECTION_HEADER FindSection(PCOFFOBJECT pObj,SHORT SectNumber) const;
+    PCOFFSYMBOL FindSymbol(COFFSYMBOL_LIST &syms,int symIndx) const;
     void ScanFunction(FUNCTION_LIST & funs,PCOFFOBJECT pObj);
     bool CheckThisFunc(PFUNCTION_SYMBOL pFun, PCBYTE phead);
     bool CheckSubFunc(PFUNCTION_SYMBOL pFun, PCBYTE phead);

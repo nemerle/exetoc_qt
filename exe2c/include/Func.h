@@ -115,7 +115,7 @@ struct st_VarLL
     int off;    //Always >=0
     int size;
     int array;  //default to 1
-    char Name[40];
+    QString Name;
 
     st_VarLL()
     {
@@ -210,7 +210,7 @@ public:
     void Create_Labels_backend();   // label back-end processing
     // create methods end
 
-    bool expr_only_use_in_this(VAR* pvar, Instruction *phead);
+    //bool expr_only_use_in_this(const VAR * const pvar, const Instruction * const phead);
 
     void    PrepareFunc();
     void    analysis();

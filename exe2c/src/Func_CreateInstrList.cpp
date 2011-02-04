@@ -56,24 +56,23 @@ Instruction * findlabel(INSTR_LIST& list, ea_t off)
 void Func::Create_Labels_backend()	// No|Number backend
 {
 	POSITION pos = m_instr_list.begin();
+    Instruction * thelabel;
 	while (pos!=m_instr_list.end())
 	{
 		Instruction * p = *pos;
 		++pos;
-		if (p->type == i_Jump)
-		{
-			Instruction * thelabel = findlabel(m_instr_list,p->jmp.jmpto_off);
+        if (p->type != i_Jump)
+            continue;
+        thelabel = findlabel(m_instr_list,p->jmp.jmpto_off);
 			if (thelabel->label.ref_instr)
 				p->jmp.next_ref_of_this_label = thelabel->label.ref_instr;	// save old ref list
 			thelabel->label.ref_instr = p;	// tell the label it was referred
 			p->jmp.target_label = thelabel;	// tell the Jxx the label it need
 		}
-	}
-	//std::remove_if(list->begin(),list->end(),)
 	pos = m_instr_list.begin();
 	while (pos!=m_instr_list.end())
-	{// remove all label not referred
-		Instruction * p = *pos;
+    {// remove all unreferrenced labels
+        const Instruction * p = *pos;
 		if (p->type == i_Label && p->label.ref_instr == 0)
 			pos=m_instr_list.erase(pos);
 		else

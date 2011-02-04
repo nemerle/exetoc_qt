@@ -13,6 +13,7 @@
 #include "ApiManage.h"
 
 void	Disassembler_Init_offset(const uint8_t * code_buf, ea_t code_offset);
+extern std::string DLLDEF_Get_ApiName_from_ord(const char *pDLLname, WORD ord);
 BYTE *	ea2ptr(ea_t pos);
 ea_t ptr2ea(void* p);
 BYTE	Peek_B(ea_t pos);

@@ -25,26 +25,11 @@ void LibScanner_Exit()
 }
 
 
-bool LibScanner::BaseInit()
-{
-        //KICK_MFC();
-        return true;
-}
-
-
 LibScanner::~LibScanner()
 {
         ClearFunction();
     //KICK_MFC();
 }
-
-
-bool LibScanner::test()
-{
-        //KICK_MFC();
-        return true;
-}
-
 
 void LibScanner::ClearFunction()
 {
@@ -57,7 +42,7 @@ void LibScanner::ClearFunction()
         m_funs.clear();
 }
 
-void LibScanner::ClearCOFFObject(COFFOBJECT_LIST &objs)
+void LibScanner::ClearCOFFObject(COFFOBJECT_LIST &objs) const
 {
         for(COFFOBJECT_LIST::iterator it = objs.begin();it!=objs.end();++it)
         {
@@ -67,26 +52,26 @@ void LibScanner::ClearCOFFObject(COFFOBJECT_LIST &objs)
         }
         objs.clear();
 }
-const char * LibScanner::COFFGetName(const IMAGE_SYMBOL* coff_sym, const char* coff_strtab)
+const char * LibScanner::COFFGetName(const IMAGE_SYMBOL &coff_sym, const char* coff_strtab)
 {
         static	char	namebuff[9];
         const char*		nampnt;
 
-        if (coff_sym->N.Name.Short)
+    if (coff_sym.N.Name.Short)
         {
-                memcpy(namebuff, coff_sym->N.ShortName, 8);
+        memcpy(namebuff, coff_sym.N.ShortName, 8);
                 namebuff[8] = '\0';
                 nampnt = &namebuff[0];
         }
         else
         {
-                nampnt = coff_strtab + coff_sym->N.Name.Long;
+        nampnt = coff_strtab + coff_sym.N.Name.Long;
         }
 
         return nampnt;
 }
 
-PIMAGE_SECTION_HEADER LibScanner::FindSection(PCOFFOBJECT pObj,SHORT SectNumber)
+PIMAGE_SECTION_HEADER LibScanner::FindSection(PCOFFOBJECT pObj,SHORT SectNumber) const
 {
         PIMAGE_FILE_HEADER pIFH = (PIMAGE_FILE_HEADER)pObj->lpBuffer;
         PIMAGE_SECTION_HEADER pISH = (PIMAGE_SECTION_HEADER)(pObj->lpBuffer + IMAGE_SIZEOF_FILE_HEADER);
@@ -112,7 +97,7 @@ void LibScanner::ScanFunction(FUNCTION_LIST & funs,PCOFFOBJECT pObj)
 
         COFFSYMBOL sym;
         memset(&sym,0,sizeof(COFFSYMBOL));
-        strcpy(sym.Name,COFFGetName(pcurIS,lpStrTab));
+        strcpy(sym.Name,COFFGetName(*pcurIS,lpStrTab));
         sym.SYMB_INX = k;
         sym.SECT_NUM = pcurIS->SectionNumber;
         sym.STOR_CLS = pcurIS->StorageClass;
@@ -127,7 +112,7 @@ void LibScanner::ScanFunction(FUNCTION_LIST & funs,PCOFFOBJECT pObj)
     for(int i =0;i<pIFH->NumberOfSymbols;i++)
     {
         PIMAGE_SYMBOL pSymb = pIS+i;
-        const char * lpName = COFFGetName(pSymb,lpStrTab);
+        const char * lpName = COFFGetName(pIS[i],lpStrTab);
         if( !(ISFCN(pSymb->Type) &&pSymb->SectionNumber>0))
         {
             i+=pSymb->NumberOfAuxSymbols;
@@ -139,7 +124,7 @@ void LibScanner::ScanFunction(FUNCTION_LIST & funs,PCOFFOBJECT pObj)
         if(!pISH)
             continue;
         PFUNCTION_SYMBOL pFun = (PFUNCTION_SYMBOL) new BYTE[sizeof(FUNCTION_SYMBOL)+pISH->NumberOfRelocations*sizeof(REFSYMBOL)];
-        assert(lpName==COFFGetName(pSymb,lpStrTab));
+        assert(lpName==COFFGetName(pIS[i],lpStrTab));
         strcpy(pFun->FunctionName , lpName);
 
         if(pISH->SizeOfRawData > pSymb->Value )
@@ -153,12 +138,12 @@ void LibScanner::ScanFunction(FUNCTION_LIST & funs,PCOFFOBJECT pObj)
 
             pFun->RefCount = pISH->NumberOfRelocations;
 
-            for(int i =0;i<pFun->RefCount;i++)
+            for(size_t ii =0;ii<pFun->RefCount;ii++)
             {
-                PCOFFSYMBOL symb = FindSymbol(syms,pIR[i].SymbolTableIndex);
-                strcpy(pFun->RefInfo[i].RefSymbol,symb->Name);
-                pFun->RefInfo[i].RefOffset = pIR[i].VirtualAddress;
-                pFun->RefInfo[i].RefType   = pIR[i].Type;
+                PCOFFSYMBOL symb = FindSymbol(syms,pIR[ii].SymbolTableIndex);
+                strcpy(pFun->RefInfo[ii].RefSymbol,symb->Name);
+                pFun->RefInfo[ii].RefOffset = pIR[ii].VirtualAddress;
+                pFun->RefInfo[ii].RefType   = pIR[ii].Type;
 
             }
             strcpy(pFun->ObjName,pObj->ObjName);
@@ -168,13 +153,12 @@ void LibScanner::ScanFunction(FUNCTION_LIST & funs,PCOFFOBJECT pObj)
         else
         {
             assert("Error!");
-            //TRACE("Error!\r\n");
         }
         i+=pSymb->NumberOfAuxSymbols;
     }
 }
 
-PCOFFSYMBOL LibScanner::FindSymbol(COFFSYMBOL_LIST &syms,int symIndx)
+PCOFFSYMBOL LibScanner::FindSymbol(COFFSYMBOL_LIST &syms,int symIndx) const
 {
         for(COFFSYMBOL_LIST::iterator it = syms.begin();it!=syms.end();++it)
         {
@@ -191,7 +175,6 @@ bool LibScanner::ScanCOFFObject(COFFOBJECT_LIST &objs,BYTE * lpBuffer,uint32_t L
                 return FALSE;
 
         PIMAGE_ARCHIVE_MEMBER_HEADER pSect = (PIMAGE_ARCHIVE_MEMBER_HEADER)(lpBuffer+IMAGE_ARCHIVE_START_SIZE);
-        bool bFirst = FALSE;
 
         BYTE * lpNewPtr = (BYTE *)pSect;
         char *lpLongTable = NULL;
@@ -203,7 +186,7 @@ bool LibScanner::ScanCOFFObject(COFFOBJECT_LIST &objs,BYTE * lpBuffer,uint32_t L
                 }
                 else if(memcmp(pSect->Name,IMAGE_ARCHIVE_LONGNAMES_MEMBER,16)==0)//LONG Name
                 {
-                        uint32_t theSecSize = atol((char *)pSect->Size);
+            //uint32_t theSecSize = atol((char *)pSect->Size);
                         lpLongTable  = ((char *)pSect) + sizeof(IMAGE_ARCHIVE_MEMBER_HEADER);
                 }
                 else //Obj Section
@@ -302,7 +285,7 @@ PFUNCTION_SYMBOL LibScanner::GetFunctionInfo(const char * szFun)
 }
 bool IfReAlloc(PFUNCTION_SYMBOL pFun, int offset)
 {
-    for (int i=0; i<pFun->RefCount; i++)
+    for (size_t i=0; i<pFun->RefCount; i++)
     {
         REFSYMBOL* p = &pFun->RefInfo[i];
         if (p->RefOffset == offset)
@@ -320,19 +303,19 @@ void nop(const void*)
 //call    ??2@YAPAXI@Z    ; operator new(uint)
 bool LibScanner::CheckSubFunc(PFUNCTION_SYMBOL pFun, PCBYTE phead)
 {
-    for (int i=0; i<pFun->RefCount; i++)
+    for (size_t i=0; i<pFun->RefCount; i++)
     {
         REFSYMBOL* p = &pFun->RefInfo[i];
         nop(p->RefType);
                 PCBYTE p1 = phead + p->RefOffset;
                 nop(p1);
                 if (p->RefType == IMAGE_REL_I386_REL32	//==0x14
-            && *(p1-1) == 0xe8) //e8是个call
+                && *(p1-1) == 0xe8) //e8 is a call
         {
             signed int off = *(signed int*)p1;
             PCBYTE new_phead = p1 + off + 4;
             if (!strcmp(p->RefSymbol, this->CheckIfLibFunc(new_phead).c_str()))
-            {//有一个就足够了
+            {//There is a is enough
                 return true;
             }
                         else
@@ -366,7 +349,8 @@ bool LibScanner::CheckThisFunc(PFUNCTION_SYMBOL pFun, PCBYTE phead)
         phead1++;
     }
     if (pFun->dwFuncLen < 0x200 && pFun->RefCount > 0)
-    {//太短的函数，最好再检查一下它call的函数
+    {
+        //Function is too short, it is best to check it and then call the function
         return CheckSubFunc(pFun, phead);
     }
     return true;
