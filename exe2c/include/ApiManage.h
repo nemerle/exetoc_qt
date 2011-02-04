@@ -32,10 +32,8 @@ private:
 public:
     static ApiManage *get();
 
-
 	bool	new_api(ea_t address,int stacksub);
 	Api*	get_api(ea_t address);
-
 	void New_ImportAPI(const std::string & pstr, uint32_t apiaddr);
 };
 

@@ -1,6 +1,4 @@
 // Copyright(C) 1999-2005 LiuTaoTao，bookaa@rorsoft.com
-
-
 //	exe2c project
 
 #ifndef	FileLoad_H
@@ -13,8 +11,6 @@ enum enum_EXEType
         enum_PE_dll		= 2,
         enum_PE_sys		= 3
 };
-
-extern enum_EXEType g_EXEType;
 
 enum enum_EXEFormat
 {
@@ -181,6 +177,7 @@ struct perelocheader
 class FileLoader
 {
 private:
+    enum_EXEType g_EXEType;
         enum_EXEFormat exetype;
         FILE *efile;
         BYTE *fbuff;
@@ -255,8 +252,6 @@ public:
 
 // predefined null pointer.
 extern const lptr nlptr;
-
-bool	if_valid_ea(ea_t ea);
 
 //#define GNAME_MAXLEN 40
 

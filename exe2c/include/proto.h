@@ -9,9 +9,9 @@
 typedef	std::list<ea_t>	EALIST;
 //---------------------------------------------
 //	unit1.cpp
-void	Set_Cur_CFunc(Func* pfunc);
-void	Redraw_CurFunc();
-void	Redraw();
+//void	Set_Cur_CFunc(Func* pfunc);
+//void	Redraw_CurFunc();
+//void	Redraw();
 //---------------------------------------------
 
 void _warn(const char * __cond, const char * __file, int __line);
@@ -32,9 +32,7 @@ void _warn(const char * __cond, const char * __file, int __line);
 //	main.cpp
 
 
-extern	Func	*g_Cur_Func;		// 全局保存当前 CFunc
-
-//extern	EXPR_LIST	*g_expr_list;	// 全局变量表
+//extern	EXPR_LIST	*g_expr_list;	// Global variable table
 
 
 //---------------------------------------------
@@ -53,7 +51,7 @@ void	alert(const char * msg);
 
 //---------------------------------------------
 // Deasm_Init.cpp
-void	Disassembler_Init_offset(BYTE * code_buf, ea_t code_offset);
+void	Disassembler_Init_offset(const uint8_t * code_buf, ea_t code_offset);
 BYTE *	ea2ptr(ea_t pos);
 ea_t ptr2ea(void* p);
 BYTE	Peek_B(ea_t pos);

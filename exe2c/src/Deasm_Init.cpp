@@ -6,7 +6,7 @@
 intptr_t	g_ea2ptr = 0;
 // Because the file transferred to a different address and virtual address, so remember this difference
 // Afterward the main program uses only the offset to access, regardless of the actual buffer
-void	Disassembler_Init_offset(BYTE * code_buf, ea_t code_offset)
+void	Disassembler_Init_offset(const uint8_t * code_buf, ea_t code_offset)
 {
     g_ea2ptr = (intptr_t)code_buf - code_offset;
 }
@@ -36,8 +36,34 @@ uint32_t	Peek_D(ea_t pos)
     BYTE * p = ea2ptr(pos);
     return *(uint32_t *)p;
 }
+bool XCPUCODE::IsCalculatedJmp() const
+{
+    if (opcode != C_JMP)
+            return false;
+    if(op[0].mode == OP_Register) // jmp eax / jmp ebx
+        return true;
 
-bool	XCPUCODE::IsJxx()
+    if (op[0].mode == OP_Address) // jmp [Offset+RegBase +Scale*RegIndex]
+        return true;
+    return false;
+
+}
+bool XCPUCODE::IsJmpMemIndexed() const
+{
+    if (opcode != C_JMP)
+            return false;
+    if (op[0].mode != OP_Address)
+        return false;
+    if (op[0].addr.base_reg_index != _NOREG_)
+        return false;
+    if (op[0].addr.off_reg_index == _NOREG_)
+        return false;
+    if (op[0].addr.off_reg_scale != 4)
+        return false;
+    return true;
+
+}
+bool	XCPUCODE::IsJxx() const
 {
 	BYTE opcode = this->opcode;
 	switch (opcode)
@@ -66,20 +92,20 @@ bool	XCPUCODE::IsJxx()
 		return false;
 	}
 }
-bool	XCPUCODE::IsJmpNear()
+bool	XCPUCODE::IsJmpNear() const
 {
 	if (this->opcode == C_JMP && this->op[0].mode == OP_Near)
 		return true;
 	return false;
 }
-bool XCPUCODE::IsCallNear()
+bool XCPUCODE::IsCallNear() const
 {
 	return (this->opcode == C_CALL) && (this->op[0].mode == OP_Near);
 }
 
 bool OPERITEM::isRegOp(uint32_t reg_idx)
 {
-	return (mode==OP_Register)&&(reg.reg_index==reg_idx);
+    return (mode==OP_Register)&&(reg.reg_index==reg_idx);
 }
 bool OPERITEM::isStaticOffset() //! return true if this is OP_Address and it does not depend on other regs e.x. [0x11212]
 {
@@ -96,11 +122,9 @@ OPERITEM OPERITEM::createReg(int reg_idx,int width)
 
 
 // To make a disassembly, pos auto-increment, the results remain xcpu
-BYTE	 CDisasm::Disasm_OneCode(ea_t &pos)
+BYTE	 Disasm::Disasm_OneCode(ea_t pos)
 {
     st_IDA_OUT idaout;
     uint32_t n = this->Disassembler_X(ea2ptr(pos), pos, &idaout);
-
-	pos += n;
 	return (BYTE)n;
 }

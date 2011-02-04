@@ -12,7 +12,7 @@
 #include "FileLoad.h"
 #include "ApiManage.h"
 
-void	Disassembler_Init_offset(BYTE * code_buf, ea_t code_offset);
+void	Disassembler_Init_offset(const uint8_t * code_buf, ea_t code_offset);
 BYTE *	ea2ptr(ea_t pos);
 ea_t ptr2ea(void* p);
 BYTE	Peek_B(ea_t pos);
@@ -178,61 +178,7 @@ typedef struct _KSPE_IMAGE_BASE_RELOCATION {
 #define KSPE_IMAGE_REL_BASED_MIPS_JMPADDR          5
 
 
-int RelocationPE(PEHEADER* peh)
-{
-        BYTE * pestart = (BYTE *)peh;
-        uint32_t nRelocSize = peh->fixup_datasize;
 
-//    int Result = false;
-
-    KSPE_IMAGE_BASE_RELOCATION *pCurrentReLocBlock = NULL;
-    int nRelocCountOfBlock = 0;
-    WORD *pRelocItem = NULL;
-
-    int nOffsetReloc = pestart - (BYTE *)(peh->image_base);
-    if (nOffsetReloc == 0)
-        return true; // not need to do Reloc
-
-    pCurrentReLocBlock = (KSPE_IMAGE_BASE_RELOCATION *)(
-        pestart + (peh->fixuptable_rva)
-    );
-
-    while (nRelocSize > 0)
-    {
-        BYTE *pbyRelocBlockStartAddress =
-            pestart + (pCurrentReLocBlock->VirtualAddress);
-
-        nRelocCountOfBlock = (
-            (pCurrentReLocBlock->SizeOfBlock) - KSPE_IMAGE_SIZEOF_BASE_RELOCATION
-        ) / sizeof(WORD);
-
-        pRelocItem = pCurrentReLocBlock->TypeOffset;
-
-        while (nRelocCountOfBlock > 0)
-        {
-            uint32_t RelocItem = *pRelocItem;
-            switch (RelocItem >> 12)
-            {
-            case KSPE_IMAGE_REL_BASED_HIGHLOW:
-                // if Intel CPU
-                // *((uint32_t *)((RelocItem & 0xfff) + RelocBlockStartAddress) ) += nOffsetReloc;
-                *((BYTE **)(pbyRelocBlockStartAddress + (RelocItem & 0xfff))) += nOffsetReloc;
-                break;
-
-            //default: Skip
-            }
-            pRelocItem++;
-            nRelocCountOfBlock--;
-        }
-        nRelocSize -= pCurrentReLocBlock->SizeOfBlock;
-        // Get Next Reloc Block
-        pCurrentReLocBlock = (KSPE_IMAGE_BASE_RELOCATION *)(
-            ((BYTE *)pCurrentReLocBlock) + (pCurrentReLocBlock->SizeOfBlock)
-        );
-    } // while
-
-    return true;
-}
 
 ea_t	Find_Main(ea_t start)
 {
@@ -272,7 +218,7 @@ ea_t	Find_Main(ea_t start)
         uint32_t d = Peek_D(p+1);
         //alert_prtf("p = %x, d = %x",p,d);
         //alert_prtf(" I get main = %x",p+5+d);
-        return p+5+d;   //这是 WinMain
+        return p+5+d;   //This is the WinMain
     }
     return start;
 }
@@ -297,7 +243,7 @@ ea_t	Find_WinMain(ea_t start)
                 && Peek_W(p+3) == 0xFF6A
                 && Peek_W(p+0x1d) == 0xEC83
                 && Peek_B(p+0x12f) == 0xE8
-                )	//	这好象是用MFC的时候
+            )	//	This seems to be used by MFC
         {
                 p += 0x12f;
         uint32_t d = Peek_D(p+1);
@@ -328,7 +274,7 @@ void	SomeOther_about_MFC_load()
 
         p += 0xbb;
         if (p[0] != 0x68 || p[5] != 0x68 || p[10] != 0xe8)
-                return;		//	这里是两个push immed
+        return;		//	Here are two push immed
 
         ea_t s_init = *(uint32_t *)(p+6);
         ea_t e_init = *(uint32_t *)(p+1);
@@ -380,28 +326,6 @@ void OneItem_Init(ea_t ea)
 
         WinApp_vftbl(vftbl);
 }
-/*
-00401070                   Init2           proc near
-00401070 E8 0B 00 00 00                    call    onInit
-00401075 E9 16 00 00 00                    jmp     loc_401090
-00401075                   Init2           endp
-
-00401080                   onInit          proc near               ; CODE XREF: Init2p
-00401080 B9 28 30 40 00                    mov     ecx, offset theApp
-00401085 E9 96 FF FF FF                    jmp     sub_401020
-00401085                   onInit          endp
-
-00401020                   sub_401020      proc near               ; CODE XREF: onInit+5j
-00401020 56                                push    esi
-00401021 8B F1                             mov     esi, ecx
-00401023 6A 00                             push    0
-00401025 E8 4E 05 00 00                    call    ??0CWinApp@@QAE@PBD@Z ; CWinApp::CWinApp(char const *)
-0040102A C7 06 18 22 40 00                 mov     dword ptr [esi], offset off_402218
-00401030 8B C6                             mov     eax, esi
-00401032 5E                                pop     esi
-00401033 C3                                retn
-00401033                   sub_401020      endp ; sp = -4
-*/
 
 #define	WinApp_InitInstance	0x16
 

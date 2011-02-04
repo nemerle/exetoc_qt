@@ -1,10 +1,10 @@
 
 // Copyright(C) 1999-2005 LiuTaoTao，bookaa@rorsoft.com
 
-//#include "stdafx.h"
+#include <cstdio>
+#include <QString>
+#include <QStringList>
 #include "CISC.h"
-//#include	<windows.h>
-#include	<stdio.h>
 
 #include "dasm.h"
 
@@ -32,25 +32,25 @@ typedef union SIB
     };
 } *PSIB;
 
-const char * SegReg[8]={
+static const char * SegReg[8]={
 "ES","CS","SS","DS","FS","GS","??","??"
 };
 
-const char * RegByte[8]={
+static const char * RegByte[8]={
 "AL","CL","DL","BL","AH","CH","DH","BH"
 };
 
-const char * RegWord[8]={
+static const char * RegWord[8]={
 "AX","CX","DX","BX","SP","BP","SI","DI"
 };
 
-const char * RegDWord[8]={
+static const char * RegDWord[8]={
 "EAX","ECX","EDX","EBX","ESP","EBP","ESI","EDI"
 };
 
 //******************************************************
 
-uint32_t	U_Size	= BIT32;
+static uint32_t	U_Size	= BIT32;
 //	So default disassembler is bit16
 //****************
 uint32_t	SegPrefix;
@@ -66,72 +66,16 @@ const char *	RepName;
 
 static XCPUCODE	xcpu;
 
-XCPUCODE* CDisasm::get_xcpu()
+XCPUCODE* Disasm::get_xcpu()
 {
     return &xcpu;
 }
 
-//**************************************
-// The list of the types of Opdata1, Opdata2, Opdata3
-typedef enum
-{
-        D_NONE,			// No any types
-        D_EB,D_EW,D_EV,	// A ModR/M bytes, specifies the operand size.
-        D_GB,D_GW,D_GV,	// The reg field of the ModR/M BYTE selects a normal register.
-        D_IB,D_IW,D_IV,	// Immediate data.
-        D_SB,			// Signed Immediate data.
-        D_SW,			// The reg field of the ModR/M BYTE selects a segment register.
-        D_MV,D_MP,D_MA,	// The ModR/M BYTE may refer only to memory.
-        D_OB,D_OV,		// The offset of the operand is coded as a WORD or d-WORD ( no ModR/M )
-        D_JB,D_JV,D_JP,	// The instruction contains a relative offset to be added to EIP.
-        D_RD,			// The mod field of the ModR/M BYTE may refer only to a general register.
-        D_CD,			// The reg field of the ModR/M BYTE selects a control register.
-        D_DD,			// The reg field of the ModR/M BYTE selects a debug register.
-
-        D_1,			// Only used for ( Group2 SHL/SHR... instruction )
-
-        D_AL,			// Specifying AL register
-        D_CL,			// Specifying CL register
-        D_DL,			// Specifying DL register
-        D_BL,			// Specifying BL register
-        D_AH,			// Specifying AH register
-        D_CH,			// Specifying CH register
-        D_DH,			// Specifying DH register
-        D_BH,			// Specifying BH register
-
-        D_AX,			// Specifying AX register
-        D_CX,			// Specifying CX register
-        D_DX,			// Specifying DX register
-        D_BX,			// Specifying BX register
-        D_SP,			// Specifying SP register
-        D_BP,			// Specifying BP register
-        D_SI,			// Specifying SI register
-        D_DI,			// Specifying DI register
-
-        D_AXV,			// Specifying eAX register
-        D_CXV,			// Specifying eCX register
-        D_DXV,			// Specifying eDX register
-        D_BXV,			// Specifying eBX register
-        D_SPV,			// Specifying eSP register
-        D_BPV,			// Specifying eBP register
-        D_SIV,			// Specifying eSI register
-        D_DIV,			// Specifying eDI register
-
-        D_ES,			// Specifying ES register
-        D_CS,			// Specifying CS register
-        D_SS,			// Specifying SS register
-        D_DS,			// Specifying DS register
-        D_FS,			// Specifying FS register
-        D_GS,			// Specifying GS register
-
-        D_V,			// Used for PUSHA/POPA, PUSHF/POPF, SHAF/LAHF
-        D_XB,D_XV		// Used for ( MOVS, LODS, OUTS, ... )
-}	OPDATATYPE;
 
 //**************************************
 
 
-INSTRUCTION grouptable1[8] =
+static const INSTRUCTION grouptable1[8] =
 {
         { C_ADD,		"ADD",		D_NONE,	D_NONE,	D_NONE },
         { C_OR,			"OR",		D_NONE,	D_NONE,	D_NONE },
@@ -143,7 +87,7 @@ INSTRUCTION grouptable1[8] =
         { C_CMP,		"CMP",		D_NONE,	D_NONE,	D_NONE }
 };
 
-INSTRUCTION grouptable2[8] =
+static const INSTRUCTION grouptable2[8] =
 {
         { C_ROL,		"ROL",		D_NONE,	D_NONE,	D_NONE },
         { C_ROR,		"ROR",		D_NONE,	D_NONE,	D_NONE },
@@ -155,7 +99,7 @@ INSTRUCTION grouptable2[8] =
         { C_SAR,		"SAR",		D_NONE,	D_NONE,	D_NONE }
 };
 
-INSTRUCTION grouptable3[8] =
+static const INSTRUCTION grouptable3[8] =
 {
         { C_MOV,		"MOV",		D_NONE,	D_NONE,	D_NONE },
         { C_ERROR,		NULL,		D_NONE,	D_NONE,	D_NONE },
@@ -167,7 +111,7 @@ INSTRUCTION grouptable3[8] =
         { C_ERROR,		NULL,		D_NONE,	D_NONE,	D_NONE }
 };
 
-INSTRUCTION grouptable4[8] =
+static const INSTRUCTION grouptable4[8] =
 {
         { C_TEST,		"TEST",		D_NONE,	D_IB,	D_NONE },
         { C_ERROR,		NULL,		D_NONE,	D_NONE,	D_NONE },
@@ -179,7 +123,7 @@ INSTRUCTION grouptable4[8] =
         { C_IDIV,		"IDIV",		D_NONE,	D_NONE,	D_NONE }
 };
 
-INSTRUCTION grouptable5[8] =
+static const INSTRUCTION grouptable5[8] =
 {
         { C_TEST,		"TEST",		D_NONE,	D_IV,	D_NONE },
         { C_ERROR,		NULL,		D_NONE,	D_NONE,	D_NONE },
@@ -191,7 +135,7 @@ INSTRUCTION grouptable5[8] =
         { C_IDIV,		"IDIV",		D_NONE,	D_NONE,	D_NONE }
 };
 
-INSTRUCTION grouptable6[8] =
+static const INSTRUCTION grouptable6[8] =
 {
         { C_INC,		"INC",		D_NONE,	D_NONE,	D_NONE },
         { C_DEC,		"DEC",		D_NONE,	D_NONE,	D_NONE },
@@ -203,7 +147,7 @@ INSTRUCTION grouptable6[8] =
         { C_ERROR,		NULL,		D_NONE,	D_NONE,	D_NONE }
 };
 
-INSTRUCTION grouptable7[8] =
+static const INSTRUCTION grouptable7[8] =
 {
         { C_INC,		"INC",		D_NONE,	D_NONE,	D_NONE },
         { C_DEC,		"DEC",		D_NONE,	D_NONE,	D_NONE },
@@ -217,7 +161,7 @@ INSTRUCTION grouptable7[8] =
 
 //**************************************
 
-INSTRUCTION	instruction0FH[] =
+static const INSTRUCTION	instruction0FH[] =
 {
         { C_ERROR,		NULL,		D_NONE,	D_NONE,	D_NONE },	//0x00,
         { C_ERROR,		NULL,		D_NONE,	D_NONE,	D_NONE },	//0x01,
@@ -479,7 +423,7 @@ INSTRUCTION	instruction0FH[] =
 };
 
 
-INSTRUCTION	instruction[] =
+static const INSTRUCTION	instruction[] =
 {
         { C_ADD,		"ADD",		D_EB,	D_GB,	D_NONE },	//0x00,
         { C_ADD,		"ADD",		D_EV,	D_GV,	D_NONE },	//0x01,
@@ -496,7 +440,7 @@ INSTRUCTION	instruction[] =
         { C_OR,			"OR",		D_AL,	D_IB,	D_NONE },	//0x0c,
         { C_OR,			"OR",		D_AXV,	D_IV,	D_NONE },	//0x0d,
         { C_PUSH,		"PUSH",		D_CS,	D_NONE,	D_NONE },	//0x0e,
-        { C_0FH,(char *)instruction0FH,D_NONE,D_NONE,	D_NONE },	//0x0f,
+        { C_0FH,(const char *)instruction0FH,D_NONE,D_NONE,	D_NONE },	//0x0f,
         { C_ADC,		"ADC",		D_EB,	D_GB,	D_NONE },	//0x10,
         { C_ADC,		"ADC",		D_EV,	D_GV,	D_NONE },	//0x11,
         { C_ADC,		"ADC",		D_GB,	D_EB,	D_NONE },	//0x12,
@@ -519,7 +463,7 @@ INSTRUCTION	instruction[] =
         { C_AND,		"AND",		D_GV,	D_EV,	D_NONE },	//0x23,
         { C_AND,		"AND",		D_AL,	D_IB,	D_NONE },	//0x24,
         { C_AND,		"AND",		D_AXV,	D_IV,	D_NONE },	//0x25,
-        { C_SEGPREFIX,	"ES:",		_ES_,	D_NONE,	D_NONE },	//0x26
+        { C_SEGPREFIX,	"ES:",		OPDATATYPE(_ES_),	D_NONE,	D_NONE },	//0x26
         { C_DAA,		"DAA",		D_NONE,	D_NONE,	D_NONE },	//0x27,
         { C_SUB,		"SUB",		D_EB,	D_GB,	D_NONE },	//0x28,
         { C_SUB,		"SUB",		D_EV,	D_GV,	D_NONE },	//0x29,
@@ -527,7 +471,7 @@ INSTRUCTION	instruction[] =
         { C_SUB,		"SUB",		D_GV,	D_EV,	D_NONE },	//0x2b,
         { C_SUB,		"SUB",		D_AL,	D_IB,	D_NONE },	//0x2c,
         { C_SUB,		"SUB",		D_AXV,	D_IV,	D_NONE },	//0x2d,
-        { C_SEGPREFIX,	"CS:",		_CS_,	D_NONE,	D_NONE },	//0x2e
+        { C_SEGPREFIX,	"CS:",		OPDATATYPE(_CS_),	D_NONE,	D_NONE },	//0x2e
         { C_DAS,		"DAS",		D_NONE,	D_NONE,	D_NONE },	//0x2f,
         { C_XOR,		"XOR",		D_EB,	D_GB,	D_NONE },	//0x30,
         { C_XOR,		"XOR",		D_EV,	D_GV,	D_NONE },	//0x31,
@@ -535,7 +479,7 @@ INSTRUCTION	instruction[] =
         { C_XOR,		"XOR",		D_GV,	D_EV,	D_NONE },	//0x33,
         { C_XOR,		"XOR",		D_AL,	D_IB,	D_NONE },	//0x34,
         { C_XOR,		"XOR",		D_AXV,	D_IV,	D_NONE },	//0x35,
-        { C_SEGPREFIX,	"SS:",		_SS_,	D_NONE,	D_NONE },	//0x36
+        { C_SEGPREFIX,	"SS:",		OPDATATYPE(_SS_),	D_NONE,	D_NONE },	//0x36
         { C_AAA,		"AAA",		D_NONE,	D_NONE,	D_NONE },	//0x37,
         { C_CMP,		"CMP",		D_EB,	D_GB,	D_NONE },	//0x38,
         { C_CMP,		"CMP",		D_EV,	D_GV,	D_NONE },	//0x39,
@@ -543,7 +487,7 @@ INSTRUCTION	instruction[] =
         { C_CMP,		"CMP",		D_GV,	D_EV,	D_NONE },	//0x3b,
         { C_CMP,		"CMP",		D_AL,	D_IB,	D_NONE },	//0x3c,
         { C_CMP,		"CMP",		D_AXV,	D_IV,	D_NONE },	//0x3d,
-        { C_SEGPREFIX,	"DS:",		_DS_,	D_NONE,	D_NONE },	//0x3e
+        { C_SEGPREFIX,	"DS:",		OPDATATYPE(_DS_),	D_NONE,	D_NONE },	//0x3e
         { C_AAS,		"AAS",		D_NONE,	D_NONE,	D_NONE },	//0x3f,
         { C_INC,		"INC",		D_AXV,	D_NONE,	D_NONE },	//0x40,
         { C_INC,		"INC",		D_CXV,	D_NONE,	D_NONE },	//0x41,
@@ -581,8 +525,8 @@ INSTRUCTION	instruction[] =
         { C_POPA,		"POPA",		D_V,	D_NONE,	D_NONE },	//0x61,
         { C_BOUND,		"BOUND",	D_GV,	D_MA,	D_NONE },	//0x62,
         { C_ARPL,		"ARPL",		D_EW,	D_GW,	D_NONE },	//0x63,
-        { C_SEGPREFIX,	"FS:",		_FS_,	D_NONE,	D_NONE },	//0x64
-        { C_SEGPREFIX,	"GS:",		_GS_,	D_NONE,	D_NONE },	//0x65
+        { C_SEGPREFIX,	"FS:",		OPDATATYPE(_FS_),	D_NONE,	D_NONE },	//0x64
+        { C_SEGPREFIX,	"GS:",		OPDATATYPE(_GS_),	D_NONE,	D_NONE },	//0x65
         { C_OPRSIZE,	NULL,		D_NONE,	D_NONE,	D_NONE },	//0x66
         { C_ADRSIZE,	NULL,		D_NONE,	D_NONE,	D_NONE },	//0x67
         { C_PUSH,		"PUSH",		D_IV,	D_NONE,	D_NONE },	//0x68,
@@ -609,10 +553,10 @@ INSTRUCTION	instruction[] =
         { C_JNL,		"JNL",		D_JB,	D_NONE,	D_NONE },	//0x7d,
         { C_JLE,		"JLE",		D_JB,	D_NONE,	D_NONE },	//0x7e,
         { C_JNLE,		"JNLE",		D_JB,	D_NONE,	D_NONE },	//0x7f,
-        { C_GROUP,(char *)grouptable1,D_EB,	D_IB,	D_NONE },	//0x80,
-        { C_GROUP,(char *)grouptable1,D_EV,	D_IV,	D_NONE },	//0x81,
-        { C_GROUP,(char *)grouptable1,D_EB,	D_IB,	D_NONE },	//0x82,
-        { C_GROUP,(char *)grouptable1,D_EV,	D_SB,	D_NONE },	//0x83,
+        { C_GROUP,(const char *)grouptable1,D_EB,	D_IB,	D_NONE },	//0x80,
+        { C_GROUP,(const char *)grouptable1,D_EV,	D_IV,	D_NONE },	//0x81,
+        { C_GROUP,(const char *)grouptable1,D_EB,	D_IB,	D_NONE },	//0x82,
+        { C_GROUP,(const char *)grouptable1,D_EV,	D_SB,	D_NONE },	//0x83,
         { C_TEST,		"TEST",		D_EB,	D_GB,	D_NONE },	//0x84,
         { C_TEST,		"TEST",		D_EV,	D_GV,	D_NONE },	//0x85,
         { C_XCHG,		"XCHG",		D_EB,	D_GB,	D_NONE },	//0x86,
@@ -673,14 +617,14 @@ INSTRUCTION	instruction[] =
         { C_MOV,		"MOV",		D_BPV,	D_IV,	D_NONE },	//0xbd,
         { C_MOV,		"MOV",		D_SIV,	D_IV,	D_NONE },	//0xbe,
         { C_MOV,		"MOV",		D_DIV,	D_IV,	D_NONE },	//0xbf,
-        { C_GROUP,(char *)grouptable2,D_EB,	D_IB,	D_NONE },	//0xc0,
-        { C_GROUP,(char *)grouptable2,D_EV,	D_IB,	D_NONE },	//0xc1,
+        { C_GROUP,(const char *)grouptable2,D_EB,	D_IB,	D_NONE },	//0xc0,
+        { C_GROUP,(const char *)grouptable2,D_EV,	D_IB,	D_NONE },	//0xc1,
         { C_RET,		"RET",		D_IW,	D_NONE,	D_NONE },	//0xc2,
         { C_RET,		"RET",		D_NONE,	D_NONE,	D_NONE },	//0xc3,
         { C_LES,		"LES",		D_GV,	D_MP,	D_NONE },	//0xc4,
         { C_LDS,		"LDS",		D_GV,	D_MP,	D_NONE },	//0xc5,
-        { C_GROUP,(char *)grouptable3,D_EB,	D_IB,	D_NONE },	//0xc6,
-        { C_GROUP,(char *)grouptable3,D_EV,	D_IV,	D_NONE },	//0xc7,
+        { C_GROUP,(const char *)grouptable3,D_EB,	D_IB,	D_NONE },	//0xc6,
+        { C_GROUP,(const char *)grouptable3,D_EV,	D_IV,	D_NONE },	//0xc7,
         { C_ENTER,		"ENTER",	D_IW,	D_IB,	D_NONE },	//0xc8,
         { C_LEAVE,		"LEAVE",	D_NONE,	D_NONE,	D_NONE },	//0xc9,
         { C_RETF,		"RETF",		D_IW,	D_NONE,	D_NONE },	//0xca,
@@ -689,10 +633,10 @@ INSTRUCTION	instruction[] =
         { C_INT,		"INT",		D_IB,	D_NONE,	D_NONE },	//0xcd,
         { C_INTO,		"INTO",		D_NONE,	D_NONE,	D_NONE },	//0xce,
         { C_IRET,		"IRET",		D_NONE,	D_NONE,	D_NONE },	//0xcf,
-        { C_GROUP,(char *)grouptable2,D_EB,	D_1,	D_NONE },	//0xd0,
-        { C_GROUP,(char *)grouptable2,D_EV,	D_1,	D_NONE },	//0xd1,
-        { C_GROUP,(char *)grouptable2,D_EB,	D_CL,	D_NONE },	//0xd2,
-        { C_GROUP,(char *)grouptable2,D_EV,	D_CL,	D_NONE },	//0xd3,
+        { C_GROUP,(const char *)grouptable2,D_EB,	D_1,	D_NONE },	//0xd0,
+        { C_GROUP,(const char *)grouptable2,D_EV,	D_1,	D_NONE },	//0xd1,
+        { C_GROUP,(const char *)grouptable2,D_EB,	D_CL,	D_NONE },	//0xd2,
+        { C_GROUP,(const char *)grouptable2,D_EV,	D_CL,	D_NONE },	//0xd3,
         { C_AAM,		"AAM",		D_IB,	D_NONE,	D_NONE },	//0xd4,
         { C_AAD,		"AAD",		D_IB,	D_NONE,	D_NONE },	//0xd5,
         { C_ERROR,		NULL,		D_NONE,	D_NONE,	D_NONE },	//0xd6,
@@ -727,44 +671,42 @@ INSTRUCTION	instruction[] =
         { C_REPZ,		"REPZ",		D_NONE,	D_NONE,	D_NONE },	//0xf3
         { C_HLT,		"HLT",		D_NONE,	D_NONE,	D_NONE },	//0xf4
         { C_CMC,		"CMC",		D_NONE,	D_NONE,	D_NONE },	//0xf5
-        { C_GROUP,(char *)grouptable4,D_EB,	D_NONE,	D_NONE },	//0xf6,
-        { C_GROUP,(char *)grouptable5,D_EV,	D_NONE,	D_NONE },	//0xf7,
+        { C_GROUP,(const char *)grouptable4,D_EB,	D_NONE,	D_NONE },	//0xf6,
+        { C_GROUP,(const char *)grouptable5,D_EV,	D_NONE,	D_NONE },	//0xf7,
         { C_CLC,		"CLC",		D_NONE,	D_NONE,	D_NONE },	//0xf8
         { C_STC,		"STC",		D_NONE,	D_NONE,	D_NONE },	//0xf9
         { C_CLI,		"CLI",		D_NONE,	D_NONE,	D_NONE },	//0xfa
         { C_STI,		"STI",		D_NONE,	D_NONE,	D_NONE },	//0xfb
         { C_CLD,		"CLD",		D_NONE,	D_NONE,	D_NONE },	//0xfc
         { C_STD,		"STD",		D_NONE,	D_NONE,	D_NONE },	//0xfd
-        { C_GROUP,(char *)grouptable6,D_EB,	D_NONE,	D_NONE },	//0xfe,
-        { C_GROUP,(char *)grouptable7,D_EV,	D_NONE,	D_NONE }	//0xff,
+        { C_GROUP,(const char *)grouptable6,D_EB,	D_NONE,	D_NONE },	//0xfe,
+        { C_GROUP,(const char *)grouptable7,D_EV,	D_NONE,	D_NONE }	//0xff,
 };
 
 //******************************************************
 
 
-void st_IDA_OUT::output(std::ostringstream & buf)
+void st_IDA_OUT::output(QString & buf)
 {
+    QStringList bld;
     if (!this->LockName.empty())
-        buf << this->LockName << " ";
+        buf += QString("%1 ").arg(this->LockName.c_str());
     if (!this->RepName.empty())
-        buf << this->RepName << " ";
+        buf += QString("%1 ").arg(this->RepName.c_str());
     if (!this->CmdStr.empty())
     {
-        buf << this->CmdStr << " ";
-
-        while (buf.str().size() < 7)
-            buf << " ";
+        buf += QString("%1 ").arg(this->CmdStr.c_str());;
+        buf=buf.leftJustified(8,' ');
     }
-
     //par1
-    buf << this->Par1Ptr << this->Par1SegPrefix << this->Par1Str;
-    //par2
+    buf += (this->Par1Ptr + this->Par1SegPrefix + this->Par1Str).c_str();
     if(has_param2())
-        buf << "," << this->Par2Ptr << this->Par2SegPrefix << this->Par2Str;
+        bld.append(QString(',') + (this->Par2Ptr + this->Par2SegPrefix + this->Par2Str).c_str());
     if(has_param3())
-        buf << ',' << this->Par3Str;
+        bld.append(QString(',') + (this->Par3Str.c_str()));
+    buf += bld.join(",");
 }
-uint32_t   CDisasm::Disassembler_X(BYTE * codebuf, uint32_t eip, st_IDA_OUT* idaout)
+uint32_t   Disasm::Disassembler_X(BYTE * codebuf, uint32_t eip, st_IDA_OUT* idaout)
 {
 //    if (memcmp(codebuf, "\x0F\xAF\xC0", 3) == 0)
 //    {
@@ -834,7 +776,7 @@ int main(int argc,char** argv)
 
 //******************************************************
 
-void	CDisasm::OpSizePrefix()
+void	Disasm::OpSizePrefix()
 {
         if( OpSize==BIT16 )
                 OpSize=BIT32;
@@ -842,7 +784,7 @@ void	CDisasm::OpSizePrefix()
                 OpSize=BIT16;
 }
 
-void	CDisasm::AdrSizePrefix()
+void	Disasm::AdrSizePrefix()
 {
         if( AdrSize==BIT16 )
                 AdrSize=BIT32;
@@ -869,41 +811,41 @@ WORD	PeekW(BYTE * codebuf)
         return *(WORD *)codebuf;
 }
 
-uint32_t	PeekD(BYTE * codebuf)
+uint32_t	PeekD(const BYTE * codebuf)
 {
         return *(uint32_t *)codebuf;
 }
 
-BYTE	CDisasm::GetByte()
+BYTE	Disasm::GetByte()
 {
         return *(UasmCode+CodeCount);
 }
 
-WORD	CDisasm::GetWord()
+WORD	Disasm::GetWord()
 {
         return *(WORD*)(UasmCode+CodeCount);
 }
 
-uint32_t	CDisasm::GetDWord()
+uint32_t	Disasm::GetDWord()
 {
         return *(uint32_t*)(UasmCode+CodeCount);
 }
 
-BYTE	CDisasm::GetByteEx()
+BYTE	Disasm::GetByteEx()
 {
         BYTE	v = *(UasmCode+CodeCount);
         CodeCount++;
         return v;
 }
 
-WORD	CDisasm::GetWordEx()
+WORD	Disasm::GetWordEx()
 {
         WORD	v = *(WORD*)(UasmCode+CodeCount);
         CodeCount+=2;
         return v;
 }
 
-uint32_t	CDisasm::GetDWordEx()
+uint32_t	Disasm::GetDWordEx()
 {
         uint32_t	v = *(uint32_t*)(UasmCode+CodeCount);
         CodeCount+=4;
@@ -912,7 +854,7 @@ uint32_t	CDisasm::GetDWordEx()
 
 /***********************************************************/
 
-void	CDisasm::SetError(uint32_t errcode)
+void	Disasm::SetError(uint32_t errcode)
 {
         U_ErrorCode = errcode;
 }
@@ -921,7 +863,7 @@ void	CDisasm::SetError(uint32_t errcode)
 // Global Function
 // Set all of the field(s) of OPERITEM except **RWFLAG** and **SEG_INDEX**
 
-BYTE CDisasm::Global_GetSize(enum_SizeKind srcsize)
+BYTE Disasm::Global_GetSize(enum_SizeKind srcsize)
 {
         switch(srcsize)
         {
@@ -1030,7 +972,7 @@ uint32_t Global_SIB(char * outbuf,BYTE * codebuf,OPERITEM *op,uint32_t mod)
         }
 }
 
-uint32_t CDisasm::Global_MEMORY(char * outbuf,BYTE * codebuf,OPERITEM *op)
+uint32_t Disasm::Global_MEMORY(char * outbuf,BYTE * codebuf,OPERITEM *op)
 {
         MODRM	modrm;
         uint32_t	len=1;
@@ -1164,7 +1106,7 @@ uint32_t CDisasm::Global_MEMORY(char * outbuf,BYTE * codebuf,OPERITEM *op)
         return len;
 }
 
-uint32_t CDisasm::Global_MODRM(char * outbuf,BYTE * codebuf,OPERITEM *op)
+uint32_t Disasm::Global_MODRM(char * outbuf,BYTE * codebuf,OPERITEM *op)
 {
         MODRM	modrm;
         modrm.v	= PeekB(codebuf);
@@ -1190,7 +1132,7 @@ uint32_t CDisasm::Global_MODRM(char * outbuf,BYTE * codebuf,OPERITEM *op)
         return Global_MEMORY(outbuf,codebuf,op);
 }
 
-uint32_t CDisasm::Global_OFFSET(char * outbuf,BYTE * codebuf,OPERITEM *op)
+uint32_t Disasm::Global_OFFSET(char * outbuf,BYTE * codebuf,OPERITEM *op)
 {
         op->mode=OP_Address;
 
@@ -1287,7 +1229,7 @@ uint32_t Global_SIGNEDIMMED(char * outbuf,BYTE * codebuf,OPERITEM *op)
         return 1;
 }
 
-uint32_t CDisasm::Global_NEARPTR(char * outbuf,BYTE * codebuf,OPERITEM *op)
+uint32_t Disasm::Global_NEARPTR(char * outbuf,BYTE * codebuf,OPERITEM *op)
 {
         op->mode = OP_Near;
     op->nearptr.offset = BaseAddress + CodeCount;
@@ -1306,7 +1248,7 @@ uint32_t CDisasm::Global_NEARPTR(char * outbuf,BYTE * codebuf,OPERITEM *op)
         return op->opersize;
 }
 
-uint32_t CDisasm::Global_FARPTR(char * outbuf,BYTE * codebuf,OPERITEM *op)
+uint32_t Disasm::Global_FARPTR(char * outbuf,BYTE * codebuf,OPERITEM *op)
 {
         op->mode = OP_Far;
 
@@ -1331,7 +1273,7 @@ uint32_t CDisasm::Global_FARPTR(char * outbuf,BYTE * codebuf,OPERITEM *op)
 
 /***********************************************************/
 
-uint32_t	CDisasm::ProcessOpdata(uint32_t opdata,OPERITEM *op,char * outbuf,uint32_t codepos)
+uint32_t	Disasm::ProcessOpdata(uint32_t opdata,OPERITEM *op,char * outbuf,uint32_t codepos)
 {
         op->mode		= OP_Invalid;
         switch(opdata)
@@ -1496,7 +1438,7 @@ uint32_t	CDisasm::ProcessOpdata(uint32_t opdata,OPERITEM *op,char * outbuf,uint3
         return 0;
 }
 
-std::string	CDisasm::ProcessSegPrefix(OPERITEM *op)
+std::string	Disasm::ProcessSegPrefix(OPERITEM *op)
 {
     std::string retn;
         if (op->mode != OP_Address)
@@ -1518,7 +1460,7 @@ std::string	CDisasm::ProcessSegPrefix(OPERITEM *op)
     return retn;
 }
 
-void	CDisasm::ProcessInstruction(	uint32_t	opcode,
+void	Disasm::ProcessInstruction(	uint32_t	opcode,
                                                         const char *	instname,
                                                         uint32_t	opdata1,
                                                         uint32_t	opdata2,
@@ -1640,13 +1582,13 @@ void	CDisasm::ProcessInstruction(	uint32_t	opcode,
                         else
                                 this->m_idaout->Par2Ptr = "WORD PTR ";
                 }
-                this->m_idaout->Par2SegPrefix = ProcessSegPrefix(&xcpu.op[1]);
-        this->m_idaout->Par2Str = outbuf2;
+        m_idaout->Par2SegPrefix = ProcessSegPrefix(&xcpu.op[1]);
+        m_idaout->Par2Str = outbuf2;
         }
 
         if (xcpu.op[2].mode != OP_Invalid)
         {
-        this->m_idaout->Par3Str = outbuf3;
+        m_idaout->Par3Str = outbuf3;
         }
 
         CodeCount = codelen;
@@ -1656,14 +1598,14 @@ void	CDisasm::ProcessInstruction(	uint32_t	opcode,
         // VMSimulate(&xpcu);
 }
 
-void	CDisasm::ProcessGroup(PINSTRUCTION pG,PINSTRUCTION inst)
+void	Disasm::ProcessGroup(const INSTRUCTION * pG,const INSTRUCTION & inst)
 {
         MODRM	modrm;
         modrm.v	= GetByte();
 
-        uint32_t	opdata1 = inst->Opdata1;
-        uint32_t	opdata2 = inst->Opdata2;
-        uint32_t	opdata3 = inst->Opdata3;
+        uint32_t	opdata1 = inst.Opdata1;
+        uint32_t	opdata2 = inst.Opdata2;
+        uint32_t	opdata3 = inst.Opdata3;
 
         if (pG[modrm.reg].Opdata1 != D_NONE)
                 opdata1 = pG[modrm.reg].Opdata1;
@@ -1682,7 +1624,7 @@ void	CDisasm::ProcessGroup(PINSTRUCTION pG,PINSTRUCTION inst)
                                                 );
 }
 
-void	CDisasm::DisassemblerOne()
+void	Disasm::DisassemblerOne()
 {
     BYTE by = GetByteEx();
 
@@ -1693,7 +1635,7 @@ void	CDisasm::DisassemblerOne()
         break;
 
     case C_GROUP:		// It'a group. If this, InstName specifies the group table.
-        ProcessGroup((PINSTRUCTION)(instruction[by].InstName),&instruction[by]);
+        ProcessGroup((const INSTRUCTION *)(instruction[by].InstName),instruction[by]);
         break;
 
     case C_0FH:			// It's 0FH instruction. If this, InstName specifies the 0FH table.
@@ -1704,7 +1646,7 @@ void	CDisasm::DisassemblerOne()
             break;
 
         case C_GROUP:	// It'a group. If this, InstName specifies the group table.
-            ProcessGroup((PINSTRUCTION)(instruction0FH[by].InstName),&instruction0FH[by]);
+            ProcessGroup((const INSTRUCTION *)(instruction0FH[by].InstName),instruction0FH[by]);
             break;
 
         default:

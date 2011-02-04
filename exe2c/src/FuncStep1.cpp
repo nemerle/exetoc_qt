@@ -183,13 +183,18 @@ bool	CFuncStep1::Step_1(ea_t head_off)
             {
                 visited_set.insert(ea);
 
-                CDisasm the;
-                the.Disasm_OneCode(ea); //ea will be incremented
-
+                Disasm the;
+                uint8_t opcode_len = the.Disasm_OneCode(ea);
+				assert(opcode_len!=0);
+                ea+=opcode_len;
 				if (the.get_xcpu()->IsJxx() || the.get_xcpu()->IsJmpNear())
+                {
 					Add_in_order(&jxxlist, the.get_xcpu()->op[0].nearptr.offset);
+				}
 				else
+				{
 					check_if_switch_case(ea,&caselist,&jxxlist, the.get_xcpu());
+				}
 
                 if (the.get_xcpu()->opcode == C_RET || the.get_xcpu()->opcode == C_JMP )
                     break;
@@ -210,13 +215,12 @@ bool	CFuncStep1::Step_1(ea_t head_off)
             AsmCode *p = AsmCode::new_AsmCode();
             p->linear = ea;
 
-            CDisasm the;
+            Disasm the;
             p->opsize = the.Disasm_OneCode(ea);
             p->xcpu = *the.get_xcpu();
 
             m_asmlist->push_back(p);
-
-            //	查找是不是刚过一个swith case
+            //	Lookup a swith case are not just after
             this->CheckIfJustSwitchCase(caselist, ea);
         }
 
@@ -710,17 +714,17 @@ void	FuncLL::prtout_asm_1(VarLL* pvarll, XmlOutPro* out)
         if (pasm->iAddRemove == 2)
             continue;
         ea_t ea = pasm->linear;
-        std::ostringstream out_buf;
+        QString out_buf;
         uint32_t n;
         if (pasm->xcpu.opcode == C_JCASE)
         {
             n = 0;
-            out_buf << "case jmp to " << std::ios::hex << pasm->xcpu.op[0].nearptr.offset;
+            out_buf += QString("case jmp to %1").arg(pasm->xcpu.op[0].nearptr.offset,0,16);
         }
         else
         {
             st_IDA_OUT idaout;
-            CDisasm the;
+            Disasm the;
             //n = the.Disassembler(buf, ea2ptr(ea), ea);
             n = the.Disassembler_X(ea2ptr(ea), ea, &idaout);
             XCPUCODE* pxcpu = the.get_xcpu();
@@ -743,7 +747,7 @@ void	FuncLL::prtout_asm_1(VarLL* pvarll, XmlOutPro* out)
                     st_VarLL* p = pvarll->LookUp_VarLL(level- pvarll->m_VarRange_L);
                     if (p != NULL)
                     {
-                        idaout.Par1Str += '.' + p->Name;
+                        idaout.Par1Str += (QString(".%1").arg(p->Name)).toStdString();
                     }
                 }
             }
@@ -759,7 +763,7 @@ void	FuncLL::prtout_asm_1(VarLL* pvarll, XmlOutPro* out)
                     st_VarLL* p = pvarll->LookUp_VarLL(level- pvarll->m_VarRange_L);
                     if (p != NULL)
                     {
-                        idaout.Par2Str += '.' + p->Name;
+                        idaout.Par2Str += (QString(".%1").arg(p->Name)).toStdString();
                     }
                 }
             }
@@ -786,7 +790,7 @@ void	FuncLL::prtout_asm_1(VarLL* pvarll, XmlOutPro* out)
         out->XMLbegin(XT_AsmOffset, (void*)ea);
         out->prtf("%x", ea);
         out->XMLend(XT_AsmOffset);
-        out->prtt(out_buf.str());
+        out->prtt(out_buf);
         out->endline();
 
         last = ea+n;

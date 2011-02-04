@@ -8,6 +8,7 @@
 #include <sstream>
 #define BIT16	0
 #define	BIT32	1
+class QString;
 enum enum_Register
 {
     _EAX_ = 0,
@@ -74,7 +75,7 @@ enum OP_TYPE
         OP_Segment	=	3,
         OP_Immed	=	4,
         OP_Near		=	5,
-        OP_Far		=	6,
+        OP_Far		=	6
 
 };
 // The list of the types of Opcode
@@ -287,16 +288,18 @@ struct OPERITEM
         static OPERITEM createReg(int reg_idx,int width); //! create an Register operand of given width
 };
 
-typedef struct XCPUCODE
+struct XCPUCODE
 {
         enum OPCODETYPE        opcode;		//	C_MOV...
         BYTE        lockflag;	// for LOCK prefix
         BYTE        repeatflag;	// for REPZ/REPNZ prefix
         OPERITEM    op[3];
-    bool	IsJxx();
-    bool	IsJmpNear();
-    bool    IsCallNear();
-} *PXCPUCODE;
+    bool    IsJmpMemIndexed() const;
+    bool	IsJxx() const;
+    bool	IsJmpNear() const;
+    bool    IsCallNear() const;
+    bool    IsCalculatedJmp() const;
+};
 
 
 
@@ -339,15 +342,73 @@ typedef struct XCPUCODE
 #define	X_BL		0x000C
 #define	X_BH		0x000D
 
-
-typedef struct INSTRUCTION
+// The list of the types of Opdata1, Opdata2, Opdata3
+enum OPDATATYPE
 {
-        uint32_t	Opcode;
+    D_NONE,			// No any types
+    D_EB,           // A ModR/M bytes, specifies the operand size.
+    D_EW,
+    D_EV,
+    D_GB,D_GW,D_GV,	// The reg field of the ModR/M BYTE selects a normal register.
+    D_IB,D_IW,D_IV,	// Immediate data.
+    D_SB,			// Signed Immediate data.
+    D_SW,			// The reg field of the ModR/M BYTE selects a segment register.
+    D_MV,D_MP,D_MA,	// The ModR/M BYTE may refer only to memory.
+    D_OB,D_OV,		// The offset of the operand is coded as a WORD or d-WORD ( no ModR/M )
+    D_JB,D_JV,D_JP,	// The instruction contains a relative offset to be added to EIP.
+    D_RD,			// The mod field of the ModR/M BYTE may refer only to a general register.
+    D_CD,			// The reg field of the ModR/M BYTE selects a control register.
+    D_DD,			// The reg field of the ModR/M BYTE selects a debug register.
+
+    D_1,			// Only used for ( Group2 SHL/SHR... instruction )
+
+    D_AL,			// Specifying AL register
+    D_CL,			// Specifying CL register
+    D_DL,			// Specifying DL register
+    D_BL,			// Specifying BL register
+    D_AH,			// Specifying AH register
+    D_CH,			// Specifying CH register
+    D_DH,			// Specifying DH register
+    D_BH,			// Specifying BH register
+
+    D_AX,			// Specifying AX register
+    D_CX,			// Specifying CX register
+    D_DX,			// Specifying DX register
+    D_BX,			// Specifying BX register
+    D_SP,			// Specifying SP register
+    D_BP,			// Specifying BP register
+    D_SI,			// Specifying SI register
+    D_DI,			// Specifying DI register
+
+    D_AXV,			// Specifying eAX register
+    D_CXV,			// Specifying eCX register
+    D_DXV,			// Specifying eDX register
+    D_BXV,			// Specifying eBX register
+    D_SPV,			// Specifying eSP register
+    D_BPV,			// Specifying eBP register
+    D_SIV,			// Specifying eSI register
+    D_DIV,			// Specifying eDI register
+
+    D_ES,			// Specifying ES register
+    D_CS,			// Specifying CS register
+    D_SS,			// Specifying SS register
+    D_DS,			// Specifying DS register
+    D_FS,			// Specifying FS register
+    D_GS,			// Specifying GS register
+
+    D_V,			// Used for PUSHA/POPA, PUSHF/POPF, SHAF/LAHF
+    D_XB,D_XV		// Used for ( MOVS, LODS, OUTS, ... )
+};
+
+struct INSTRUCTION
+{
+
+    OPCODETYPE	Opcode;
         const char *	InstName;
-        uint32_t	Opdata1;
-        uint32_t	Opdata2;
-        uint32_t	Opdata3;
-}	*PINSTRUCTION;
+    OPDATATYPE	Opdata1;
+    OPDATATYPE	Opdata2;
+    OPDATATYPE	Opdata3;
+};
 
 //Define a structure similar to the IDA of the ASM output
 struct st_IDA_OUT
@@ -376,7 +437,7 @@ struct st_IDA_OUT
     {
         return !Par3Str.empty();
     }
-    void output(std::ostringstream &buf);
+    void output(QString &buf);
 };
 enum enum_SizeKind
 {
@@ -388,7 +449,7 @@ enum enum_SizeKind
     SIZE_A = 6
 };
 
-class CDisasm
+class Disasm
 {
     st_IDA_OUT* m_idaout;
 
@@ -420,7 +481,7 @@ class CDisasm
     uint32_t	ProcessOpdata(uint32_t opdata,OPERITEM *op,char * outbuf,uint32_t codepos);
     void	SetError(uint32_t errcode);
     void	DisassemblerOne();
-    void	ProcessGroup(PINSTRUCTION pG,PINSTRUCTION inst);
+    void	ProcessGroup(const INSTRUCTION *pG,const INSTRUCTION &inst);
     void	ProcessInstruction(	uint32_t	opcode,
                                const char *	instname,
                                uint32_t	opdata1,
@@ -429,7 +490,7 @@ class CDisasm
     std::string	ProcessSegPrefix(OPERITEM *op);
 
 public:
-    BYTE	Disasm_OneCode(ea_t &pos);
+    BYTE	Disasm_OneCode(ea_t pos);
     XCPUCODE* get_xcpu();
     uint32_t   Disassembler_X(unsigned char * codebuf, uint32_t eip, st_IDA_OUT* idaout);
 };

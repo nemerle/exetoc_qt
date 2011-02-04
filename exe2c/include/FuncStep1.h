@@ -3,6 +3,7 @@
 #ifndef CFuncStep1__H
 #define CFuncStep1__H
 #include <list>
+#include <set>
 #include <string>
 #include "Func.h"
 

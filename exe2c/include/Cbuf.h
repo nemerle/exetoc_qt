@@ -3,15 +3,16 @@
 #ifndef	CCbuf_h
 #define CCbuf_h
 #include <cstdio>
+#include <QStringList>
 class CCbuf
 {
 public:
         char f_str;	//因为有'和"两种string形式 Because there 'and "two kinds of string form
         char * m_p;
-        SIZEOF	m_len;
-
+        size_t	m_len;
+        QStringList m_lines;
         CCbuf();
-        ~CCbuf(){};
+        ~CCbuf(){}
 
         void LoadFile(FILE *f);
         void OneChar(int c);
