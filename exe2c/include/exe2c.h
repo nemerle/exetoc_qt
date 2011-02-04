@@ -14,14 +14,14 @@
 #include "../exe2c_interface.h"
 #include "CISC.h"
 #include "proto.h"
-#include "FuncStep1.h"
 class Exe2c : public I_EXE2C
 {
-public:
-	Exe2c(){}
+private:
+    static Exe2c* s_Cexe2c;
+    Exe2c();
 	~Exe2c();
-
 public:
+    static Exe2c* get();
 ///////////// DO NOT EDIT THIS //////////////
 	virtual bool	BaseInit();	//override the origin function, it's a class creator!
 ///////////// DO NOT EDIT THIS //////////////
@@ -29,26 +29,18 @@ public:
 	//Add interface here
 	virtual bool	test();		//Test interface
 	void  exe2c_main(const std::string &fname);
-	void  prtout_asm(I_XmlOut* iOut)
-	{
-		if (g_Cur_Func->m_nStep == 0)
-			return;
-
-        XmlOutPro out(iOut);
-        CFuncLL the(g_Cur_Func->ll.m_asmlist);
-        the.prtout_asm(g_Cur_Func, &g_Cur_Func->m_varll, &out);
-    }
+    void  prtout_asm(I_XmlOut* iOut);
     void  prtout_itn(I_XmlOut* iOut)
     {
         XmlOutPro out(iOut);
-        g_Cur_Func->prtout_internal(&out);
+        m_Cur_Func->prtout_internal(&out);
     }
     void  prtout_cpp(I_XmlOut* iOut)
     {
-        if (g_Cur_Func != NULL)
+        if (m_Cur_Func != NULL)
         {
             XmlOutPro out(iOut);
-            CFunc_Prt prt(g_Cur_Func);
+            CFunc_Prt prt(m_Cur_Func);
             prt.prtout_cpp(&out);
         }
     }
@@ -76,12 +68,12 @@ public:
 
 	bool  analysis_Once()
 	{
-		if (g_Cur_Func != NULL)
-			return (g_Cur_Func->analysis_step_by_step());
+        if (m_Cur_Func != NULL)
+            return (m_Cur_Func->analysis_step_by_step());
 		return false;
 	}
 	void  analysis_All() {
-		g_Cur_Func->analysis();
+        m_Cur_Func->analysis();
 	}
 	bool  RenameCurFuncName(const char * name);
 	virtual void  DoCommandLine(const char * cmd);
@@ -96,19 +88,19 @@ public:
     void Recurse_Optim();
     Func* func_new(ea_t start);
     Func* GetFunc(ea_t start);
-
+    Func *current_func() {return m_Cur_Func;}
+    void current_func(Func *x) {m_Cur_Func=x;}
 
 private:
     //Add member here
     I_E2COUT* m_E2COut;
-    NameMng* m_api_name_manager;   //用于保存API的函数名列表 //API is used to save a list of function names
     FileLoader* m_FileLoader;
-    FUNC_LIST m_func_list;	// 全局函数列表 //Global function list
+    FUNC_LIST m_func_list;	// Global function list
     //Add member here
 
     Func*	FindFuncByName(const char * pname);
     void	do_exe2c(ea_t entry);
-};
+    Func	*m_Cur_Func;		// Stores the current global CFunc
 
-extern Exe2c* g_Cexe2c;
+};
 #endif	// _CEXE2C_H_

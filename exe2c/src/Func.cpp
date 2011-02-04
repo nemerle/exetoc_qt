@@ -166,7 +166,7 @@ bool	Func::Step2_GetRetPurge()
     if (this->m_IfLibFunc)
         return false;
 
-    CFuncLL the(this->ll.m_asmlist);
+    FuncLL the(this->ll.m_asmlist);
     int retn = the.Get_Ret_Purge();
     if (retn == -1)
     {
@@ -180,7 +180,7 @@ bool	Func::Step2_GetRetPurge()
 
 bool    Func::AddRemoveSomeInstr()
 {
-    CFuncLL the(this->ll.m_asmlist);
+    FuncLL the(this->ll.m_asmlist);
     the.AddRemoveSomeInstr();
     return true;
 }
@@ -189,7 +189,7 @@ bool	Func::Step3_FillStackInfo()
     //If CFunc is ebp based, general ebp not change once established, it can save CFunc volume within the ebp_based
     m_EBP_base = Not_EBP_based;   //invalid
 
-    CFuncLL the(this->ll.m_asmlist);
+    FuncLL the(this->ll.m_asmlist);
     if (this->m_prepareTrue_analysisFalse == false)
     {
         the.Prepare_CallFunc();
@@ -500,8 +500,8 @@ void Func::DeleteUnusedVar()
         pt = p->var_r2.thevar; if (pt != NULL) pt->tem_useno++;
         pt = p->var_w .thevar; if (pt != NULL) pt->tem_useno++;
     }
-
-    this->m_exprs->DeleteUnuse_VarList(this->m_exprs->vList);
+    this->m_exprs->DeleteUnusedVars();
+    //m_exprs->DeleteUnuse_VarList(this->m_exprs->vList);
 }
 
 
@@ -513,12 +513,12 @@ VarTypeID GetMemDataType(VAR* pvar)
     assert(pvar->thevar->m_DataType);
     assert(pvar->thevar->m_DataType->m_type == vtt_class);
     */
-    Class_st* pstruc = g_VarTypeManage->is_class(pvar->thevar->m_DataTypeID);
+    Class_st* pstruc = VarTypeMng::get()->is_class(pvar->thevar->m_DataTypeID);
     assert(pstruc);
 
     if (pvar->part_flag == 0)
-    {//只有一种可能，就是结构只有一个元素，就这么大
-        assert(pstruc->m_nDataItem == 1);
+    {//There is only one possibility -> the structure is only one large
+        assert(pstruc->m_DataItems.size() == 1);
         return pstruc->GetClassItem(0)->m_vartypeid;
     }
     else
@@ -608,7 +608,6 @@ void Func::ReType(M_t* p, const char * newtype)
     }
 }
 
-#include "ParseHead.h"
 std::string GetToken(const char * &p)
 {
     std::string s;

@@ -207,6 +207,7 @@ public:
         void savedb(char *fname,char *exename);
         bool loaddb(char *fname,char *exename);
 
+    bool        if_valid_ea(ea_t ea);
 private:
         void get_exetype();
         void	LoadPE(uint32_t offs);

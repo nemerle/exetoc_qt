@@ -17,20 +17,15 @@ void define_replace(char * buf);
 VarTypeID do_struct(const char * &p);
 VarTypeID do_union(const char * &p);
 
-CVarTypeMng* g_VarTypeManage = NULL;
+VarTypeMng* VarTypeMng::s_VarTypeManage = NULL;
 
-
-void CExprManage_cpp_Init()
+VarTypeMng *VarTypeMng::get()
 {
-    g_VarTypeManage = new CVarTypeMng;
+    if(s_VarTypeManage==0)
+        s_VarTypeManage = new VarTypeMng;
+    return s_VarTypeManage;
 }
-void CExprManage_cpp_exit()
-{
-        delete g_VarTypeManage;
-        g_VarTypeManage = NULL;
-}
-
-CVarTypeMng::CVarTypeMng()
+VarTypeMng::VarTypeMng()
 {
     list = new VarTypeList;
     nextfreeid = 1;
@@ -67,12 +62,14 @@ struct _var_deleter
             break;
         case vtt_simple:
             break;
+        default:
+            assert(false);
 
         }
         delete p;
     }
 };
-CVarTypeMng::~CVarTypeMng()
+VarTypeMng::~VarTypeMng()
 {
     _var_deleter dl;
     std::for_each(list->begin(),list->end(),dl);
@@ -81,7 +78,7 @@ CVarTypeMng::~CVarTypeMng()
 }
 
 
-VarTypeID	CVarTypeMng::New_p(VarTypeID id0)
+VarTypeID	VarTypeMng::New_p(VarTypeID id0)
 {	//	新建一个数据类型，它指向id0
     // Create a data type, it points to id0
     assert(id0);
@@ -97,7 +94,7 @@ VarTypeID	CVarTypeMng::New_p(VarTypeID id0)
 
     return id;
 }
-VarTypeID	CVarTypeMng::FuncType2VarID(FuncType* ft)
+VarTypeID	VarTypeMng::FuncType2VarID(FuncType* ft)
 {
     VarTypeID id = nextfreeid++;
 
@@ -109,7 +106,7 @@ VarTypeID	CVarTypeMng::FuncType2VarID(FuncType* ft)
 
     return id;
 }
-VarTypeID	CVarTypeMng::Enum2VarID(enum_st* newenum)
+VarTypeID	VarTypeMng::Enum2VarID(enum_st* newenum)
 {
     VarTypeID id = nextfreeid++;
 
@@ -122,7 +119,7 @@ VarTypeID	CVarTypeMng::Enum2VarID(enum_st* newenum)
 
     return id;
 }
-VarTypeID	CVarTypeMng::NewTypeDef(VarTypeID id0, const char * name)
+VarTypeID	VarTypeMng::NewTypeDef(VarTypeID id0, const char * name)
 {
     //typedef: the data types need their own VarTypeID
 
@@ -149,7 +146,7 @@ VarTypeID	CVarTypeMng::NewTypeDef(VarTypeID id0, const char * name)
 
     return id;
 }
-VarTypeID	CVarTypeMng::NewSignedVarType(VarTypeID id, const char * name)
+VarTypeID	VarTypeMng::NewSignedVarType(VarTypeID id, const char * name)
 {
     VarTypeID id1 = nextfreeid++;
 
@@ -166,7 +163,7 @@ VarTypeID	CVarTypeMng::NewSignedVarType(VarTypeID id, const char * name)
 }
 
 
-VarTypeID	CVarTypeMng::NewSimpleVarType(SIZEOF opsize)
+VarTypeID	VarTypeMng::NewSimpleVarType(SIZEOF opsize)
 {
     VarTypeList::iterator pos = this->list->begin();
     while (pos!=this->list->end())
@@ -189,12 +186,14 @@ VarTypeID	CVarTypeMng::NewSimpleVarType(SIZEOF opsize)
 
     return id;
 }
-VarTypeID	CVarTypeMng::NewBaseVarType(SIZEOF opsize, const char * name)
+VarTypeID	VarTypeMng::NewBaseVarType(SIZEOF opsize, const char * name)
 {
     VarTypeID id = nextfreeid++;
 
     if (id >= 10)
-        nop();
+    {
+        //TODO: nop();
+    }
     assert(id < 10);
     //  In addition to my own definition of these base classes, the other can only use
     //		New_p
@@ -212,7 +211,7 @@ VarTypeID	CVarTypeMng::NewBaseVarType(SIZEOF opsize, const char * name)
 
     return id;
 }
-VarTypeID CVarTypeMng::GetBaseID(bool fsign, SIZEOF size)
+VarTypeID VarTypeMng::GetBaseID(bool fsign, SIZEOF size)
 {
     VarTypeList::iterator pos = this->list->begin();
     while (pos!=list->end())
@@ -231,7 +230,7 @@ VarTypeID CVarTypeMng::GetBaseID(bool fsign, SIZEOF size)
     return 0;
 }
 
-void CVarTypeMng::VarType_ID2Name(VarTypeID id, char * namebuf)
+void VarTypeMng::VarType_ID2Name(VarTypeID id, char * namebuf)
 {
     SVarType* p = id2_VarType(id);
     switch (p->type)
@@ -273,7 +272,7 @@ void CVarTypeMng::VarType_ID2Name(VarTypeID id, char * namebuf)
 }
 
 
-VarTypeID CVarTypeMng::NoConst(VarTypeID id)
+VarTypeID VarTypeMng::NoConst(VarTypeID id)
 {
     SVarType* p = id2_VarType(id);
     assert(p);
@@ -281,7 +280,7 @@ VarTypeID CVarTypeMng::NoConst(VarTypeID id)
         return p->m_const.id_base;
     return id;
 }
-VarTypeID CVarTypeMng::GetPointTo(VarTypeID id)
+VarTypeID VarTypeMng::GetPointTo(VarTypeID id)
 {
     //  If the id is a pointer type, return the type pointed to
     SVarType* p = id2_VarType(id);
@@ -309,7 +308,7 @@ VarTypeID CVarTypeMng::GetPointTo(VarTypeID id)
 
     return 0;
 }
-SVarType*	CVarTypeMng::id2_VarType(VarTypeID id)
+SVarType*	VarTypeMng::id2_VarType(VarTypeID id)
 {
     assert(id);
     assert(id < 2500);
@@ -326,7 +325,7 @@ SVarType*	CVarTypeMng::id2_VarType(VarTypeID id)
     return NULL;	//	why here
 }
 
-FuncType* CVarTypeMng::get_funcptr(VarTypeID id)
+FuncType* VarTypeMng::get_funcptr(VarTypeID id)
 {
     assert(id);
     SVarType* p = id2_VarType(id);
@@ -345,7 +344,7 @@ FuncType* CVarTypeMng::get_funcptr(VarTypeID id)
 }
 
 
-bool    CVarTypeMng::is_simple(VarTypeID id)
+bool    VarTypeMng::is_simple(VarTypeID id)
 {
     if (id == 0)
         return false;
@@ -356,7 +355,7 @@ bool    CVarTypeMng::is_simple(VarTypeID id)
     return false;
 }
 
-Class_st*	CVarTypeMng::is_classpoint(VarTypeID id)
+Class_st*	VarTypeMng::is_classpoint(VarTypeID id)
 {
     assert(id);
     SVarType* p = id2_VarType(id);
@@ -373,7 +372,7 @@ Class_st*	CVarTypeMng::is_classpoint(VarTypeID id)
         return NULL;
     }
 }
-enum_st*	CVarTypeMng::id2_enum(VarTypeID id)
+enum_st*	VarTypeMng::id2_enum(VarTypeID id)
 {
     assert(id);
     SVarType* p = id2_VarType(id);
@@ -390,14 +389,14 @@ enum_st*	CVarTypeMng::id2_enum(VarTypeID id)
         return NULL;
     }
 }
-Class_st*	CVarTypeMng::is_class(VarTypeID id)
+Class_st*	VarTypeMng::is_class(VarTypeID id)
 {
     if (id == 0)
         return NULL;
     return id2_Class(id);
 }
 
-Class_st*	CVarTypeMng::id2_Class(VarTypeID id)
+Class_st*	VarTypeMng::id2_Class(VarTypeID id)
 {
     assert(id);
     SVarType* p = id2_VarType(id);
@@ -414,7 +413,7 @@ Class_st*	CVarTypeMng::id2_Class(VarTypeID id)
         return NULL;
     }
 }
-bool	CVarTypeMng::is_funcptr(VarTypeID id)
+bool	VarTypeMng::is_funcptr(VarTypeID id)
 {
     //	if a pointer to function
     assert(id);
@@ -432,7 +431,7 @@ bool	CVarTypeMng::is_funcptr(VarTypeID id)
         return false;
     }
 }
-SIZEOF CVarTypeMng::VarType_ID2Size(VarTypeID id)
+SIZEOF VarTypeMng::VarType_ID2Size(VarTypeID id)
 {
     assert(id);
     SVarType* p = id2_VarType(id);
@@ -466,7 +465,7 @@ SIZEOF CVarTypeMng::VarType_ID2Size(VarTypeID id)
     return 0;
 }
 
-VarTypeID CVarTypeMng::NewArray(char * item_name,SIZEOF n)
+VarTypeID VarTypeMng::NewArray(char * item_name,SIZEOF n)
 {
     VarTypeID id = VarType_Name2ID(item_name);
     return NewArray_id_id(id,n);
@@ -485,7 +484,7 @@ VarTypeID CVarTypeMng::NewArray(char * item_name,SIZEOF n)
         return 0;
         */
 }
-VarTypeID CVarTypeMng::VarType_Name2ID(const char * name)
+VarTypeID VarTypeMng::VarType_Name2ID(const char * name)
 {
     //  Borrow the following procedures before it
     VarTypeID id = get_DataType(name);
@@ -495,10 +494,12 @@ VarTypeID CVarTypeMng::VarType_Name2ID(const char * name)
 }
 
 VarTypeID get_DataType_bare(const char * &p)
-{	//	with "unsigned char *", only parse "unsigned char"
+{
+    //	with "unsigned char *", only parse "unsigned char"
 
     if (memcmp(p,"unsigned __int64",16) == 0)
-        nop();
+        ; //TODO: nop();
+
 
     const char * savp = p;
     char buf[80];
@@ -542,12 +543,12 @@ VarTypeID get_DataType_bare(const char * &p)
     if (strcmp(buf,"unsigned") == 0 )
     {
         VarTypeID id = get_DataType_bare(p);
-        return g_VarTypeManage->Get_unsigned_id(id);
+        return VarTypeMng::get()->Get_unsigned_id(id);
     }
     else if (strcmp(buf,"signed") == 0)
     {
         VarTypeID id = get_DataType_bare(p);
-        return g_VarTypeManage->Get_signed_id(id);
+        return VarTypeMng::get()->Get_signed_id(id);
     }
     else if (strcmp(buf,"int") == 0 )
     {
@@ -573,14 +574,14 @@ VarTypeID get_DataType_bare(const char * &p)
     {
         VarTypeID id = get_DataType_bare(p);
         assert(id);
-        return g_VarTypeManage->GetConstOfID(id);
+        return VarTypeMng::get()->GetConstOfID(id);
     }
     const char * p1 = buf;
-    VarTypeID id = g_VarTypeManage->FirstDataType(p1);
+    VarTypeID id = VarTypeMng::get()->FirstDataType(p1);
     if (id == 0)
-        id = g_ClassManage->if_StrucName(p1);
+        id = ClassManage::get()->if_StrucName(p1);
     if (id == 0)
-        id = g_enum_mng->if_EnumName(p1);
+        id = Enum_mng::get()->if_EnumName(p1);
     if (id == 0)
         p = savp;
 
@@ -588,8 +589,8 @@ VarTypeID get_DataType_bare(const char * &p)
 }
 VarTypeID Get_Additional_id(VarTypeID baseid, const char * &p)
 {
-    //	对 "unsigned char *", 已经知道 "unsigned char" 的id,
-    //	期望 p 指的是一个 "*" 或 "**" 之类
+    //	For "unsigned char *", already knows "unsigned char" in id,
+    //	Expect p to refers to a "*"or"** " and the like
     //  On the "unsigned char *", have known "unsigned char" in the id,
     //  Expect p refers to a "*"or"** " and the like
     VarTypeID id = baseid;
@@ -600,7 +601,7 @@ VarTypeID Get_Additional_id(VarTypeID baseid, const char * &p)
         else if (*p == '*')
         {
             p++;
-            id = g_VarTypeManage->GetAddressOfID(id);
+            id = VarTypeMng::get()->GetAddressOfID(id);
         }
         else if (memcmp(p,"far ",4) == 0)
             p += 4;
@@ -630,11 +631,11 @@ VarTypeID get_DataType(const char * &p)
         else if (*p == '*')
         {
             p++;
-            id = g_VarTypeManage->GetAddressOfID(id);
+            id = VarTypeMng::get()->GetAddressOfID(id);
         }
         else if (memcmp(p,"const",5) == 0 && if_split_char(p[5]))
         {
-            id = g_VarTypeManage->GetConstOfID(id);
+            id = VarTypeMng::get()->GetConstOfID(id);
             p += 5;
         }
         else
@@ -643,7 +644,7 @@ VarTypeID get_DataType(const char * &p)
     return id;
 }
 
-VarTypeID CVarTypeMng::GetConstOfID(VarTypeID id)
+VarTypeID VarTypeMng::GetConstOfID(VarTypeID id)
 {
     VarTypeList::iterator pos = list->begin();
     while (pos!=list->end())
@@ -670,7 +671,7 @@ VarTypeID CVarTypeMng::GetConstOfID(VarTypeID id)
     return idnew;
 }
 
-VarTypeID CVarTypeMng::FirstDataType(const char * &pattern)
+VarTypeID VarTypeMng::FirstDataType(const char * &pattern)
 {
     assert(list);
 
@@ -706,7 +707,7 @@ VarTypeID CVarTypeMng::FirstDataType(const char * &pattern)
     return 0;
 }
 
-bool	CVarTypeMng::If_Based_on_idid(VarTypeID id, VarTypeID id0)
+bool	VarTypeMng::If_Based_on_idid(VarTypeID id, VarTypeID id0)
 {
     //	check if id is based on id0
 
@@ -724,7 +725,7 @@ bool	CVarTypeMng::If_Based_on_idid(VarTypeID id, VarTypeID id0)
         return false;
     }
 }
-bool	CVarTypeMng::If_Based_on(VarTypeID id, char * basename)
+bool	VarTypeMng::If_Based_on(VarTypeID id, char * basename)
 {
     VarTypeID id0 = this->VarType_Name2ID(basename);
     assert(id0);
@@ -732,7 +733,7 @@ bool	CVarTypeMng::If_Based_on(VarTypeID id, char * basename)
     return this->If_Based_on_idid(id, id0);
 }
 
-VarTypeID CVarTypeMng::Get_unsigned_id(VarTypeID id)
+VarTypeID VarTypeMng::Get_unsigned_id(VarTypeID id)
 {
     SVarType* p = id2_VarType(id);
     assert(p);
@@ -748,7 +749,7 @@ VarTypeID CVarTypeMng::Get_unsigned_id(VarTypeID id)
     return 0;
 }
 
-VarTypeID CVarTypeMng::Get_signed_id(VarTypeID id)
+VarTypeID VarTypeMng::Get_signed_id(VarTypeID id)
 {
     SVarType* p = id2_VarType(id);
     assert(p);
@@ -766,7 +767,7 @@ VarTypeID CVarTypeMng::Get_signed_id(VarTypeID id)
     //assert(0);
     return id;
 }
-VarTypeID CVarTypeMng::Class2VarID(Class_st *pclass)
+VarTypeID VarTypeMng::Class2VarID(Class_st *pclass)
 {
     VarTypeList::iterator pos = list->begin();
     while (pos!=list->end())
@@ -794,7 +795,7 @@ VarTypeID CVarTypeMng::Class2VarID(Class_st *pclass)
     this->list->push_back(pnew);
     return pnew->id;
 }
-VarTypeID CVarTypeMng::NewArray_id_id(VarTypeID id0, SIZEOF n)
+VarTypeID VarTypeMng::NewArray_id_id(VarTypeID id0, SIZEOF n)
 {
     // Is already char's id, generate a char kkk [] for id
     VarTypeList::iterator pos = list->begin();
@@ -822,7 +823,7 @@ VarTypeID CVarTypeMng::NewArray_id_id(VarTypeID id0, SIZEOF n)
     this->list->push_back(pnew);
     return id;
 }
-VarTypeID CVarTypeMng::GetArrayItemID(VarTypeID id)
+VarTypeID VarTypeMng::GetArrayItemID(VarTypeID id)
 {
     //	if it is a array, return item datatype
     SVarType* p = id2_VarType(id);
@@ -830,7 +831,7 @@ VarTypeID CVarTypeMng::GetArrayItemID(VarTypeID id)
         return p->m_array.id_arrayitem;
     return id;
 }
-VarTypeID CVarTypeMng::NewUnknownStruc(const char * strucname)
+VarTypeID VarTypeMng::NewUnknownStruc(const char * strucname)
 {
     VarTypeList::iterator pos = list->begin();
     while (pos!=list->end())
@@ -863,7 +864,7 @@ VarTypeID CVarTypeMng::NewUnknownStruc(const char * strucname)
     this->list->push_back(pnew);
     return pnew->id;
 }
-VarTypeID CVarTypeMng::GetAddressOfID(VarTypeID id)
+VarTypeID VarTypeMng::GetAddressOfID(VarTypeID id)
 {
     //It returns an type id of pointer to type 'id'
     // so for unsigned long it returns unsigned long *
@@ -885,31 +886,31 @@ VarTypeID CVarTypeMng::GetAddressOfID(VarTypeID id)
 
 SVarType* GG_id2_VarType(VarTypeID id)
 {
-    return g_VarTypeManage->id2_VarType(id);
+    return VarTypeMng::get()->id2_VarType(id);
 }
 
 std::string	GG_VarType_ID2Name(VarTypeID id)
 {
     char buf[128];
-    g_VarTypeManage->VarType_ID2Name(id,buf);
+    VarTypeMng::get()->VarType_ID2Name(id,buf);
     return (std::string)buf;
 }
 
 SIZEOF	GG_VarType_ID2Size(VarTypeID id)
 {
-    return g_VarTypeManage->VarType_ID2Size(id);
+    return VarTypeMng::get()->VarType_ID2Size(id);
 }
 
 bool	GG_is_funcpoint(VarTypeID id)
 {
-    return g_VarTypeManage->is_funcptr(id);
+    return VarTypeMng::get()->is_funcptr(id);
 }
 FuncType* GG_get_funcpoint(VarTypeID id)
 {
-    return g_VarTypeManage->get_funcptr(id);
+    return VarTypeMng::get()->get_funcptr(id);
 }
 
 Class_st*	GG_id2_Class(VarTypeID id)
 {
-    return g_VarTypeManage->id2_Class(id);
+    return VarTypeMng::get()->id2_Class(id);
 }

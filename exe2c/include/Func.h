@@ -149,7 +149,7 @@ class Func
 {
     typedef INSTR_LIST::iterator POSITION;
     friend class CFuncPrt;
-    friend class CFuncOptim;
+    friend class FuncOptim;
 private:
     UINT GetVaryParaSize(POSITION pos);
 
@@ -309,7 +309,7 @@ struct st_VarOptm
 typedef std::list<st_VarOptm*> VAROPTM_LIST;
 typedef std::list< INSTR_LIST::iterator > POS_LIST;
 
-class CFuncOptim
+class FuncOptim
 {
     typedef INSTR_LIST::iterator POSITION;
     Func* m_my_func;
@@ -338,7 +338,7 @@ class CFuncOptim
     void SimplifyAddImmed(Instruction *p);
     void SimplifyImulImmed(Instruction *p);
 public:
-    CFuncOptim(Func* p)
+    FuncOptim(Func* p)
     {
         m_my_func = p;
     }

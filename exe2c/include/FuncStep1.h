@@ -35,7 +35,7 @@ public:
     void CreateNewFunc_if_CallNear();
 };
 
-class CFuncLL
+class FuncLL
 {
         int m_EBP_base;
     AsmCodeList* m_asmlist;
@@ -45,10 +45,10 @@ class CFuncLL
         bool	stack_stack(AsmCode* p0, AsmCode* p1);
         AsmCode* ea2pasm(ea_t ea);
     std::string GetLabelName(ea_t ea);
-    void VarLL_Analysis_1(VarLL* pvarll, OPERITEM* op, AsmCode* pasm);
+    void    VarLL_Analysis_1(VarLL* pvarll, OPERITEM* op, AsmCode* pasm) const;
         void	prtout_asm_1(VarLL* pvarll, XmlOutPro* out);
 public:
-    CFuncLL(AsmCodeList* asmlist)
+    FuncLL(AsmCodeList* asmlist)
     {
         this->m_asmlist = asmlist;
                 m_EBP_base = Not_EBP_based;   //invalid

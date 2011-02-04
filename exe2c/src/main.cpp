@@ -3,16 +3,13 @@
 #include <cassert>
 #include <algorithm>
 #include "exe2c.h"
-#include "CISC.h"
-
-Func* g_Cur_Func = NULL;
 
 //EXPR_LIST	*g_expr_list = NULL;	// Global variable table
 
 
 void outstring_in_log(const char * str)
 {
-    g_Cexe2c->prt_log(str);
+    Exe2c::get()->prt_log(str);
 }
 
 FUNC_LIST::iterator Exe2c::GetFirstFuncHandle()
@@ -23,8 +20,8 @@ FUNC_LIST::iterator Exe2c::GetFirstFuncHandle()
 
 FUNC_LIST::iterator Exe2c::GetCurFuncHandle()
 {
-    assert(g_Cur_Func!=0);
-    FUNC_LIST::iterator pos = std::find(m_func_list.begin(),m_func_list.end(),g_Cur_Func);
+    assert(m_Cur_Func!=0);
+    FUNC_LIST::iterator pos = std::find(m_func_list.begin(),m_func_list.end(),m_Cur_Func);
     assert(pos!=m_func_list.end());
     return pos;
 }
@@ -34,7 +31,7 @@ void Exe2c::SetCurFunc_by_Name(const char * funcname)
         Func *p = this->FindFuncByName(funcname);
     if (p == NULL)
         return;
-    g_Cur_Func = p;
+    m_Cur_Func = p;
 }
 void Exe2c::GetFuncInfo( FUNC_LIST::iterator h, st_FuncInfo* info )
 {
@@ -65,7 +62,7 @@ FUNC_LIST::iterator Exe2c::GetNextFuncHandle( FUNC_LIST::iterator h )
 
 bool Exe2c::RenameCurFuncName(const char * name)
 {
-    Func *p = g_Cur_Func;
+    Func *p = m_Cur_Func;
     if (p == NULL)
         return false;
     if (!IfValideFuncName(name))

@@ -3,65 +3,58 @@
 #include <cassert>
 #include <cstring>
 #include <cstdio>
+#include <algorithm>
+#include <boost/lambda/lambda.hpp>
+#include <boost/lambda/construct.hpp>
+#include <boost/lambda/bind.hpp>
 
 #include "00000.h"
 #include "ClassManage.h"
 
 #include	"hpp.h"
 #include	"SVarType.h"
-//#include	"../src/CFunc.h"
+//#include	"Func.h"
 #include "strparse.h"
 
-Class_st::Class_st() : m_TclassFstruc(false),m_size(0),m_nDataItem(0),m_DataItems(0),m_Fstruc_Tunion(0),m_Vftbl(0),m_nSubFuncs(0),m_SubFuncs(0)
-{
-    m_name[0]=0;
-}
+using namespace boost::lambda;
 
-Class_st::~Class_st()
+ClassManage* ClassManage::s_ClassManage = NULL;
+ClassManage* ClassManage::get()
 {
-    delete m_DataItems;
-    m_DataItems=0;
-    for (int i=0;i < m_nSubFuncs;i++)
-    {
-        delete m_SubFuncs[i];
+    if(0==s_ClassManage)
+        s_ClassManage=new ClassManage;
+    return s_ClassManage;
     }
-    delete m_SubFuncs;
-}
-
-void Class_st::set_subfuncs()
+VarTypeID ClassManage::if_StrucName(const char * &pstr)
 {
-	for (int i=0; i<m_nSubFuncs; i++)
+    CLASS_LIST::iterator pos = this->m_classlist.begin();
+    for (;pos!=m_classlist.end();++pos)
 	{
-		FuncType *p = m_SubFuncs[i];
-		p->m_class = this;
+        Class_st* p = *pos;
+        int n = strlen(p->getname());
+        if (memcmp(p->getname(),pstr,n))
+            continue;
+        if (if_split_char(pstr[n]))
+        {
+            pstr += n;
+            return VarTypeMng::get()->Class2VarID(p);
 	}
 }
-
-bool Class_st::IfThisName(const char * name)
-{
-	if (strcmp(this->m_name, name) == 0)
-		return true;
-	return false;
+    return 0;
 }
 //	----------------------------------
-
-ClassManage* g_ClassManage = NULL;
 
 ClassManage::ClassManage()
 {
 }
 ClassManage::~ClassManage()
 {
-	CLASS_LIST::iterator pos = this->m_classlist.begin();
-	for(;pos!=m_classlist.end();++pos)
-	{
-		delete *pos;
-	}
-	m_classlist.clear();
+    std::for_each(m_classlist.begin(),m_classlist.end(), boost::lambda::bind(delete_ptr(), _1));
+    m_classlist.clear();
 }
 void ClassManage::add_class(Class_st* pnew)
 {
-	this->m_classlist.push_back(pnew);
+    m_classlist.push_back(pnew);
 }
 
 Class_st* ClassManage::LoopUp_class_by_name(const char * name)
@@ -85,28 +78,60 @@ FuncType* ClassManage::Get_SubFuncDefine_from_name(const char * classname, const
 }
 
 
+Class_st::Class_st() : m_TclassFstruc(false),
+    m_size(0),
+    m_Fstruc_Tunion(false),
+    m_Vftbl(0)
+{
+    m_name[0]=0;
+}
+
+Class_st::~Class_st()
+{
+    m_DataItems.clear();
+    std::for_each(m_SubFuncs.begin(),m_SubFuncs.end(), boost::lambda::bind(delete_ptr(), _1));
+    m_SubFuncs.clear();
+}
+
+void Class_st::set_subfuncs()
+{
+    std::for_each(m_SubFuncs.begin(),m_SubFuncs.end(), boost::lambda::bind(&FuncType::setClass,_1, this));
+    for (size_t i=0; i<m_SubFuncs.size(); i++)
+    {
+        assert(m_SubFuncs[i]->m_class == this);
+    }
+}
+
+bool Class_st::IfThisName(const char * name) const
+{
+    if (strcmp(m_name, name) == 0)
+        return true;
+    return false;
+}
+
 FuncType* Class_st::LookUp_SubFunc(const char * name)
 {
 	FuncType* p;
-	for (int i=0; i<this->m_nSubFuncs; i++)
+    for (size_t i=0; i<m_SubFuncs.size(); i++)
 	{
-		p = this->m_SubFuncs[i];
+        p = m_SubFuncs[i];
 		if(p->m_pname.compare(name) == 0)
 			return p;
 	}
 	return NULL;
 }
-bool	Class_st::is_GouZ(FuncType* pft) //is a constructor
+bool	Class_st::is_Constructor(const FuncType* pft) const //is a constructor
 {
 	return pft->m_pname.compare(this->m_name)==0;
 }
-bool	Class_st::is_GouX(FuncType* pft) //destructor
+bool	Class_st::is_Destructor(const FuncType* pft) const //destructor
 {
 	return (pft->m_pname[0] == '~');
 }
-bool	Class_st::is_GouZX(FuncType* pft)
-{//constructor or destructor
-	return is_GouZ(pft) || is_GouX(pft);
+//constructor or destructor
+bool	Class_st::is_ConstructOrDestruct(const FuncType* pft) const
+{
+    return is_Constructor(pft) || is_Destructor(pft);
 }
 
 /*
@@ -117,8 +142,8 @@ void CFunc::ClassSubFuncProcess()
 	if (m_ftype->m_class == NULL)
 		return;
 
-	VarTypeID id = g_VarTypeManage->Class2VarID(m_ftype->m_class);
-	id = g_VarTypeManage->GetAddressOfID(id);
+    VarTypeID id = CVarTypeMng::get()->Class2VarID(m_ftype->m_class);
+    id = CVarTypeMng::get()->GetAddressOfID(id);
 
 	this->m_instrs->Fill_this_ECX(id);
 }*/
@@ -265,41 +290,19 @@ const char *	Class_st::getclassitemname(uint32_t off)
 }
 st_Var_Declare* Class_st::GetClassItem(uint32_t off)
 {
-	assert(this->m_nDataItem < 0x1000);
-	for (int i=0; i<this->m_nDataItem; i++)
+    assert(m_DataItems.size() < 0x1000);
+    for (size_t i=0; i<m_DataItems.size(); i++)
 	{
-		st_Var_Declare* p = this->m_DataItems + i;
-		if (p->m_offset_in_struc == off)
-		{
-			return p;
-		}
-		if (p->m_offset_in_struc <= off
-			&& (p->m_offset_in_struc + p->m_size) > off)
-		{
-			return p;
-		}
-	}
-	return NULL;
-}
-VarTypeID ClassManage::if_StrucName(const char * &pstr)
-{
-	CLASS_LIST::iterator pos = this->m_classlist.begin();
-	for (;pos!=m_classlist.end();++pos)
-	{
-		Class_st* p = *pos;
-		int n = strlen(p->getname());
-		if (memcmp(p->getname(),pstr,n))
-			continue;
-		if (if_split_char(pstr[n]))
-		{
-			pstr += n;
-			return g_VarTypeManage->Class2VarID(p);
-		}
+        st_Var_Declare &p(m_DataItems[i]);
+        if (p.m_offset_in_struc == off)
+            return &p;
+        if (p.m_offset_in_struc <= off && (p.m_offset_in_struc + p.m_size) > off)
+            return &p;
 	}
 	return 0;
 }
 
-const char *	Class_st::getname()
+const char *	Class_st::getname() const
 {
-	return this->m_name;
+    return m_name;
 }

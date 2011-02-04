@@ -15,7 +15,7 @@ enum enum_CallC
 };	//	calling convention
 
 enum_CallC if_CallC(const char* p);
-
+class Class_st;
 class FuncType
 {
 public:
@@ -34,11 +34,11 @@ public:
 	std::vector<std::string> m_parnames;
 	std::string	m_pname;
 	std::string	m_internal_name;	//can be "_printf", "printf$CRS"
-	class Class_st*	m_class;			//	if not null, means this func is a subfunc of this class
+	Class_st*	m_class;			//	if not null, means this func is a subfunc of this class
 
 	FuncType();
 	~FuncType();
-
+	void setClass(Class_st* v) {m_class=v;}
 	void create_internal_funcname();
 	FuncType* ft_clone();
 

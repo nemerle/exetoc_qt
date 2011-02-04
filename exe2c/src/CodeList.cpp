@@ -270,7 +270,7 @@ void	CodeList_Maker::AddTail_Cur_Opcode()
         {
             Instruction * p = new Instruction(i_Call);  //new_INSTR
             p->call.esp_level = cur->esp_level;
-            p->call.call_func = g_Cexe2c->GetFunc(pxcpu->op[0].nearptr.offset);
+            p->call.call_func = Exe2c::get()->GetFunc(pxcpu->op[0].nearptr.offset);
             p->call.p_callpara = NULL;
             p->call.p_callret = NULL;
             Q->InstrAddTail(p);

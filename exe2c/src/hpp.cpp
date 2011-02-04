@@ -1,10 +1,6 @@
 // Copyright(C) 1999-2005 LiuTaoTao，bookaa@rorsoft.com
 
 
-//	exe2c project
-
-//#include "stdafx.h"
-#include <cstring>
 #include <cassert>
 #include <algorithm>
 #include <boost/lambda/lambda.hpp>
@@ -25,23 +21,13 @@
 #include "strparse.h"
 #include "SVarType.h"
 
-/*
-#include "../pub/strparse.h"
-#include "../CCbuf/CCbuf.h"
-#include "../FileLoad/FileLoad.h"
-
-#include "../CEnumMng/CEnumMng.h"
-#include "../CVarTypeMng/SVarType.h"
-  */
-
-//#include "io.h"
 using namespace std;
 using namespace boost::lambda;
 using namespace boost::filesystem;
 class CHpp
 {
 public:
-        FuncTypeList* m_FuncTypeList;	//	保存从.h得来的全局函数定义
+    FuncTypeList* m_FuncTypeList;	//	Saved from the '.h' derived global function definition
 
         CHpp();
         ~CHpp();
@@ -51,19 +37,29 @@ public:
         FuncType* Get_FuncDefine_from_name_(const std::string &pmyname);
 };
 
-CHpp* g_Hpp = NULL;
+static CHpp* g_Hpp = NULL;
+static path g_incpath;
+
+struct define_t
+{
+    std::string src; //#define src dst
+    std::string dst;
+};
+
+typedef std::list<define_t*> DefineList;
+    //about this list:
+    //	1. allow multi define, that is , it will save both
+    //		#define A 1
+    //		#define A 2
+    //		but if 2 just same define, only once
+
+static DefineList* g_DefineList = NULL;
 
 VarTypeID Get_Var_Declare(const char * &p, char * name);
-
-DefineList* g_DefineList = NULL;
-
-
-bool LoadIncFile(const std::string &fname);
-void prt_defines();
-std::string get_define(char * partern);
+static void prt_defines();
+static std::string get_define(char * partern);
 void define_replace(char * buf);
 
-path g_incpath;
 CHpp::CHpp()
 {
         m_FuncTypeList = new FuncTypeList;
@@ -87,8 +83,6 @@ bool hpp_init()
         g_Hpp = new CHpp;
 
         g_DefineList = new DefineList;
-        g_ClassManage = new ClassManage;
-        g_enum_mng = new Enum_mng;
         path current_dir=GetMyExePath();
         current_dir = current_dir/"inc";
         g_incpath = current_dir.native_directory_string();
@@ -96,7 +90,7 @@ bool hpp_init()
     //	if (g_EXEType == enum_PE_sys)
     //		strcat(g_incpath, "\\ntddk\\");
 
-        LoadIncFile("my.h");
+    CCInfo::LoadIncFile("my.h");
 
         return true;
 }
@@ -105,35 +99,25 @@ bool hpp_onexit()
 {
     delete g_Hpp;
     g_Hpp = NULL;
-
-    delete g_enum_mng;
     if (g_DefineList)
     {
         for_each(g_DefineList->begin(),g_DefineList->end(),boost::lambda::bind(delete_ptr(), _1));
         delete g_DefineList;
         g_DefineList = NULL;
     }
-
-
-    if (g_ClassManage)
-    {
-        delete g_ClassManage;
-        g_ClassManage = NULL;
-    }
-
     return true;
 }
 
 //	----------------------------------------------------------
 CCInfo::CCInfo()
 {
-        this->comma1 = 0;
-        this->comma2 = 0;
-        this->extern_c = 0;
-        this->m_default_callc = enum_stdcall;
+    this->m_parentheses_level = 0;
+    this->m_curly_level = 0;
+    this->m_extern_c = 0;
+    m_default_callc = enum_stdcall;
 
-        this->m_len = 0;
-        this->m_buf = NULL;
+    m_len = 0;
+    m_buf = NULL;
 }
 
 CCInfo::~CCInfo()
@@ -146,10 +130,10 @@ void CCInfo::LoadFile(FILE *f)
 {
         CCbuf ccbuf;
         ccbuf.LoadFile(f);
-        this->m_buf = ccbuf.m_p;
-        this->m_len = ccbuf.m_len;
+    m_buf = ccbuf.m_p;
+    m_len = ccbuf.m_len;
 }
-bool LoadIncFile(const std::string &fname)
+bool CCInfo::LoadIncFile(const std::string &fname)
 {
     path file_path;
     file_path=g_incpath/fname;
@@ -173,9 +157,7 @@ bool LoadIncFile(const std::string &fname)
     while (p < plast)
     {
         const char * pnext = NULL;
-        pInfo->OneLine(p, pnext);	//	一般情况下，OneLine不会动pnext
-        //	如果它是多行，就会把pnext指向最后
-//        Under normal circumstances, OneLine does not move pnext
+        pInfo->OneLine(p, pnext);	//	Under normal circumstances, OneLine will not move pnext
 //        If it is more than one line, putting the final point pnext
         if (pnext == NULL)
             p += strlen(p) + 1;
@@ -186,9 +168,9 @@ bool LoadIncFile(const std::string &fname)
         }
     }
 
-    assert(pInfo->comma1 == 0);
-    assert(pInfo->comma2 == 0);
-    assert(pInfo->extern_c == 0);
+    assert(pInfo->m_parentheses_level == 0);
+    assert(pInfo->m_curly_level == 0);
+    assert(pInfo->m_extern_c == 0);
     delete [] pInfo->m_buf;
     pInfo->m_buf = NULL;
     delete pInfo;
@@ -196,7 +178,7 @@ bool LoadIncFile(const std::string &fname)
     //printf("end   file %s\n",fname);
     return true;
 }
-void LoadIncBuffer(const char * p,char * plast)
+static void LoadIncBuffer(const char * p,char * plast)
 {
         CCInfo* pInfo = new CCInfo;
 
@@ -206,13 +188,9 @@ void LoadIncBuffer(const char * p,char * plast)
                 pInfo->OneLine(p, pnext);	//	一般情况下，OneLine不会动pnext
                                                                         //	如果它是多行，就会把pnext指向最后
                 if (pnext == NULL)
-                {
                         p += strlen(p) + 1;
-                }
                 else
-                {
                         p = pnext;
-                }
         }
 
         delete pInfo;
@@ -252,18 +230,10 @@ void do_define(char * p1,const char * p2)
         else
                 g_DefineList->push_back(pnew);
 }
-//Handle all lines beginning with #
-void One_Line_pre(const char * lbuf)
+static void onDefine(const char *p)
 {
-    const char * p = lbuf;
-    assert(*p == '#');
-    p++;
-
-    if (memcmp(p,"define",6) == 0)
-    {	//	#define find
-        p+=6;
-        skip_space(p);
-        assert(*p);	//#define 后面不能什么也没有
+    skip_space(p);
+    assert(*p);	// #define can not be followed by nothing
 
         char buf[280];
         get_1part(buf,p);
@@ -271,25 +241,34 @@ void One_Line_pre(const char * lbuf)
         do_define(buf,p);
         return;
     }
-    if (memcmp(p,"include",7) == 0)
+static void onInclude(const char *p)
     {
-        p += 7;
         skip_space(p);
         if (*p == '\"' || *p == '<')
         {
-            char path[80];
+        char inc_path[80];
             p++;
             int i=0;
             while (*p != '\"' && *p != '>')
             {
-                path[i++] = *p++;
+            inc_path[i++] = *p++;
             }
-            path[i] = '\0';
-            log_prtf("Load include file: %s\n",path);
-            LoadIncFile(path);
+        inc_path[i] = '\0';
+        log_prtf("Load include file: %s\n",inc_path);
+        CCInfo::LoadIncFile(inc_path);
         }
-        return;
     }
+//Handle all lines beginning with #
+static void onPreprocessorDirective(const char * lbuf)
+{
+    const char * p = lbuf;
+    assert(*p == '#');
+    p++;
+
+    if (memcmp(p,"define",6) == 0)
+        onDefine(p+6);
+    if (memcmp(p,"include",7) == 0)
+        onInclude(p+7);
 }
 
 void skip_string(char c1, const char * & p)
@@ -320,44 +299,42 @@ bool Read_Var_Declare(const char * pstr, st_Var_Declare* pvardcl)
         pvardcl->m_vartypeid = id;
         return true;
 }
-void log_display_structure(Class_st* p)
+void Class_st::log_display_structure()
 {
         log_prtt("struct ");
-        log_prtt(p->m_name);
-        log_prtf("\n{    \\\\sizeof = 0x%x\n",p->m_size);
+    log_prtt(m_name);
+    log_prtf("\n{    \\\\sizeof = 0x%x\n",m_size);
         int nident = 1;
-        for (int i=0;i<p->m_nDataItem;i++)
-        {
-                st_Var_Declare* pv = &p->m_DataItems[i];
-                if (pv->m_access == nm_sub_end)
+    size_t count=m_DataItems.size();
+    for (int i=0;i<count;i++)
+    {
+        st_Var_Declare &pv(m_DataItems[i]);
+        if (pv.m_access == nm_sub_end)
                         nident--;
                 for (int j=0;j<nident;j++)
                         log_prtt("    ");
-                if (pv->m_access == nm_substruc)
+        if (pv.m_access == nm_substruc)
                 {
                         log_prtt("struct {\n");
                         nident++;
                         continue;
                 }
-                if (pv->m_access == nm_subunion)
+        if (pv.m_access == nm_subunion)
                 {
                         log_prtt("union {\n");
                         nident++;
                         continue;
                 }
-                if (pv->m_access == nm_sub_end)
+        if (pv.m_access == nm_sub_end)
                 {
                         log_prtt("} ");
-                        if (pv->m_name[0])
-                                log_prtt(pv->m_name);
+            if (pv.m_name[0])
+                log_prtt(pv.m_name);
                         log_prtt(";\n");
             continue;
                 }
 
-                log_prtl("%s\t%s;\t//+%02x",
-                                 GG_VarType_ID2Name(pv->m_vartypeid),
-                                 pv->m_name,
-                                 pv->m_offset_in_struc);
+        log_prtl("%s\t%s;\t//+%02x", GG_VarType_ID2Name(pv.m_vartypeid),pv.m_name,pv.m_offset_in_struc);
         }
         log_prtt("}\n");
 }
@@ -373,7 +350,7 @@ VarTypeID do_struct(const char * &p)
 
         if (*p == '{')
                 return do_struct_after_name(name,p,false);
-        VarTypeID id = g_VarTypeManage->NewUnknownStruc(name);
+    VarTypeID id = VarTypeMng::get()->NewUnknownStruc(name);
         return id;
 }
 VarTypeID do_union(const char * &p)
@@ -387,7 +364,7 @@ VarTypeID do_union(const char * &p)
 
         if (*p == '{')
                 return do_struct_after_name(name,p,true);
-        VarTypeID id = g_VarTypeManage->NewUnknownStruc(name);
+    VarTypeID id = VarTypeMng::get()->NewUnknownStruc(name);
         return id;
 }
 VarTypeID do_struct_after_name(const char * strucname, const char * &p, bool Fstruc_Tunion)
@@ -397,7 +374,7 @@ VarTypeID do_struct_after_name(const char * strucname, const char * &p, bool Fst
         skip_eos(p);
 
         int n = 0;
-        st_Var_Declare items[150];	//50个，够了吗
+    st_Var_Declare items[150];	// 'x' should be enough
         SIZEOF size = 0;
 
 
@@ -418,7 +395,7 @@ VarTypeID do_struct_after_name(const char * strucname, const char * &p, bool Fst
                         get_1part(buf,p);
                         skip_eos(p);
                         if (strcmp(buf,"struct") == 0 && *p == '{')
-                        {	//	这是一个struct 中的struct定义
+            {	//	This is a struct defined in the struct
                                 size_tbl[substruc_stack] = size;
                                 maxsize_tbl[substruc_stack] = maxsize_in_union;
                                 f_tbl[substruc_stack++] = f;
@@ -426,13 +403,12 @@ VarTypeID do_struct_after_name(const char * strucname, const char * &p, bool Fst
                                 f = false;
                                 pvar->m_access = nm_substruc;
                                 n++;
-
                                 p++;
                                 skip_eos(p);
                                 continue;
                         }
                         if (strcmp(buf,"union") == 0 && *p == '{')
-                        {	//	这是一个struct 中的union定义
+            {	//	This is a struct defined in an union
                                 size_tbl[substruc_stack] = size;
                                 maxsize_tbl[substruc_stack] = maxsize_in_union;
                                 f_tbl[substruc_stack++] = f;
@@ -462,7 +438,7 @@ VarTypeID do_struct_after_name(const char * strucname, const char * &p, bool Fst
                                 maxsize_in_union = maxsize_tbl[substruc_stack];
                                 if (size > maxsize_in_union)
                                         maxsize_in_union = size;
-                                size = size_tbl[substruc_stack];	//	退回原来的size
+                size = size_tbl[substruc_stack];	//	Returned to its original size
                         }
                         pvar->m_access = nm_sub_end;
                         n++;
@@ -470,7 +446,7 @@ VarTypeID do_struct_after_name(const char * strucname, const char * &p, bool Fst
                         p++;
                         skip_eos(p);
                         if (*p != ';')
-                        {	//	说明有名的
+            {	//	Description known
                                 get_1part(pvar->m_name,p);
                                 skip_eos(p);
                                 assert(*p == ';');
@@ -507,20 +483,19 @@ VarTypeID do_struct_after_name(const char * strucname, const char * &p, bool Fst
         //	------------------------------------------
         Class_st* pnew = new Class_st;
         strcpy(pnew->m_name, strucname);
-        pnew->m_nDataItem = n;
-        pnew->m_DataItems = new st_Var_Declare[n];
-        memcpy(pnew->m_DataItems, items, sizeof(st_Var_Declare)*n);
+    pnew->m_DataItems.reserve(n);
+    pnew->m_DataItems.assign(items,items+n);
         if (Fstruc_Tunion)
                 pnew->m_size = maxsize_in_union;
         else
                 pnew->m_size = size;
         pnew->m_Fstruc_Tunion = Fstruc_Tunion;
 
-        log_display_structure(pnew);
+    pnew->log_display_structure();
 
-        g_ClassManage->new_struc(pnew);
+    ClassManage::get()->new_struc(pnew);
 
-        return g_VarTypeManage->Class2VarID(pnew);
+    return VarTypeMng::get()->Class2VarID(pnew);
 }
 void CCInfo::OneLine(const char * lbuf, const char * &pnext)
 {
@@ -538,22 +513,20 @@ void CCInfo::OneLine(const char * lbuf, const char * &pnext)
         skip_space(p);
 
         if (*p == '#')
-        {	//	它总是单行的
-            //It is always a single line
-            //FIXME not true
-                One_Line_pre(p);
-                return;
-        }
-        //_CRTIMP int __cdecl printf(const char *, ...);
+    {
+
+        onPreprocessorDirective(p); //It is always a single line
+        return;
+    }
         const char * p1 = p;
         char part1[80];
-        get_1part(part1,p1);
-        skip_eos(p1);
+    get_1part(part1,p1); // next token
+    skip_eos(p1); // skip spaces, also embeded nulls
 
-        if (strcmp(part1,"__inline") == 0)
+    if (strcmp(part1,"__inline") == 0) // skip __inline
         {
                 pnext = p1;
-                OneLine(p1,pnext);
+        OneLine(p1,pnext); //recurse
                 return;
         }
         if (strcmp(part1,"extern") == 0)
@@ -563,29 +536,28 @@ void CCInfo::OneLine(const char * lbuf, const char * &pnext)
                 const char * p2 = p1;
                 get_1part(part2,p2);
                 if (strcmp(part2,"\"C\"") == 0)
-                {	//extern "C"
-                        //printf("extern C find\n");
+        {
                         assert(*p2);
                         if (*p2 == '{')
                         {
-                                assert(this->comma1 == 0);
-                                assert(this->comma2 == 0);
-                                this->extern_c++;
-                                this->OneLine(p2+1, pnext);
+                assert(m_parentheses_level == 0);
+                assert(m_curly_level == 0);
+                m_extern_c++;
+                OneLine(p2+1, pnext);
                                 return;
                         }
                         else
                         {	//	just 1 line
-                                this->extern_c++;
-                                this->OneLine(p2, pnext);
-                                this->extern_c--;
+                m_extern_c++;
+                OneLine(p2, pnext);
+                m_extern_c--;
                                 return;
                         }
                 }
         }
         else if (strcmp(part1,"typedef") == 0)
         {
-                do_typedef(p1);
+        onTypedef(p1);
                 pnext = p1;
                 return;
         }
@@ -612,13 +584,10 @@ void CCInfo::OneLine(const char * lbuf, const char * &pnext)
                 pnext = p1;
                 return;
         }
-        {	//	检查是不是多行的 func define
-                if (strcmp(p,"NTSTATUS") == 0)
-                        nop();
-
+    {	//	Check is not the func define multi-line
                 const char * pf = p;
                 VarTypeID id = get_DataType(pf);
-                if (id)	//	第一个量肯定是数据类型
+        if (id)	//The first part is definitely the data type
                 {
                         char buf1[80];
                         skip_eos(pf);
@@ -632,10 +601,10 @@ void CCInfo::OneLine(const char * lbuf, const char * &pnext)
                                 get_1part(buf1,pf);
                         }
                         skip_eos(pf);
-                        if (*pf == '(')		//	这下，肯定是func define 了
+            if (*pf == '(')		//	This, is certainly a func define
                         {
                                 FuncType* pnewfunc = new FuncType;
-                                if (this->extern_c)
+                if (this->m_extern_c)
                                         pnewfunc->m_extern_c = true;
                                 pnewfunc->m_callc = cc;
                                 pnewfunc->m_retdatatype_id = id;
@@ -643,7 +612,7 @@ void CCInfo::OneLine(const char * lbuf, const char * &pnext)
                                 //this->do_func_proto
                                 func_define_2(pnewfunc,pf);
                                 g_Hpp->newfunc_addlist(pnewfunc);
-                                if (*pf == '{')
+                if (*pf == '{') // function body
                                 {
                                         int n = 1;
                                         for (;;)
@@ -654,11 +623,10 @@ void CCInfo::OneLine(const char * lbuf, const char * &pnext)
                                                 if (n == 0) break;
                                         }
                                 }
-                                else if (*pf == ';')
-                                {
-                                }
-                                else
+                else if (*pf != ';')
+                {
                                         assert(0);
+                }
                                 pf++;
                                 skip_eos(pf);
                                 pnext = pf;
@@ -666,7 +634,7 @@ void CCInfo::OneLine(const char * lbuf, const char * &pnext)
                         }
                 }
         }
-        int old_comma1 = this->comma1;
+    int old_comma1 = this->m_parentheses_level;
 //	int old_comma2 = this->comma2;
         for(;;)
         {
@@ -680,24 +648,24 @@ void CCInfo::OneLine(const char * lbuf, const char * &pnext)
                 }
                 if (c == '(')
                 {
-                        this->comma1++;
+            m_parentheses_level++;
                         continue;
                 }
                 if (c == '{')
                 {
-                        this->comma2++;
+            m_curly_level++;
                         continue;
                 }
                 if (c == ')')
                 {
-                        this->comma1--;
-                        if (old_comma1 == 0	&& this->comma1 == 0)
+            m_parentheses_level--;
+            if (old_comma1 == 0	&& this->m_parentheses_level == 0)
                         {
                                 const char * p1 = p;
-                                if (*p1 == ' ')
+                if (*p1 == ' ') // skip ' '
                                         p1++;
                                 if (*p1 == ';')
-                                {	//	现在，我认为我已经找到一个函数定义
+                {	//	Now, I think I have to find a function definition
                                         //printf(":: %s\n",lbuf);
                                         g_Hpp->func_define(lbuf, this);
                                 }
@@ -706,19 +674,19 @@ void CCInfo::OneLine(const char * lbuf, const char * &pnext)
                 }
                 if (c == '}')
                 {
-                        if (this->comma2)
-                                this->comma2--;
-                        else if (this->extern_c != 0)
-                                this->extern_c--;
+            if (m_curly_level)
+                m_curly_level--;
+            else if (m_extern_c != 0)
+                m_extern_c--;
                         else
-                                assert(0);	//extra '}' find
+                assert(0);	//extra '}' found
                         continue;
                 }
 
         }
 }
 
-void CCInfo::do_typedef(const char * &p)
+void CCInfo::onTypedef(const char * &p)
 {
         const char * savp = p;
         assert(p);
@@ -726,7 +694,9 @@ void CCInfo::do_typedef(const char * &p)
         assert(*p != ' ');
 
         if (memcmp(p,"enum",4) == 0)
-                nop();
+    {
+        //       nop();
+    }
 
         VarTypeID id = get_DataType_bare(p);
         if (id == 0)
@@ -776,7 +746,7 @@ void CCInfo::do_typedef_(VarTypeID baseid, const char * &p)
                 assert(*p == '(');
 
                 FuncType* pnewfunc = new FuncType;
-                if (this->extern_c)
+        if (this->m_extern_c)
                 {
                         pnewfunc->m_extern_c = true;
                 }
@@ -785,11 +755,11 @@ void CCInfo::do_typedef_(VarTypeID baseid, const char * &p)
 
                 pnewfunc->m_callc = callc;
                 pnewfunc->m_retdatatype_id = id;
-                //	生成内部函数名
+        //	Generate the internal function name
                 pnewfunc->create_internal_funcname();
 
-                VarTypeID id_f = g_VarTypeManage->FuncType2VarID(pnewfunc);
-                g_VarTypeManage->NewTypeDef(id_f, name);
+        VarTypeID id_f = VarTypeMng::get()->FuncType2VarID(pnewfunc);
+        VarTypeMng::get()->NewTypeDef(id_f, name);
 
                 return;
         }
@@ -797,21 +767,21 @@ void CCInfo::do_typedef_(VarTypeID baseid, const char * &p)
         char name[80];
         get_1part(name, p);
 
-        {	//	检查一下是否已经定义过了
+    {	//	Checking to see if it's already defined
                 const char * p1 = name;
                 VarTypeID id1 = get_DataType_bare(p1);
                 if (id1 != 0)
                 {
                         if (id1 >= 10)
+            {
                                 alert_prtf("already typedef : %s", name);
-                        //	我们预定义了BYTE,WORD,unsigned lonuint32_t                        return;
-                }
+                //	我们预定义了BYTE,WORD,unsigned long uint32_t                        return;
+            }
         }
+    }
 
-        log_prtl("^^ typedef %s === %s",
-                         GG_VarType_ID2Name(id),
-                         name);
-        g_VarTypeManage->NewTypeDef(id, name);
+    log_prtl("^^ typedef %s === %s", GG_VarType_ID2Name(id), name);
+    VarTypeMng::get()->NewTypeDef(id, name);
 
         skip_eos(p);
         if (*p == ';')
@@ -825,15 +795,15 @@ void CCInfo::do_typedef_(VarTypeID baseid, const char * &p)
         }
         else
         {
-                nop();
+        //TODO: nop();
                 alert_prtf("expect , or ; in typedef: %s",savp);
         }
 }
 FuncType* CCInfo::do_func_proto_void(const char * lbuf)
-{	//	就是没有函数返回值的情况，比如class的构造函数
-    //Function return value is not the case, such as class constructor
+{
+    //Function return value is not defined ex. class constructor
         FuncType* pnewfunc = new FuncType;
-        if (this->extern_c)
+    if (this->m_extern_c)
         {
                 pnewfunc->m_extern_c = true;
         }
@@ -853,18 +823,16 @@ FuncType* CCInfo::do_func_proto_void(const char * lbuf)
         pnewfunc->m_retdatatype_id = id_void;
     pnewfunc->m_callc = enum_stdcall;
 
-        //	下面，处理它的参数 //The following address its argument
 
-        func_define_2(pnewfunc,p);
-        //Build the internal function name
-        pnewfunc->create_internal_funcname();
+    func_define_2(pnewfunc,p); //	Handle arguments
+    pnewfunc->create_internal_funcname(); //Generate the internal function name
 
         return pnewfunc;
 }
 FuncType* CCInfo::do_func_proto(const char * lbuf)
 {
         FuncType* pnewfunc = new FuncType;
-        if (this->extern_c)
+    if (this->m_extern_c)
         {
                 pnewfunc->m_extern_c = true;
         }
@@ -883,11 +851,8 @@ FuncType* CCInfo::do_func_proto(const char * lbuf)
         //	--------------------------
 
         func_1(pnewfunc, buf1);
-        //	下面，处理它的参数 //The following address its argument
-        func_define_2(pnewfunc,p);
-
-        //	生成内部函数名
-        pnewfunc->create_internal_funcname();
+    func_define_2(pnewfunc,p); //Handle arguments
+    pnewfunc->create_internal_funcname(); //	Generate the internal function name
 
         return pnewfunc;
 }
@@ -896,6 +861,7 @@ void CHpp::func_define(const char * lbuf, CCInfo* pCCInfo)
         FuncType* pnewfunc = pCCInfo->do_func_proto(lbuf);
         newfunc_addlist(pnewfunc);
 }
+
 void CHpp::newfunc_addlist(FuncType* pnewfunc)
 {
 
@@ -946,12 +912,12 @@ VarTypeID Get_Var_Declare(const char * &p, char * name)
                 if (*p == ']')
                 {
                         p++;
-                        id = g_VarTypeManage->NewArray_id_id(id, SIZE_unknown);
+            id = VarTypeMng::get()->NewArray_id_id(id, SIZE_unknown);
                 }
                 else
                 {
                         uint32_t d = Str2Num(p);
-                        id = g_VarTypeManage->NewArray_id_id(id, d);
+            id = VarTypeMng::get()->NewArray_id_id(id, d);
                 }
         }
         return id;
@@ -1207,8 +1173,8 @@ VarTypeID define_enum(const char * &p)
                                 assert(0);
                 }
                 p++;
-                g_enum_mng->Add_New_Enum(pnew);
-                return g_VarTypeManage->Enum2VarID(pnew);
+        Enum_mng::get()->Add_New_Enum(pnew);
+        return VarTypeMng::get()->Enum2VarID(pnew);
         }
         return 0;
 }
@@ -1307,24 +1273,21 @@ void CCInfo::do_class(const char * p, const char * &pnext)
                         p += strlen(p)+1;
                 }
         }
-        theclass.m_nDataItem = n;
         theclass.m_size = size;
-        theclass.m_DataItems = new st_Var_Declare[n];
-        memcpy(theclass.m_DataItems, items, n * sizeof(st_Var_Declare));
+    theclass.m_DataItems.reserve(n);
 
-        theclass.m_nSubFuncs = nfunc;
-        theclass.m_SubFuncs = new FuncType *[nfunc];
-        memcpy(theclass.m_SubFuncs, funcs, nfunc * sizeof(FuncType *));
+    theclass.m_DataItems.assign(items, items+n);
+
+    theclass.m_SubFuncs.reserve(nfunc);
+    theclass.m_SubFuncs.assign(funcs,funcs+nfunc);
 
         Class_st* pnew = new Class_st;
         *pnew = theclass;
 
-        //ZeroMemory(&theclass, sizeof(Class_st)); //防止theclass析构时删东西
-
         pnew->set_subfuncs();
-        g_ClassManage->add_class(pnew);
+    ClassManage::get()->add_class(pnew);
 
-        //	现在 p 应该指向 "};"
+    //	Now p should point to "}; "
         p++;
         skip_space(p);
         if (*p == ';')

@@ -18,25 +18,20 @@
 #include "exe2c.h"
 #include "FuncStep1.h"
 #include "DataType.h"
-#include "ParseHead.h"
 #include "LibScanner.h"
 
 using namespace boost::lambda;
 //KS_DECLARE_COMPONENT(exe2c, EXE2C)
 
 
-Exe2c* g_Cexe2c = NULL;
-
 I_LIBSCANNER* g_LIBSCANNER = NULL;
 
-bool hpp_init();
-void lib_init();
-void lib_exit();
-void CExprManage_cpp_Init();
+bool hpp_init(void);
+void lib_init(void);
+void lib_exit(void);
 
 bool exe2c_Init()
 {
-    CExprManage_cpp_Init();
     hpp_init();
     return true;
 }
@@ -46,15 +41,22 @@ void exe2c_Exit()
 {
     lib_exit();
 }
-
+Exe2c* Exe2c::s_Cexe2c=0;
+Exe2c *Exe2c::get()
+{
+    if(0==s_Cexe2c)
+        s_Cexe2c = new Exe2c;
+    return s_Cexe2c;
+}
+Exe2c::Exe2c()
+{
+    m_Cur_Func = NULL;
+}
 bool Exe2c::BaseInit()
 {
     m_E2COut = NULL;
-    //TODO: Convert Exe2c to singleton
-    g_Cexe2c = this;
     //this->m_api_name_manager = new CNameMng;    //new_CNameMng
     // Make some global initializations
-
 	m_FileLoader = NULL;
 	return true;
 }
@@ -69,9 +71,7 @@ struct remover
 Exe2c::~Exe2c()
 {
     //KICK_MFC();
-    g_Cexe2c = NULL;
-    delete m_api_name_manager;
-    m_api_name_manager = NULL;
+    s_Cexe2c = NULL;
 //    for_each(m_func_list.begin(),m_func_list.end(),remover);
     m_func_list.clear();
 
@@ -118,13 +118,11 @@ void	Exe2c::Recurse_Optim()
 void Exe2c::exe2c_main(const std::string & fname)
 {
 	lib_init();
-	//MessageBox(0,fname,"file open",0);
 
-    //	文件调入
-    // File transferred to
     if (m_FileLoader != NULL)
         delete m_FileLoader;
     m_FileLoader = new FileLoader;  //new_FileLoader
+    // File to decompile
     bool f = m_FileLoader->load(fname.c_str());
     if (!f)
     {
@@ -143,8 +141,7 @@ void Exe2c::exe2c_main(const std::string & fname)
     // After the main program only offset to access, regardless of the actual buffer
     Disassembler_Init_offset(entry_buf, entry_offset);
 
-    //	开始分析
-    //start Analysis
+    //start analysis
     this->do_exe2c(entry_offset);
 }
 
@@ -171,7 +168,6 @@ void	Exe2c::do_exe2c(ea_t start)
 {
 	ea_t pmain = Find_Main(start);
 
-	// 第一步，根据 start，创建一个空的 CFunc
 	//The first step, according to start, create an empty CFunc
 	Func* pfunc = this->func_new(pmain);
 
@@ -180,9 +176,8 @@ void	Exe2c::do_exe2c(ea_t start)
 	else
 		pfunc->m_funcname="main";
 	//Set the current CFunc
-	g_Cur_Func = pfunc;	//	设置当前的CFunc
-
-	g_Cur_Func->PrepareFunc();
+    m_Cur_Func = pfunc;
+    m_Cur_Func->PrepareFunc();
 }
 
 #include "FuncType.h"
@@ -269,7 +264,10 @@ static uint32_t str_to_dword(const char * cmd)
     buf[70] = 0;
     size_t idx=0;
     while(buf[idx]!=0)
-        buf[idx]=toupper(buf[idx++]);
+    {
+        buf[idx]=toupper(buf[idx]);
+        ++idx;
+    }
     if (buf[0] == '0' && buf[1] == 'X')
     {
         uint32_t d;
@@ -284,17 +282,17 @@ static uint32_t str_to_dword(const char * cmd)
 const char * my_itoa(int i);
 void Exe2c::DoCommandLine(const char * cmd)
 {
-    //if (g_Cur_Func == NULL)
+    //if (m_Cur_Func == NULL)
         //return;
     if (memcmp(cmd, "var ", 4) == 0)
     {
         const char * varname = cmd + 4;
-        CFuncOptim the(g_Cur_Func);
+        FuncOptim the(m_Cur_Func);
         the.Prt_Var_Flow(varname);
     }
     else if (strncmp(cmd, "funcinfo", 8) == 0)
     {
-        g_Cur_Func->report_info();
+        m_Cur_Func->report_info();
     }
     else if (strncmp(cmd, "funcproto ", 10) == 0)
     {
@@ -302,49 +300,23 @@ void Exe2c::DoCommandLine(const char * cmd)
         cmd += 10;
         CCInfo * pnew = new CCInfo;
         FuncType* pfunctype = pnew->do_func_proto(cmd);
-        g_Cur_Func->m_functype = pfunctype;
-        g_Cur_Func->m_funcname = pfunctype->m_pname;
+        m_Cur_Func->m_functype = pfunctype;
+        m_Cur_Func->m_funcname = pfunctype->m_pname;
     }
     else if (strncmp(cmd, "classof ", 8) == 0)
     {
         cmd += 8;
-        VarTypeID id = g_VarTypeManage->VarType_Name2ID(cmd);
-        Class_st* pclass = g_VarTypeManage->id2_Class(id);
-        FuncType* pfunctype = g_Cur_Func->m_functype;
+        VarTypeID id = VarTypeMng::get()->VarType_Name2ID(cmd);
+        Class_st* pclass = VarTypeMng::get()->id2_Class(id);
+        FuncType* pfunctype = m_Cur_Func->m_functype;
         if (pfunctype != NULL && pclass != NULL)
         {
             pfunctype->m_class = pclass;
         }
-        //this->DoCommandLine("funcproto void __cdecl func1()");
-        //this->DoCommandLine("classof CTest1");
     }
-    else if (strncmp(cmd, "macro1", 6) == 0)
-    {
-        this->DoCommandLine("funcproto ATOM __cdecl MyRegisterClass(HINSTANCE hInstance)");
-    }
-    else if (strncmp(cmd, "macro2", 6) == 0)
-    {
-        this->DoCommandLine("funcproto bool __cdecl InitInstance(HINSTANCE hInstance, int nCmdShow)");
-    }
-    else if (strncmp(cmd, "macro3", 6) == 0)
-    {
-        this->DoCommandLine("funcproto int __stdcall WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nCmdShow)");
-    }
-    else if (strncmp(cmd, "macro_test", 10) == 0)
-    {
-        this->DoCommandLine("funcproto void __cdecl CTest1()");
-    }
-    else if (strncmp(cmd, "macro5", 6) == 0)
-    {
-        this->DoCommandLine("classof CTest1");
-    }
-#if 0
-    //this->DoCommandLine("funcproto void __cdecl test_class()");
-    //this->DoCommandLine("funcproto void __cdecl test_class()");
-#endif
     else if (strncmp(cmd, "restart", 7) == 0)
     {
-        g_Cur_Func->Restart();
+        m_Cur_Func->Restart();
     }
     else if (strncmp(cmd, "optim", 5) == 0)
     {
@@ -373,8 +345,8 @@ void Exe2c::Change_Array(int colorindex, void* handle, int newarray)
     }
     if (colorindex == COLOR_VarH)
     {
-        M_t* p = (M_t*)handle;
-        //g_Cur_Func->m_exprs->Change_Array(p, newarray);
+        //M_t* p = (M_t*)handle;
+        //m_Cur_Func->m_exprs->Change_Array(p, newarray);
     }
 }
 void Exe2c::LineHotKey(void* hline, char key)
@@ -397,7 +369,7 @@ void Exe2c::LineHotKey(void* hline, char key)
 
     if (key == 'd' || key == 'D')
     {
-        g_Cur_Func->MakeDownInstr(hline);
+        m_Cur_Func->MakeDownInstr(hline);
     }
 }
 void Exe2c::HotKey(int colorindex, void* handle, char key)
@@ -412,8 +384,8 @@ void Exe2c::HotKey(int colorindex, void* handle, char key)
 
     if (colorindex == COLOR_VarH)
     {
-        M_t* p = (M_t*)handle;
-        //g_Cur_Func->m_exprs->namemanager->Rename(p->nameid,newname);
+        //M_t* p = (M_t*)handle;
+        //m_Cur_Func->m_exprs->namemanager->Rename(p->nameid,newname);
     }
 }
 
@@ -424,7 +396,7 @@ void Exe2c::ReType(int colorindex, void* handle, const char * newtype)
     else if (colorindex == COLOR_VarH || colorindex == COLOR_type)
     {
         M_t* p = (M_t*)handle;
-        g_Cur_Func->ReType(p, newtype);
+        m_Cur_Func->ReType(p, newtype);
     }
 }
 bool Exe2c::Rename(int arg, void* handle, const char * newname)
@@ -454,17 +426,26 @@ bool Exe2c::Rename(int arg, void* handle, const char * newname)
     else if (colorindex == COLOR_type)
     {
         M_t* p = (M_t*)handle;
-        g_Cur_Func->ReType(p, newname);
+        m_Cur_Func->ReType(p, newname);
     }
     */
     return false;
 }
+void Exe2c::prtout_asm(I_XmlOut* iOut)
+{
+    if (m_Cur_Func->m_nStep == 0)
+        return;
+
+    XmlOutPro out(iOut);
+    FuncLL the(m_Cur_Func->ll.m_asmlist);
+    the.prtout_asm(m_Cur_Func, &m_Cur_Func->m_varll, &out);
+}
+
 #include "LibScanner.h"
 void lib_init()
 {
     //I_LIBSCANNER* pnew = NEW_LIBSCANNER();
     I_LIBSCANNER* pnew = new LibScanner();
-    ((LibScanner *)pnew)->BaseInit();
     boost::filesystem::path tolibc=GetMyExePath()/"lib"/"libc.lib";
     pnew->ScanLib(tolibc.native_file_string().c_str());
 

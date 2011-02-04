@@ -16,7 +16,7 @@ enum em_InstrAddOn
     IA_AddImmed,    //simply add the number immediately
     IA_MulImmed,    //simply multiply the number immediately
     IA_ReadPointTo, //*
-    IA_GetAddress,  //&
+    IA_GetAddress   //&
 };
 struct st_InstrAddOn
 {

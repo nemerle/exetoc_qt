@@ -18,22 +18,23 @@ struct enum_st
 {
 	char	m_name[80];		//	enum  //enum name
 	NumStr_st*	m_pfirst;
-	char * lookup_itemname(uint32_t n);
+    char * lookup_itemname(uint32_t n) const;
 };
-typedef std::list<enum_st*> Enum_List;
 
 class Enum_mng
 {
-public:
+private:
+    typedef std::list<enum_st*> Enum_List;
 	Enum_List m_list;
+    static Enum_mng* s_enum_mng;
 	Enum_mng(){}
 	~Enum_mng();
-
+public:
+    static Enum_mng *get();
 	void Add_New_Enum(enum_st * pnew);
 	VarTypeID if_EnumName(const char * &pstr);
 };
 
 
-extern Enum_mng* g_enum_mng;
 
 #endif	//	CEnumMng_H

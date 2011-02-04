@@ -1,8 +1,8 @@
 // Copyright(C) 1999-2005 LiuTaoTao，bookaa@rorsoft.com
-
+#include <algorithm>
 #include "CISC.h"
 #include "exe2c.h"
-
+#include "FuncStep1.h"
 CPrtOut g_PrtOut;
 bool VAR::IfTemVar() const
 {
@@ -91,7 +91,7 @@ void	CFunc_Prt::prt_add(const Instruction *p, const char * s, XmlOutPro* out)
 {
     if (strcmp(s,"*") == 0)
     {
-        strcmp(s,"*");//FIXME out->prtt("*"); ?
+        //strcmp(s,"*");//FIXME out->prtt("*"); ?
     }
     if (p->var_w.IfTemVar())
     {
@@ -135,7 +135,7 @@ void    CFunc_Prt::out_PointTo(st_InstrAddOn* pa,const VAR* pv, XmlOutPro* out)
 {
     if (pv->thevar != NULL)
     {
-        Class_st* p3 = g_VarTypeManage->is_classpoint(pv->thevar->m_DataTypeID);
+        Class_st* p3 = VarTypeMng::get()->is_classpoint(pv->thevar->m_DataTypeID);
         if (p3 != NULL)
         {
             if (pa == NULL)
@@ -161,7 +161,7 @@ void 	CFunc_Prt::prt_va_1(const st_InstrAddOn* pa, const VAR* pv, XmlOutPro* out
 {
     if (pa != NULL && pa->type == IA_ReadPointTo
             && pv->thevar != NULL
-            && g_VarTypeManage->GetPointTo(pv->thevar->m_DataTypeID) != 0)
+            && VarTypeMng::get()->GetPointTo(pv->thevar->m_DataTypeID) != 0)
     {
         out_PointTo(pa->pChild, pv, out);
         return;
@@ -308,13 +308,12 @@ void	CFunc_Prt::prt_one_statement(const Instruction *phead, XmlOutPro* out)
     assert(begin->type == i_Begin);
 
     POSITION endpos = std::find(m_my_func->m_instr_list.begin(),m_my_func->m_instr_list.end(),begin->begin.m_end);
-    ++endpos;	//	要包括end
+    ++endpos;	//	to include 'end'
 
     while(pos != endpos)
     {
         assert(pos != m_my_func->m_instr_list.end());
-        Instruction * p = *pos;
-        ++pos;
+        Instruction * p = *(pos++);
         prt_instr(p, pos, out);
         if (p == phead && this->m_flag_prt_var_delare)
         {	//	Printed after the left parenthesis, to print variable declaration
@@ -632,7 +631,7 @@ void	CFunc_Prt::prt_func_head(XmlOutPro* out)
     FuncType* pfctype = this->m_my_func->m_functype;
     if (pfctype != NULL)
     {
-        if (pfctype->m_class != NULL && pfctype->m_class->is_GouZX(pfctype))
+        if (pfctype->m_class != NULL && pfctype->m_class->is_ConstructOrDestruct(pfctype))
         {
             //Structure and the destructor is not necessary to write the return value
         }
@@ -677,7 +676,7 @@ void	CFunc_Prt::prtout_cpp(XmlOutPro* out)
 {
     if (m_my_func->m_instr_list.size()==0)
     {//Not yet prepared for the E2C
-        CFuncLL the(m_my_func->ll.m_asmlist);
+        FuncLL the(m_my_func->ll.m_asmlist);
         the.prtout_asm(m_my_func, &m_my_func->m_varll, out);
 
         return;
@@ -1203,7 +1202,6 @@ void	CFunc_Prt::prt_instr(const Instruction * p, POSITION &nextpos, XmlOutPro* o
         }
         break;
 
-#undef m_funcname
     case i_CallApi:
     case i_Call:
         if (prt_instr_callret(nextpos, out))

@@ -20,7 +20,6 @@ struct M_t
 	uint32_t s_off;	//start offset
 	uint32_t size;
 
-    //H_NAMEID nameid;
     std::string namestr;
     int tem_useno;  //how many others, counting me, [do not control this variable]
     bool bTem; //Is temporary variable
@@ -70,22 +69,16 @@ struct M_t
 
 typedef std::list<M_t*> MLIST;
     //MLIST is ordered storage of M_t
-
-class NameMng;
-
 class	ExprManage
 {
-    M_t* GetVarByName_1(MLIST* list, const char * varname);
+    static M_t* GetVarByName_1(const MLIST &list, const char * varname);
+    static void DeleteUnuse_VarList(MLIST &vlist);
+    friend class FuncOptim;
+protected:
+    MLIST	vList;
 public:
-
-    void DeleteUnuse_VarList(MLIST* vlist);
-
     signed int m_VarRange_L;
     signed int m_VarRange_H;
-
-    MLIST*	vList;
-
-    M_t* CreateNewTemVar(UINT size);
 
 
 	ExprManage();
@@ -93,6 +86,7 @@ public:
 
 	void EspReport(signed int esplevel);
 	void AddRef(VAR* pvar);
+    M_t* CreateNewTemVar(UINT size);
 	M_t* AddRef_with_name(en_MTTYPE type, uint32_t off, uint32_t size, const char * tj_name);
 	M_t* AddRef_tem(uint32_t temno, uint32_t size);
 	M_t* AddRef_immed(uint32_t d, uint32_t size);
@@ -111,6 +105,7 @@ public:
     void prt_var_declares(XmlOutPro* out);
     M_t* GetVarByName(const char * varname);
     void Enlarge_Var(M_t* p, INSTR_LIST& instr_list);
+    void DeleteUnusedVars();
 
     void ClearUse();
 };

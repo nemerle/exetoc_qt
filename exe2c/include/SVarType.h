@@ -107,14 +107,17 @@ struct SVarType
 
 typedef std::list<SVarType*> VarTypeList;
 
-class CVarTypeMng
+class VarTypeMng
 {
 private:
         VarTypeList*	list;
         VarTypeID		nextfreeid;
+static  VarTypeMng *   s_VarTypeManage;
+        VarTypeMng();
+        ~VarTypeMng();
 public:
-        CVarTypeMng();
-        ~CVarTypeMng();
+
+static  VarTypeMng *get();
 
         VarTypeID	NewBaseVarType(SIZEOF opsize, const char * name);
         VarTypeID	NewSimpleVarType(SIZEOF opsize);
@@ -155,9 +158,6 @@ public:
         Class_st*	id2_Class(VarTypeID id);
         enum_st*	id2_enum(VarTypeID id);
 };
-
-
-extern CVarTypeMng* g_VarTypeManage;
 
 VarTypeID get_DataType_bare(const char * &p);	//	with "unsigned char *", only parse "unsigned char"
 VarTypeID get_DataType(const char * &p);

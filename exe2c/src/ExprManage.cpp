@@ -3,30 +3,29 @@
 ////#include "stdafx.h"
 #include <cstdio>
 #include	"CISC.h"
-
+#include "exe2c.h"
 
 ExprManage::ExprManage()
 {
-    vList = new MLIST;
 }
 
 ExprManage::~ExprManage()
 {
-    delete vList;
+    vList.clear();
 }
 
 
-void ExprManage::DeleteUnuse_VarList(MLIST* vlist)
+void ExprManage::DeleteUnuse_VarList(MLIST &var_list)
 {
-    MLIST::iterator pos = vlist->begin();
-    while (pos!=vlist->end())
+    MLIST::iterator pos = var_list.begin();
+    while (pos!=var_list.end())
     {
         if ((*pos)->tem_useno != 0)
         {
             ++pos;
             continue;
         }
-        pos=vlist->erase(pos);
+        pos=var_list.erase(pos);
     }
 }
 
@@ -148,7 +147,7 @@ void M_t::Expand(M_t* p)
     {
         this->size += p->end_off() - this->end_off();
     }
-    this->m_DataTypeID = g_VarTypeManage->NewSimpleVarType(this->size);
+    this->m_DataTypeID = VarTypeMng::get()->NewSimpleVarType(this->size);
 }
 
 
@@ -163,11 +162,11 @@ const char * ExprManage::BareVarName(const VAR* v)
     //IsBadReadPtr(retn,1);
     return retn;
 }
-M_t* ExprManage::GetVarByName_1(MLIST* list, const char * varname)
 //SuperC_func: Use only in <CExprManage::GetVarByName>
+M_t* ExprManage::GetVarByName_1(const MLIST &list, const char * varname)
 {
-    MLIST::iterator pos = list->begin();
-    for (;pos!=list->end(); ++pos)
+    MLIST::const_iterator pos = list.begin();
+    for (;pos!=list.end(); ++pos)
     {
         M_t* p = *pos;
         if (p->namestr.compare(varname) == 0)
@@ -195,7 +194,7 @@ const char * GetBeautyImmedValue(uint32_t n)
 }
 
 
-void Cstr_fmt(char * dst, const char * src)
+static void Cstr_fmt(char * dst, const char * src)
 {
     int n = 0;
     dst[n++] = '\"';
@@ -231,7 +230,7 @@ void Cstr_fmt(char * dst, const char * src)
 
 void 	ExprManage::prt_var_Immed(const VAR* v, XmlOutPro* out)
 {
-    if (v->thevar == NULL || g_VarTypeManage->is_simple(v->thevar->m_DataTypeID))
+    if (v->thevar == NULL || VarTypeMng::get()->is_simple(v->thevar->m_DataTypeID))
     {
         out->XMLbegin(XT_Number, NULL);
         out->prtt(GetBeautyImmedValue(v->d));
@@ -240,13 +239,12 @@ void 	ExprManage::prt_var_Immed(const VAR* v, XmlOutPro* out)
     }
     VarTypeID id1 = v->thevar->m_DataTypeID;
     assert(id1 != 0);
-    static char buf[180];
 
-    VarTypeID id_p = g_VarTypeManage->GetPointTo(id1);
-    if ( id_p != 0 && g_VarTypeManage->If_Based_on_idid(id_p,id_char))
+    VarTypeID id_p = VarTypeMng::get()->GetPointTo(id1);
+    if ( id_p != 0 && VarTypeMng::get()->If_Based_on_idid(id_p,id_char))
     {
         static char strbuf[180];
-        if ( ! if_valid_ea((ea_t)v->d))	//	奇怪
+        if ( ! g_FileLoader->if_valid_ea((ea_t)v->d))	//	strane
         {
             //sprintf(strbuf,"(WHY_PSTR)0x%x",v->d);
             //return strbuf;
@@ -279,7 +277,7 @@ void 	ExprManage::prt_var_Immed(const VAR* v, XmlOutPro* out)
 
     out->XMLbegin(XT_Number, NULL);
     //sprintf(buf,"(%s)", GG_VarType_ID2Name(v->thevar->m_DataTypeID));
-    if (v->thevar->immed.d == 0 && g_VarTypeManage->GetPointTo(v->thevar->m_DataTypeID) != 0)
+    if (v->thevar->immed.d == 0 && VarTypeMng::get()->GetPointTo(v->thevar->m_DataTypeID) != 0)
     {
         out->prtt("NULL");
     }
@@ -290,17 +288,17 @@ void 	ExprManage::prt_var_Immed(const VAR* v, XmlOutPro* out)
 }
 const char * ExprManage::VarName_Immed(const VAR* v)
 {
-    if (v->thevar == NULL || g_VarTypeManage->is_simple(v->thevar->m_DataTypeID))
+    if (v->thevar == NULL || VarTypeMng::get()->is_simple(v->thevar->m_DataTypeID))
         return GetBeautyImmedValue(v->d);
     VarTypeID id1 = v->thevar->m_DataTypeID;
     assert(id1 != 0);
     static char buf[180];
 
-    VarTypeID id_p = g_VarTypeManage->GetPointTo(id1);
-    if ( id_p != 0 && g_VarTypeManage->If_Based_on_idid(id_p,id_char))
+    VarTypeID id_p = VarTypeMng::get()->GetPointTo(id1);
+    if ( id_p != 0 && VarTypeMng::get()->If_Based_on_idid(id_p,id_char))
     {
         static char strbuf[180];
-        if ( ! if_valid_ea((ea_t)v->d))	//	奇怪
+        if ( ! g_FileLoader->if_valid_ea((ea_t)v->d))	//	strange
         {
             sprintf(strbuf,"(WHY_PSTR)0x%x",v->d);
             return strbuf;
@@ -311,7 +309,7 @@ const char * ExprManage::VarName_Immed(const VAR* v)
     }
 
     sprintf(buf,"(%s)", GG_VarType_ID2Name(v->thevar->m_DataTypeID).c_str());
-    if (v->thevar->immed.d == 0 && g_VarTypeManage->GetPointTo(v->thevar->m_DataTypeID) != 0)
+    if (v->thevar->immed.d == 0 && VarTypeMng::get()->GetPointTo(v->thevar->m_DataTypeID) != 0)
     {
         strcat(buf, "NULL");
     }
@@ -342,15 +340,17 @@ const char * ExprManage::VarName(const VAR* v)
             {
                 UINT typesize = ::GG_VarType_ID2Size(p->m_DataTypeID);
                 if (typesize == p->size)
-                    nop();
+                {
+                    ; //nop
+                }
             }
             return p->namestr.c_str();
         }
-        if (v->part_flag != 0 && g_VarTypeManage->is_class(p->m_DataTypeID) != NULL)
+        if (v->part_flag != 0 && VarTypeMng::get()->is_class(p->m_DataTypeID) != NULL)
         {
             static char buf[180];
             sprintf(buf, "%s.%s", p->namestr.c_str(),
-                    g_VarTypeManage->is_class(p->m_DataTypeID)->getclassitemname(v->part_flag - 1));
+                    VarTypeMng::get()->is_class(p->m_DataTypeID)->getclassitemname(v->part_flag - 1));
             return buf;
         }
         else
@@ -383,9 +383,8 @@ void 	ExprManage::prt_var(const VAR* v, XmlOutPro* out)
 }
 void ExprManage::prt_var_declares(XmlOutPro* out)
 {
-    MLIST* list = this->vList;
-    MLIST::iterator pos = list->begin();
-    for (;pos!=list->end();++pos)
+    MLIST::iterator pos = this->vList.begin();
+    for (;pos!=this->vList.end();++pos)
     {
         M_t* p = *pos;
         if (p->type != MTT_reg)
@@ -411,8 +410,8 @@ void ExprManage::prt_var_declares(XmlOutPro* out)
         out->endline();
     }
 
-    pos = list->begin();
-    for (;pos!=list->end();++pos)
+    pos = this->vList.begin();
+    for (;pos!=this->vList.end();++pos)
     {
         M_t* p = *pos;
         if (p->type != MTT_var)
@@ -446,10 +445,9 @@ void ExprManage::prt_parameters(XmlOutPro* out)
     bool first = true;
 
     assert(this);
-    MLIST* list = this->vList;
-    assert(list);
-    MLIST::iterator pos = list->begin();
-    for (;pos!=list->end();++pos)
+    assert( !this->vList.empty() );
+    MLIST::iterator pos = vList.begin();
+    for (;pos!=this->vList.end();++pos)
     {
         M_t* p = *pos;
         if (p->type != MTT_par)
@@ -479,16 +477,16 @@ M_t* ExprManage::AddRef_immed(uint32_t d, uint32_t size)
     pnew->type = MTT_immed;
     pnew->immed.d = d;
     pnew->size = size;
-    pnew->m_DataTypeID = g_VarTypeManage->NewSimpleVarType(pnew->size);
+    pnew->m_DataTypeID = VarTypeMng::get()->NewSimpleVarType(pnew->size);
 
-    vList->push_back(pnew);
+    this->vList.push_back(pnew);
 
     return pnew;
 }
 M_t* ExprManage::AddRef_tem(uint32_t temno, uint32_t size)
 {
-    MLIST::iterator pos = vList->begin();
-    for (;pos!=vList->end();++pos)
+    MLIST::iterator pos = vList.begin();
+    for (;pos!=vList.end();++pos)
     {
         M_t* p = *pos;
         if (p->type == MTT_tem && p->tem.temno == temno)
@@ -502,9 +500,9 @@ M_t* ExprManage::AddRef_tem(uint32_t temno, uint32_t size)
     pnew->tem.temno = temno;
     pnew->namestr = QString("t_%1").arg(temno,0,16).toStdString();
     pnew->size = size;
-    pnew->m_DataTypeID = g_VarTypeManage->NewSimpleVarType(pnew->size);
+    pnew->m_DataTypeID = VarTypeMng::get()->NewSimpleVarType(pnew->size);
 
-    vList->push_back(pnew);
+    vList.push_back(pnew);
 
     return pnew;
 }
@@ -514,10 +512,10 @@ M_t* ExprManage::AddRef_with_name(en_MTTYPE type, uint32_t off, uint32_t size, c
 {
     assert(type != MTT_tem);
 
-    // First look for is not already have
-    {//先找一找是不是已经有了
-        MLIST::iterator pos = vList->begin();
-        for (;pos!=vList->end();++pos)
+    //First look them up are not already had
+    {
+        MLIST::iterator pos = vList.begin();
+        for (;pos!=vList.end();++pos)
         {
             M_t* p = *pos;
             if (p->type == type && p->s_off == off && p->size == size)
@@ -532,11 +530,11 @@ M_t* ExprManage::AddRef_with_name(en_MTTYPE type, uint32_t off, uint32_t size, c
     pnew->type = type;
     pnew->s_off = off;
     pnew->size = size;
-    pnew->m_DataTypeID = g_VarTypeManage->NewSimpleVarType(pnew->size);
+    pnew->m_DataTypeID = VarTypeMng::get()->NewSimpleVarType(pnew->size);
 
-    vList->push_back(pnew);
+    vList.push_back(pnew);
 
-    this->Enlarge_Var(pnew, ::g_Cur_Func->m_instr_list);
+    this->Enlarge_Var(pnew, Exe2c::get()->current_func()->m_instr_list);
 
     pnew->namestr = tj_name;
 
@@ -549,8 +547,8 @@ void ExprManage::EspReport(signed int esplevel)
     static int static_iThrown = 1;
     static_iThrown++;
 
-    MLIST::iterator pos = vList->begin();
-    for (;pos!=vList->end();++pos)
+    MLIST::iterator pos = vList.begin();
+    for (;pos!=vList.end();++pos)
     {
         M_t* p = *pos;
         if (p->type != MTT_var)
@@ -558,7 +556,7 @@ void ExprManage::EspReport(signed int esplevel)
 
         if (esplevel > varoff2stack(p->s_off))
         {
-            p->iThrowned = static_iThrown;    //扔掉
+            p->iThrowned = static_iThrown;    //Throw away
         }
     }
 }
@@ -566,8 +564,8 @@ void ExprManage::EspReport(signed int esplevel)
 
 M_t* ExprManage::SearchMT(en_MTTYPE type, uint32_t off)
 {
-    MLIST::iterator pos = vList->begin();
-    for (;pos!=vList->end();++pos)
+    MLIST::iterator pos = vList.begin();
+    for (;pos!=vList.end();++pos)
     {
         M_t* p = *pos;
         if (p->type == type && p->s_off == off)
@@ -586,9 +584,7 @@ void ExprManage::AddRef(VAR* pvar)
     case v_Invalid: return;
     case v_Immed:
         if (pvar->d == 4)
-        {
             pvar->d = 4;
-        }
         pvar->thevar = this->AddRef_immed(pvar->d, pvar->opsize);
         return;
     case v_Global:
@@ -607,8 +603,8 @@ void ExprManage::AddRef(VAR* pvar)
     }
     case v_Var:
     {
-        this->m_VarRange_H;
-        this->m_VarRange_L;
+        //m_VarRange_H;
+        //m_VarRange_L;
         char name[20];
         if (0x7ffff - (signed int)pvar->var_off + 1 > -this->m_VarRange_L)
         {
@@ -667,9 +663,9 @@ M_t* ExprManage::CreateNewTemVar(UINT size)
     g_newtemno += 2;
 
     pnew->namestr = QString("tem_%1").arg(pnew->tem.temno,0,16).toStdString();
-    pnew->m_DataTypeID = g_VarTypeManage->NewSimpleVarType(pnew->size);
+    pnew->m_DataTypeID = VarTypeMng::get()->NewSimpleVarType(pnew->size);
 
-    vList->push_back(pnew);
+    vList.push_back(pnew);
     return pnew;
 }
 
@@ -707,13 +703,12 @@ void ExprManage::Enlarge_Var(M_t* thevar, INSTR_LIST& instr_list)
 {
     //The following should be deleted by my account of the var
 
-    MLIST*	list = vList;
-    MLIST::iterator pos = list->begin();
-    while (pos!=list->end())
+    MLIST::iterator savpos;
+    MLIST::iterator pos = this->vList.begin();
+    while (pos!=this->vList.end())
     {
-        MLIST::iterator savpos = pos;
-        M_t* p = *pos;
-        ++pos;
+        savpos = pos;
+        M_t* p = *(pos++);
         if (p == thevar)
         {
             Replace_Var(instr_list, p, thevar); //replace myself
@@ -726,7 +721,7 @@ void ExprManage::Enlarge_Var(M_t* thevar, INSTR_LIST& instr_list)
 
         if (thevar->IfInclude(p->s_off) && thevar->IfInclude(p->s_off + p->size))
         {
-            list->erase(savpos);
+            this->vList.erase(savpos);
             // Just delete does not work, but also update instrlist
             Replace_Var(instr_list, p, thevar);
         }
@@ -735,12 +730,14 @@ void ExprManage::Enlarge_Var(M_t* thevar, INSTR_LIST& instr_list)
 
 void ExprManage::ClearUse()
 {
-    MLIST::iterator pos = vList->begin();
-    while (pos!=vList->end())
+    MLIST::iterator pos = vList.begin();
+    for(;pos!=vList.end();++pos)
     {
-        MLIST::iterator savpos = pos;
-        M_t* p = *pos;
-        ++pos;
-        p->tem_useno = 0;
+        (*pos)->tem_useno = 0;
     }
+}
+
+void ExprManage::DeleteUnusedVars()
+{
+    DeleteUnuse_VarList(vList);
 }
