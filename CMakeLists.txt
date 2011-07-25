@@ -22,19 +22,17 @@ FIND_PACKAGE(Qt4 COMPONENTS QtCore QtGui REQUIRED)
 
 INCLUDE(${QT_USE_FILE})
 #########################################################
-
-##  LLVM related
 ADD_DEFINITIONS(-D__STDC_LIMIT_MACROS=1 -D__STDC_CONSTANT_MACROS)
-SET(LLVM_ROOT "" CACHE PATH "Root of LLVM install.")
-SET(LLVM_BLD_ROOT "" CACHE PATH "LLVM build location, if any.")
-IF( NOT IS_ABSOLUTE ${LLVM_BLD_ROOT})
-	SET(LLVM_BLD_ROOT ${LLVM_ROOT} CACHE PATH "LLVM build location, if any." FORCE)
-ENDIF()
-IF( NOT EXISTS ${LLVM_ROOT}/include/llvm )
-	message(FATAL_ERROR "LLVM_ROOT (${LLVM_ROOT}) is not a valid LLVM install")
-ENDIF()
-SET(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${LLVM_BLD_ROOT}/share/llvm/cmake")
-INCLUDE(LLVM)
+
+find_package(LLVM)
+
+if( NOT LLVM_FOUND )
+  message(FATAL_ERROR "LLVM package can't be found. Set CMAKE_PREFIX_PATH variable to LLVM's installation prefix.")
+endif()
+
+include_directories( ${LLVM_INCLUDE_DIRS} )
+link_directories( ${LLVM_LIBRARY_DIRS} )
+
 #########################################################
 INCLUDE_DIRECTORIES(
 	.
