@@ -79,8 +79,8 @@ VarTypeMng::~VarTypeMng()
 
 
 VarTypeID	VarTypeMng::New_p(VarTypeID id0)
-{	//	新建一个数据类型，它指向id0
-    // Create a data type, it points to id0
+{
+    // Create a new data type, it points to id0
     assert(id0);
 
     VarTypeID id = nextfreeid++;
@@ -122,13 +122,12 @@ VarTypeID	VarTypeMng::Enum2VarID(enum_st* newenum)
 VarTypeID	VarTypeMng::NewTypeDef(VarTypeID id0, const char * name)
 {
     //typedef: the data types need their own VarTypeID
-
     assert(id0);
 
     SVarType* p = this->id2_VarType(id0);
     assert(p);
     if (p->type == vtt_class && p->m_class.pClass->m_name[0] == '\0')
-    {	//	是一个没名的class或struct或union
+    {
         //Is not the name of a class or struct or union
         strcpy(p->m_class.pClass->m_name, name);
         return id0;

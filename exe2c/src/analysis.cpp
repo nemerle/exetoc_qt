@@ -90,21 +90,19 @@ bool	Func::analysis_once_1()
         if ((the.*pfunc)())
             return true;
     }
-
-
     return false;
 }
 bool	Func::analysis_once()
 {
     if( !analysis_once_1() )
-		return false;
-	if (g_CStrategy.IfAny())
-	{
+        return false;
+    if (g_CStrategy.IfAny())
+    {
         g_CStrategy.PrintIt(m_instr_list, this);
         g_CStrategy.DoIt(m_instr_list, m_exprs);
-	}
-	DeleteUnusedVar();
-	return true;
+    }
+    DeleteUnusedVar();
+    return true;
 }
 void Func::analysis()
 {
@@ -116,7 +114,6 @@ void Func::analysis()
             break;
     }
 }
-
 
 void	Func::ana_RetType()
 {
@@ -140,11 +137,11 @@ void	Func::ana_RetType()
     for (;pos!=m_instr_list.end();++pos)
     {
         const Instruction * p = *pos;
-		if (p->type != i_Return)
-			continue;
+        if (p->type != i_Return)
+            continue;
 
-		Instruction * pnew = new Instruction(i_RetPar);// For the time being that each is ret uint32_t func
-		pnew->var_r1 = v;
+        Instruction * pnew = new Instruction(i_RetPar);// For the time being that each is ret uint32_t func
+        pnew->var_r1 = v;
         m_instr_list.insert(pos,pnew);
     }
 }

@@ -57,8 +57,8 @@ bool Exe2c::BaseInit()
     m_E2COut = NULL;
     //this->m_api_name_manager = new CNameMng;    //new_CNameMng
     // Make some global initializations
-	m_FileLoader = NULL;
-	return true;
+        m_FileLoader = NULL;
+        return true;
 }
 struct remover
 {
@@ -82,8 +82,8 @@ Exe2c::~Exe2c()
 
 bool Exe2c::test()
 {
-	//KICK_MFC();
-	return true;
+        //KICK_MFC();
+        return true;
 }
 
 
@@ -117,7 +117,7 @@ void	Exe2c::Recurse_Optim()
 }
 void Exe2c::exe2c_main(const std::string & fname)
 {
-	lib_init();
+        lib_init();
 
     if (m_FileLoader != NULL)
         delete m_FileLoader;
@@ -166,16 +166,16 @@ Func*	Exe2c::FindFuncByName(const char * pname)
     //start Analysis
 void	Exe2c::do_exe2c(ea_t start)
 {
-	ea_t pmain = Find_Main(start);
+        ea_t pmain = Find_Main(start);
 
-	//The first step, according to start, create an empty CFunc
-	Func* pfunc = this->func_new(pmain);
+        //The first step, according to start, create an empty CFunc
+        Func* pfunc = this->func_new(pmain);
 
-	if (pmain == start)
-		pfunc->m_funcname="start";
-	else
-		pfunc->m_funcname="main";
-	//Set the current CFunc
+        if (pmain == start)
+                pfunc->m_funcname="start";
+        else
+                pfunc->m_funcname="main";
+        //Set the current CFunc
     m_Cur_Func = pfunc;
     m_Cur_Func->PrepareFunc();
 }
@@ -227,20 +227,20 @@ Func* Exe2c::func_new(ea_t start)
             return p;
     }
 
-	// not find
-	log_prtl("New func %x",start);
-	if (start == 0x128b1e1)
-	{
-		start = 0x128b1e1;
-	}
+        // not find
+        log_prtl("New func %x",start);
+        if (start == 0x128b1e1)
+        {
+                start = 0x128b1e1;
+        }
 
-	Func* p = new Func(start);    //new_CFunc
+        Func* p = new Func(start);    //new_CFunc
 
-	//	填入 CFunc 的一些其它信息
-	//Fill in some of the other information CFunc
-	fill_func_info(start, p);
+        //	填入 CFunc 的一些其它信息
+        //Fill in some of the other information CFunc
+        fill_func_info(start, p);
 
-	std::string pname = CheckIf_libfunc(ea2ptr(p->m_head_off));
+        std::string pname = CheckIf_libfunc(ea2ptr(p->m_head_off));
 
     if (pname.length()!=0)
     {
@@ -447,7 +447,7 @@ void lib_init()
     //I_LIBSCANNER* pnew = NEW_LIBSCANNER();
     I_LIBSCANNER* pnew = new LibScanner();
     boost::filesystem::path tolibc=GetMyExePath()/"lib"/"libc.lib";
-    pnew->ScanLib(tolibc.native_file_string().c_str());
+    pnew->ScanLib(tolibc.string().c_str());
 
     g_LIBSCANNER = pnew;
 }

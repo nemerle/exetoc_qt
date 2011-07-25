@@ -43,24 +43,24 @@ FuncType* FuncType::ft_clone()
 
 void FuncType::create_internal_funcname()
 {
-        if (!this->m_internal_name.empty())
-                return;
+    if (!this->m_internal_name.empty())
+        return;
 
-        char buf[80];
-        if (this->m_extern_c)
-        {
-                m_internal_name="_"+this->m_pname;
-                return;
-        }
-        if (this->m_callc == enum_stdcall) //	stdcall is alos simple
-                sprintf(buf,"%s@%d",this->m_pname.c_str(),this->m_args * 4);
-        else if (this->m_callc == enum_fastcall) //Do not know how to change it easily
-                sprintf(buf,"%s@@%d",this->m_pname.c_str(),this->m_args * 4);
-        else if (this->m_callc == enum_cdecl)
-                sprintf(buf,"%s@%d",this->m_pname.c_str(),this->m_args * 4);
-        else
-            assert( !"I do not know how to convert it to internal funcname" );
-        this->m_internal_name = buf;
+    char buf[80];
+    if (this->m_extern_c)
+    {
+        m_internal_name="_"+this->m_pname;
+        return;
+    }
+    if (this->m_callc == enum_stdcall) //	stdcall is alos simple
+        sprintf(buf,"%s@%d",this->m_pname.c_str(),this->m_args * 4);
+    else if (this->m_callc == enum_fastcall) //Do not know how to change it easily
+        sprintf(buf,"%s@@%d",this->m_pname.c_str(),this->m_args * 4);
+    else if (this->m_callc == enum_cdecl)
+        sprintf(buf,"%s@%d",this->m_pname.c_str(),this->m_args * 4);
+    else
+        assert( !"I do not know how to convert it to internal funcname" );
+    this->m_internal_name = buf;
 }
 
 
@@ -88,27 +88,27 @@ SIZEOF FuncType::para_total_size()
 
 unsigned char FuncType::get_stack_purge()
 {
-    //	根据m_ftype，算出 m_stack_purge
+    //	According to m_ftype, calculate the m_stack_purge
     if (m_varpar)
     {
-        assert(m_callc == enum_cdecl);	//	似乎只有__cdecl才会变参
-        return 0;	//	变参数肯定是不改堆栈的
+        assert(m_callc == enum_cdecl);	//	It seems that only __cdecl parameter count is variable
+        return 0;	//	Varargs will definitely not change the stack
     }
     switch (m_callc)
     {
-    case enum_cdecl:
-        return 0;
-
-    case enum_fastcall:
-        if (m_args <= 2)
+        case enum_cdecl:
             return 0;
-        return (m_args-2) * 4;
 
-    case enum_stdcall:
-        return m_args * 4;
+        case enum_fastcall:
+            if (m_args <= 2)
+                return 0;
+            return (m_args-2) * 4;
 
-    default:
-        assert(0);
-        return 0;
+        case enum_stdcall:
+            return m_args * 4;
+
+        default:
+            assert(0);
+            return 0;
     }
 }

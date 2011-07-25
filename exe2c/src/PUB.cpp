@@ -23,39 +23,39 @@ void	alert_prtf(const char * fmt,...)
 {
     va_list argptr;
     int cnt;
-        char buf[280];
+    char buf[280];
 
     va_start(argptr, fmt);
     cnt = vsprintf(buf, fmt, argptr);
     va_end(argptr);
 
-        alert(buf);
+    alert(buf);
 }
 
 void log_prtf(const char * fmt,...)
 {
     va_list argptr;
     int cnt;
-        char buf[280];
+    char buf[280];
 
     va_start(argptr, fmt);
     cnt = vsprintf(buf, fmt, argptr);
     va_end(argptr);
 
-        outstring_in_log(buf);
+    outstring_in_log(buf);
 }
 void log_prtl(const char * fmt,...)
 {
     va_list argptr;
     int cnt;
-        char buf[280];
+    char buf[280];
 
     va_start(argptr, fmt);
     cnt = vsprintf(buf, fmt, argptr);
     va_end(argptr);
 
-        outstring_in_log(buf);
-        outstring_in_log("\n");
+    outstring_in_log(buf);
+    outstring_in_log("\n");
 
     //return(cnt);
 }
@@ -64,14 +64,14 @@ void log_prtl(const char * fmt,...)
 
 void _warn(const char * __cond, const char * __file, int __line)
 {
-        char	buf[280];
-        sprintf(buf,"Warn condition %s, in file %s, at line %d",
-                        __cond,
-                        __file,
-                        __line);
-        QMessageBox::warning(0,"Warning",
-                             QString("%1, [%2 at line %3]").arg(__cond).arg(__file).arg(__line)
-                             );
+    char	buf[280];
+    sprintf(buf,"Warn condition %s, in file %s, at line %d",
+            __cond,
+            __file,
+            __line);
+    QMessageBox::warning(0,"Warning",
+                         QString("%1, [%2 at line %3]").arg(__cond).arg(__file).arg(__line)
+                         );
 }
 
 //char * new_str(const char * p)
@@ -83,12 +83,12 @@ void _warn(const char * __cond, const char * __file, int __line)
 
 const char * prt_DWORD(uint32_t d)
 {
-        static char s[16];
-        if ( (d < 16) || (d % 100) == 0)
-                sprintf(s,"%d",d);
-        else
-                sprintf(s,"0x%x",d);
-        return s;
+    static char s[16];
+    if ( (d < 16) || (d % 100) == 0)
+        sprintf(s,"%d",d);
+    else
+        sprintf(s,"0x%x",d);
+    return s;
 }
 
 
