@@ -1,6 +1,6 @@
 #include "exe2c_gui.h"
 
-#include <QtGui/QApplication>
+#include <QApplication>
 #include "exe2c_mainwindow.h"
 int main(int argc, char **argv)
 {

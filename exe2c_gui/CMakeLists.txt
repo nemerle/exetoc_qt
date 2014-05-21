@@ -16,13 +16,12 @@ SET(gui_SOURCES
     ${gui_MOC_HEADERS}
 )
 
-include_directories(${CMAKE_CURRENT_BINARY_DIR})
+set(CMAKE_INCLUDE_CURRENT_DIR ON)
 
-QT4_WRAP_UI(gui_UI_H ${gui_UI_FILES})
+QT5_WRAP_UI(gui_UI_H ${gui_UI_FILES})
 
-QT4_WRAP_CPP(gui_MOC_SRC ${gui_MOC_HEADERS})
+QT5_WRAP_CPP(gui_MOC_SRC ${gui_MOC_HEADERS})
 
-qt4_automoc(${gui_SOURCES})
 ADD_EXECUTABLE(exetoc ${gui_SOURCES} ${gui_MOC_SRC} ${gui_UI_H})
-TARGET_LINK_LIBRARIES(exetoc exe2c_lib ${QT_LIBRARIES} ${Boost_LIBRARIES})
+TARGET_LINK_LIBRARIES(exetoc exe2c_lib Qt5::Widgets ${Boost_LIBRARIES})
 ADD_DEPENDENCIES(exetoc exe2c_lib)

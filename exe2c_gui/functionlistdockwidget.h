@@ -22,8 +22,9 @@ public:
     QVariant data(const QModelIndex &,int role) const;
     void clear()
     {
-        m_list.clear();
-        this->reset();
+		beginResetModel();
+		m_list.clear();
+		endResetModel();
     }
     QVariant headerData(int section, Qt::Orientation orientation,int role) const;
 public slots:
