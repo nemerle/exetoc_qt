@@ -1,6 +1,9 @@
 bld
 build
 BIN/*lib
-BIN/*dll
+BIN/*.dll
+BIN/*.ilk
+BIN/*.pdb
+BIN/*.exe
 *.user
 *kdev4*
