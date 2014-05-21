@@ -48,7 +48,7 @@ extern	char g_mypath[];
 CCbuf* ReadDefFile(const std::string & fname)
 {
         boost::filesystem::path path=GetMyExePath()/"def"/(fname+".def");
-        FILE* f = fopen(path.native_file_string().c_str(),"rb");
+        FILE* f = fopen(path.string().c_str(),"rb");
         if (f == NULL)
         {
                 alert_prtf("Cannot load def file:\n%s",fname.c_str());

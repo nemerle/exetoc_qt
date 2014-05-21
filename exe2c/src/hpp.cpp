@@ -85,7 +85,7 @@ bool hpp_init()
         g_DefineList = new DefineList;
         path current_dir=GetMyExePath();
         current_dir = current_dir/"inc";
-        g_incpath = current_dir.native_directory_string();
+        g_incpath = current_dir.string();
 
     //	if (g_EXEType == enum_PE_sys)
     //		strcat(g_incpath, "\\ntddk\\");
@@ -137,7 +137,7 @@ bool CCInfo::LoadIncFile(const std::string &fname)
 {
     path file_path;
     file_path=g_incpath/fname;
-    std::string nativepath=file_path.native_file_string();
+    std::string nativepath=file_path.string();
     //alert_prtf("begin file %s\n",fname);
     FILE* f = fopen(nativepath.c_str(),"rb");
     if (f == NULL)

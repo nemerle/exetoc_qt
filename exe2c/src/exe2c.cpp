@@ -447,7 +447,7 @@ void lib_init()
     //I_LIBSCANNER* pnew = NEW_LIBSCANNER();
     I_LIBSCANNER* pnew = new LibScanner();
     boost::filesystem::path tolibc=GetMyExePath()/"lib"/"libc.lib";
-    pnew->ScanLib(tolibc.native_file_string().c_str());
+    pnew->ScanLib(tolibc.string().c_str());
 
     g_LIBSCANNER = pnew;
 }

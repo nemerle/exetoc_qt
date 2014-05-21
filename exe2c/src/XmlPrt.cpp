@@ -179,7 +179,7 @@ bool XmlPrt::GetRightWord(long curpos, long &posfrom, long &posto)
 
 void	XmlPrt::prtprtout(XmlOutPro* prt)
 {
-    const char * pstr = m_str.toAscii().constData();
+    const char * pstr = m_str.toLatin1().constData();
 
     if (m_xmllist == NULL || m_xmllist->m_xmltype == XT_invalid)
     {
@@ -206,7 +206,7 @@ void	XmlPrt::prtprtout(XmlOutPro* prt)
 void XmlPrt::Display(I_COLOROUT* iColorOut)
 {
 
-    const char * pstr = m_str.toAscii().constData();
+    const char * pstr = m_str.toLatin1().constData();
 
     if (this->m_xmllist == NULL || this->m_xmllist->m_xmltype == XT_invalid)
     {
