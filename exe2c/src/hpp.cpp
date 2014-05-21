@@ -178,23 +178,6 @@ bool CCInfo::LoadIncFile(const std::string &fname)
     //printf("end   file %s\n",fname);
     return true;
 }
-static void LoadIncBuffer(const char * p,char * plast)
-{
-        CCInfo* pInfo = new CCInfo;
-
-        while (p < plast)
-        {
-                const char * pnext = NULL;
-                pInfo->OneLine(p, pnext);	//	一般情况下，OneLine不会动pnext
-                                                                        //	如果它是多行，就会把pnext指向最后
-                if (pnext == NULL)
-                        p += strlen(p) + 1;
-                else
-                        p = pnext;
-        }
-
-        delete pInfo;
-}
 void prt_defines()
 {
     DefineList::iterator pos = g_DefineList->begin();
@@ -341,8 +324,6 @@ void Class_st::log_display_structure()
 VarTypeID do_struct_after_name(const char * strucname, const char * &p, bool Fstruc_Tunion);
 VarTypeID do_struct(const char * &p)
 {
-        const char * savp = p;
-
         char name[80];
         get_1part(name,p);
 
@@ -355,8 +336,6 @@ VarTypeID do_struct(const char * &p)
 }
 VarTypeID do_union(const char * &p)
 {
-        const char * savp = p;
-
         char name[80];
         get_1part(name,p);
 
