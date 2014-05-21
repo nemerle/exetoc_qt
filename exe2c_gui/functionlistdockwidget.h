@@ -13,7 +13,7 @@ class FunctionListModel : public QAbstractTableModel
     {
         std::string m_name;
         int m_decoding_step;
-        int m_start_off, end_off,stack_purge;
+        int m_start_off, m_end_off, m_stack_purge;
     };
     std::vector<function_info> m_list;
 public:
@@ -38,6 +38,8 @@ protected:
         info.m_name=name;
         info.m_decoding_step=step;
         info.m_start_off=start_off;
+		info.m_end_off=end_off;
+		info.m_stack_purge=stack_purge;
         m_list.push_back(info);
     }
     void rebuildFunctionList();
