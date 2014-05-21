@@ -73,8 +73,8 @@ public:
         fHasSpace = false;
         b_OneLine = false;
         m_out = out;
-        m_f_prt_in_1line = FALSE;
-        m_f_prt_in_comma = FALSE;
+        m_f_prt_in_1line = false;
+        m_f_prt_in_comma = false;
         m_nIdent = 0;
     }
     void prtt(const char * s)
