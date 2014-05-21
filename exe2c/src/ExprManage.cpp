@@ -383,12 +383,15 @@ void 	ExprManage::prt_var(const VAR* v, XmlOutPro* out)
 }
 void ExprManage::prt_var_declares(XmlOutPro* out)
 {
+	bool hasOutputDeclares = false;
     MLIST::iterator pos = this->vList.begin();
     for (;pos!=this->vList.end();++pos)
     {
         M_t* p = *pos;
         if (p->type != MTT_reg)
             continue;
+
+		hasOutputDeclares  = true;
 
         out->prtspace(4);
 
@@ -419,6 +422,8 @@ void ExprManage::prt_var_declares(XmlOutPro* out)
         if (p->bTem)
             continue;
 
+		hasOutputDeclares = true;
+
         out->prtspace(4);
 
         out->XMLbegin(XT_DataType, p);
@@ -439,6 +444,12 @@ void ExprManage::prt_var_declares(XmlOutPro* out)
         out->endline();
 
     }
+
+	if (hasOutputDeclares)
+	{
+		// If no declares where output don't include extra white space
+		out->endline();
+	}
 }
 void ExprManage::prt_parameters(XmlOutPro* out)
 {
@@ -448,6 +459,8 @@ void ExprManage::prt_parameters(XmlOutPro* out)
     MLIST::iterator pos = vList.begin();
     for (;pos!=this->vList.end();++pos)
     {
+		// TODO: Unused parameters do not appear in vList, and this always 
+		// going to be in order? It would be good have reuse the existing FuncType
         M_t* p = *pos;
         if (p->type != MTT_par)
             continue;
