@@ -306,7 +306,7 @@ void Class_st::log_display_structure()
     log_prtf("\n{    \\\\sizeof = 0x%x\n",m_size);
         int nident = 1;
     size_t count=m_DataItems.size();
-    for (int i=0;i<count;i++)
+    for (size_t i=0;i<count;i++)
     {
         st_Var_Declare &pv(m_DataItems[i]);
         if (pv.m_access == nm_sub_end)
