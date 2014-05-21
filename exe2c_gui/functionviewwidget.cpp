@@ -59,7 +59,7 @@ void FunctionViewWidget::XMLend(XMLTYPE xmltype)
         res.write(collected_text.toUtf8());
         res.close();
         collected_text.replace(QChar('\n'),"<br>");
-        ui->textBrowser->setHtml(collected_text);
+        ui->textEdit->setHtml(collected_text);
         collected_text.clear();
         break;
     }
