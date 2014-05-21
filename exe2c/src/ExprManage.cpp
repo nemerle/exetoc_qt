@@ -445,7 +445,6 @@ void ExprManage::prt_parameters(XmlOutPro* out)
     bool first = true;
 
     assert(this);
-    assert( !this->vList.empty() );
     MLIST::iterator pos = vList.begin();
     for (;pos!=this->vList.end();++pos)
     {
