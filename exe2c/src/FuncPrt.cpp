@@ -801,7 +801,7 @@ bool CFunc_Prt::prt_instr_callret(POSITION nextpos, XmlOutPro* out)
             continue;
         if (p1->type == i_CallRet)
         {
-            if (p1->var_w.thevar != NULL && p1->var_w.thevar->type == MTT_tem)
+			if (p1->var_w.IfTemVar())
                 return true;
 
             out->ident();
