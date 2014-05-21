@@ -931,7 +931,6 @@ void func_define_2(FuncType* pfunc,const char * &p)
     skip_space(p);
     skip_eos(p);
 
-    int parnum = 0;
     std::vector<VarTypeID> pars;	//	100 should be enough ?
     std::vector<std::string> parnames;
     parnames.reserve(100);
@@ -958,7 +957,7 @@ void func_define_2(FuncType* pfunc,const char * &p)
         {
             skip_eos(p);
             assert(*p == ')');
-            assert(parnum == 0);
+			assert(pars.size()==0);
             break;
         }
         parnames.push_back(parname);//[parnum] = parname;
