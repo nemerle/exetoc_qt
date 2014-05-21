@@ -27,7 +27,7 @@ void CCbuf::LoadFile(FILE *f)
 	m_p = new char[flen+1];	//thats enough
 	m_len = 0;
 
-    for (long i = 0; i < flen; i++)
+    for (size_t i = 0; i < flen; i++)
         OneChar(buf[i]);
     OneChar(EOF);
     delete [] buf;

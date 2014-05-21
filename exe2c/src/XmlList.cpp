@@ -138,12 +138,12 @@ bool XmlList::GetLeftWord(long curpos, long &posfrom, long &posto)
         for (int i=0;i<2;i++)
         {
                 if (NULL != this->GetCurWord(curpos,posfrom,posto))
-                        return TRUE;
+                        return true;
                 if (curpos == 0)
-                        return FALSE;
+                        return false;
                 curpos--;
         }
-        return FALSE;
+        return false;
 }
 
 bool XmlList::GetRightWord(long curpos, long &posfrom, long &posto)
@@ -151,10 +151,10 @@ bool XmlList::GetRightWord(long curpos, long &posfrom, long &posto)
         for (int i=0;i<2;i++)
         {
                 if (NULL != this->GetCurWord(curpos,posfrom,posto))
-                    return TRUE;
+                    return true;
                 curpos++;
         }
-        return FALSE;
+        return false;
 }
 
 #include "XmlPrt.h"

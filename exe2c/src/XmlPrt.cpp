@@ -155,26 +155,26 @@ void XmlPrt::Clicked(long x1, long x2)
 bool XmlPrt::GetCurWord(long curpos, long &posfrom, long &posto)
 {
     if (NULL != m_xmllist->GetCurWord(curpos, posfrom, posto))
-        return TRUE;
+        return true;
     posfrom = curpos;
     posto = curpos+1;
-    return FALSE;
+    return false;
 }
 bool XmlPrt::GetLeftWord(long curpos, long &posfrom, long &posto)
 {
     if (this->m_xmllist->GetLeftWord(curpos, posfrom, posto))
-        return TRUE;
+        return true;
     posfrom = curpos;
     posto = curpos+1;
-    return FALSE;
+    return false;
 }
 bool XmlPrt::GetRightWord(long curpos, long &posfrom, long &posto)
 {
     if (this->m_xmllist->GetRightWord(curpos, posfrom, posto))
-        return TRUE;
+        return true;
     posfrom = curpos;
     posto = curpos+1;
-    return FALSE;
+    return false;
 }
 
 void	XmlPrt::prtprtout(XmlOutPro* prt)

@@ -172,7 +172,7 @@ PCOFFSYMBOL LibScanner::FindSymbol(COFFSYMBOL_LIST &syms,int symIndx) const
 bool LibScanner::ScanCOFFObject(COFFOBJECT_LIST &objs,BYTE * lpBuffer,uint32_t Len)
 {
         if(memcmp(lpBuffer,IMAGE_ARCHIVE_START,IMAGE_ARCHIVE_START_SIZE)!=0)
-                return FALSE;
+                return false;
 
         PIMAGE_ARCHIVE_MEMBER_HEADER pSect = (PIMAGE_ARCHIVE_MEMBER_HEADER)(lpBuffer+IMAGE_ARCHIVE_START_SIZE);
 
@@ -228,7 +228,7 @@ bool LibScanner::ScanCOFFObject(COFFOBJECT_LIST &objs,BYTE * lpBuffer,uint32_t L
                         lpNewPtr++;
                 pSect = (PIMAGE_ARCHIVE_MEMBER_HEADER) lpNewPtr;
         }
-        return TRUE;
+        return true;
 }
 
 
@@ -240,7 +240,7 @@ bool LibScanner::ScanLib(const char * szLib)
     if(pFile==NULL)
     {
         log_prtl("Load error: file not find %s", szLib);
-        return FALSE;
+        return false;
     }
     fseek(pFile,0,SEEK_END);
     long fsize = ftell(pFile);
@@ -250,7 +250,7 @@ bool LibScanner::ScanLib(const char * szLib)
     if (fbuf == NULL)
     {
         fclose(pFile);
-        return FALSE;
+        return false;
     }
     fread(fbuf,fsize,1,pFile);
 
@@ -259,7 +259,7 @@ bool LibScanner::ScanLib(const char * szLib)
     if(!ScanCOFFObject(objs,fbuf,fsize))
     {
         delete []fbuf;
-        return FALSE;
+        return false;
     }
     delete []fbuf;
 
@@ -270,7 +270,7 @@ bool LibScanner::ScanLib(const char * szLib)
     ClearCOFFObject(objs);
 
     log_prtl("%d function loaded.", this->m_funs.size());
-    return TRUE;
+    return true;
 }
 PFUNCTION_SYMBOL LibScanner::GetFunctionInfo(const char * szFun)
 {
