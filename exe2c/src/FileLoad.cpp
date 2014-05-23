@@ -28,7 +28,10 @@ FileLoader::FileLoader(void)
 FileLoader::~FileLoader(void)
 {
     delete fbuff;
-    fclose(efile);
+	if (efile)
+	{
+		fclose(efile);
+	}
 }
 
 bool	FileLoader::if_valid_ea(ea_t ea)

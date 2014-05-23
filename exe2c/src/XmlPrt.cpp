@@ -155,31 +155,31 @@ void XmlPrt::Clicked(long x1, long x2)
 bool XmlPrt::GetCurWord(long curpos, long &posfrom, long &posto)
 {
     if (NULL != m_xmllist->GetCurWord(curpos, posfrom, posto))
-        return TRUE;
+        return true;
     posfrom = curpos;
     posto = curpos+1;
-    return FALSE;
+    return false;
 }
 bool XmlPrt::GetLeftWord(long curpos, long &posfrom, long &posto)
 {
     if (this->m_xmllist->GetLeftWord(curpos, posfrom, posto))
-        return TRUE;
+        return true;
     posfrom = curpos;
     posto = curpos+1;
-    return FALSE;
+    return false;
 }
 bool XmlPrt::GetRightWord(long curpos, long &posfrom, long &posto)
 {
     if (this->m_xmllist->GetRightWord(curpos, posfrom, posto))
-        return TRUE;
+        return true;
     posfrom = curpos;
     posto = curpos+1;
-    return FALSE;
+    return false;
 }
 
 void	XmlPrt::prtprtout(XmlOutPro* prt)
 {
-    const char * pstr = m_str.toAscii().constData();
+    const char * pstr = m_str.toLatin1().constData();
 
     if (m_xmllist == NULL || m_xmllist->m_xmltype == XT_invalid)
     {
@@ -206,7 +206,7 @@ void	XmlPrt::prtprtout(XmlOutPro* prt)
 void XmlPrt::Display(I_COLOROUT* iColorOut)
 {
 
-    const char * pstr = m_str.toAscii().constData();
+    const char * pstr = m_str.toLatin1().constData();
 
     if (this->m_xmllist == NULL || this->m_xmllist->m_xmltype == XT_invalid)
     {

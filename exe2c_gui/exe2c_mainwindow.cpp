@@ -1,4 +1,6 @@
 #include <QtGui>
+#include <QLabel>
+#include <QFileDialog>
 #include "exe2c_mainwindow.h"
 #include "ui_exe2c_gui.h"
 #include "exe2c_interface.h"

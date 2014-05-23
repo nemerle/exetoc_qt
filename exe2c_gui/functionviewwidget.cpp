@@ -54,12 +54,14 @@ void FunctionViewWidget::XMLend(XMLTYPE xmltype)
     case XT_Function:
     {
         collected_text+="</body>";
+		// TODO: What about attributes with spaces?
+		collected_text.replace("  ", "&nbsp;&nbsp;");
         QFile res("result.html");
         res.open(QFile::WriteOnly);
         res.write(collected_text.toUtf8());
         res.close();
         collected_text.replace(QChar('\n'),"<br>");
-        ui->textBrowser->setHtml(collected_text);
+        ui->textEdit->setHtml(collected_text);
         collected_text.clear();
         break;
     }

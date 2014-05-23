@@ -62,3 +62,4 @@ set(exe2c_HEADERS
     exe2c_interface.h
 )
 ADD_LIBRARY(exe2c_lib STATIC ${exe2c_SOURCES} ${exe2c_HEADERS})
+TARGET_LINK_LIBRARIES(exe2c_lib Qt5::Widgets ${Boost_LIBRARIES})

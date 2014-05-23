@@ -178,23 +178,6 @@ bool CCInfo::LoadIncFile(const std::string &fname)
     //printf("end   file %s\n",fname);
     return true;
 }
-static void LoadIncBuffer(const char * p,char * plast)
-{
-    CCInfo* pInfo = new CCInfo;
-
-    while (p < plast)
-    {
-        const char * pnext = NULL;
-        pInfo->OneLine(p, pnext); // Under normal circumstances, OneLine does not change pnext
-        //	If it is a multi-line, putting pnext pointing to the last
-        if (pnext == NULL)
-            p += strlen(p) + 1;
-        else
-            p = pnext;
-    }
-
-    delete pInfo;
-}
 void prt_defines()
 {
     DefineList::iterator pos = g_DefineList->begin();
@@ -306,7 +289,7 @@ void Class_st::log_display_structure()
     log_prtf("\n{    \\\\sizeof = 0x%x\n",m_size);
     int nident = 1;
     size_t count=m_DataItems.size();
-    for (int i=0;i<count;i++)
+    for (size_t i=0;i<count;i++)
     {
         st_Var_Declare &pv(m_DataItems[i]);
         if (pv.m_access == nm_sub_end)
@@ -341,8 +324,6 @@ void Class_st::log_display_structure()
 VarTypeID do_struct_after_name(const char * strucname, const char * &p, bool Fstruc_Tunion);
 VarTypeID do_struct(const char * &p)
 {
-    const char * savp = p;
-
     char name[80];
     get_1part(name,p);
 
@@ -355,8 +336,6 @@ VarTypeID do_struct(const char * &p)
 }
 VarTypeID do_union(const char * &p)
 {
-    const char * savp = p;
-
     char name[80];
     get_1part(name,p);
 
@@ -931,7 +910,6 @@ void func_define_2(FuncType* pfunc,const char * &p)
     skip_space(p);
     skip_eos(p);
 
-    int parnum = 0;
     std::vector<VarTypeID> pars;	//	100 should be enough ?
     std::vector<std::string> parnames;
     parnames.reserve(100);
@@ -958,7 +936,7 @@ void func_define_2(FuncType* pfunc,const char * &p)
         {
             skip_eos(p);
             assert(*p == ')');
-            assert(parnum == 0);
+			assert(pars.size()==0);
             break;
         }
         parnames.push_back(parname);//[parnum] = parname;

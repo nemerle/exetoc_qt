@@ -2,6 +2,7 @@ PROJECT(ExeToC_Qt)
 #SET(CMAKE_BUILD_TYPE Debug)
 CMAKE_MINIMUM_REQUIRED(VERSION 2.8)
 
+cmake_policy(SET CMP0020 NEW)
 
 SET(CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/CMakeScripts;${CMAKE_MODULE_PATH})
 IF(CMAKE_CXX_COMPILER MATCHES cl)
@@ -12,15 +13,10 @@ ENDIF ()
 ##	Boost related
 SET(Boost_USE_STATIC_LIBS   ON)
 SET(Boost_USE_MULTITHREADED ON)
-SET(BOOST_ROOT "" CACHE PATH "")
-SET (Boost_COMPILER "-vc100")
-FIND_PACKAGE(Boost COMPONENTS filesystem system REQUIRED)
+FIND_PACKAGE(Boost COMPONENTS filesystem system)
 #########################################################
 
-##  Qt related
-FIND_PACKAGE(Qt4 COMPONENTS QtCore QtGui REQUIRED)
-
-INCLUDE(${QT_USE_FILE})
+find_package(Qt5Widgets REQUIRED)
 #########################################################
 ADD_DEFINITIONS(-D__STDC_LIMIT_MACROS=1 -D__STDC_CONSTANT_MACROS)
 
