@@ -50,9 +50,9 @@ typedef struct
 typedef struct _IMAGE_FILE_HEADER {
   WORD  Machine;
   WORD  NumberOfSections;
-  DWORD TimeDateStamp;
-  DWORD PointerToSymbolTable;
-  DWORD NumberOfSymbols;
+  int32_t TimeDateStamp;
+  int32_t PointerToSymbolTable;
+  int32_t NumberOfSymbols;
   WORD  SizeOfOptionalHeader;
   WORD  Characteristics;
 } IMAGE_FILE_HEADER, *PIMAGE_FILE_HEADER;
@@ -71,12 +71,12 @@ typedef struct _IMAGE_SYMBOL {
     union {
         uint8_t    ShortName[8];
         struct {
-            DWORD   Short;     // if 0, use LongName
-            DWORD   Long;      // offset into string table
+            int32_t   Short;     // if 0, use LongName
+            int32_t   Long;      // offset into string table
         } Name;
-        DWORD   LongName[2];    // PBYTE [2]
+        int32_t   LongName[2];    // PBYTE [2]
     } N;
-    DWORD   Value;
+    int32_t   Value;
     SHORT   SectionNumber;
     WORD    Type;
     uint8_t    StorageClass;
@@ -87,17 +87,17 @@ typedef IMAGE_SYMBOL *PIMAGE_SYMBOL;
 typedef struct _IMAGE_SECTION_HEADER {
     uint8_t    Name[8];
     union {
-        DWORD   PhysicalAddress;
-        DWORD   VirtualSize;
+        int32_t   PhysicalAddress;
+        int32_t   VirtualSize;
     } Misc;
-    DWORD   VirtualAddress;
-    DWORD   SizeOfRawData;
-    DWORD   PointerToRawData;
-    DWORD   PointerToRelocations;
-    DWORD   PointerToLinenumbers;
+    int32_t   VirtualAddress;
+    int32_t   SizeOfRawData;
+    int32_t   PointerToRawData;
+    int32_t   PointerToRelocations;
+    int32_t   PointerToLinenumbers;
     WORD    NumberOfRelocations;
     WORD    NumberOfLinenumbers;
-    DWORD   Characteristics;
+    int32_t   Characteristics;
 } IMAGE_SECTION_HEADER, *PIMAGE_SECTION_HEADER;
 #pragma pack()
 #define IMAGE_SYM_DTYPE_NULL                0       // no derived type.

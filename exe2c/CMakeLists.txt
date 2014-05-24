@@ -60,6 +60,7 @@ set(exe2c_HEADERS
     include/strparse.h
     include/types.h
     exe2c_interface.h
+    LibScanner_interface.h
 )
 ADD_LIBRARY(exe2c_lib STATIC ${exe2c_SOURCES} ${exe2c_HEADERS})
 TARGET_LINK_LIBRARIES(exe2c_lib ${Boost_LIBRARIES})

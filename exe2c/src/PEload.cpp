@@ -125,7 +125,7 @@ int	RelocImportTable(PEHEADER* peh)
         char *	pDLLname = (char *)pestart+pimp0->dllname_rva;
         log_prtl("pDLLname is %s ",pDLLname);
         //HMODULE hModule = GetModuleHandle(pDLLname);	//should I use Load ?
-        DWORD *p2 = (DWORD *)(pestart+pimp0->tbl2_rva);
+        int32_t *p2 = (int32_t *)(pestart+pimp0->tbl2_rva);
         uint32_t d;
         while ((d = *p2) != 0)
         {

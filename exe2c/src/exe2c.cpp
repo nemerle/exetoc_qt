@@ -441,6 +441,7 @@ void Exe2c::prtout_asm(I_XmlOut* iOut)
 }
 
 #include "LibScanner.h"
+extern QDir getInstallSubdir(QString);
 void lib_init()
 {
     //I_LIBSCANNER* pnew = NEW_LIBSCANNER();
