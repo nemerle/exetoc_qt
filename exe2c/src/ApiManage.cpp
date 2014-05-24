@@ -2,17 +2,12 @@
 
 //	CApiManage.cpp
 
-#include <QString>
-#include <QDebug>
-#include <algorithm>
-#include <boost/lambda/lambda.hpp>
-#include <boost/lambda/construct.hpp>
-#include <boost/lambda/bind.hpp>
-
 #include "CISC.h"
 #include "exe2c.h"
 
-using namespace boost::lambda;
+#include <QString>
+#include <QDebug>
+#include <algorithm>
 
 ApiManage *ApiManage::s_self=0;
 ApiManage * ApiManage::get()
@@ -29,7 +24,7 @@ ApiManage::ApiManage()
 }
 ApiManage::~ApiManage()
 {
-    std::for_each(m_apilist.begin(),m_apilist.end(), boost::lambda::bind(delete_ptr(), _1));
+    qDeleteAll(m_apilist.begin(),m_apilist.end());
     m_apilist.clear();
 }
 bool ApiManage::new_api(ea_t address,int stacksub)

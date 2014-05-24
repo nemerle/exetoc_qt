@@ -126,7 +126,7 @@ public:
     ~LibScanner();
 
 public:
-    virtual bool  ScanLib(const char * szLib);
+    virtual bool  ScanLib(const QString & szLib);
     virtual PFUNCTION_SYMBOL  GetFunctionInfo(const char * szFun);
     virtual std::string  CheckIfLibFunc(PCBYTE phead);
 

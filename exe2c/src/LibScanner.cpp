@@ -8,6 +8,9 @@
 //#include "stdafx.h"
 #include "types.h"
 #include "LibScanner.h"
+
+#include <QtCore/QFile>
+
 //#include <io.h>
 
 
@@ -16,7 +19,7 @@
 
 bool LibScanner_Init()
 {
-        return true;
+    return true;
 }
 
 
@@ -27,60 +30,60 @@ void LibScanner_Exit()
 
 LibScanner::~LibScanner()
 {
-        ClearFunction();
+    ClearFunction();
     //KICK_MFC();
 }
 
 void LibScanner::ClearFunction()
 {
-        for(FUNCTION_LIST::iterator it = m_funs.begin();it!=m_funs.end();++it)
-        {
-                PFUNCTION_SYMBOL pFun= *it;
-                delete []pFun->FunRawData;
-                delete  []((uint8_t*)pFun);
-        }
-        m_funs.clear();
+    for(FUNCTION_LIST::iterator it = m_funs.begin();it!=m_funs.end();++it)
+    {
+        PFUNCTION_SYMBOL pFun= *it;
+        delete []pFun->FunRawData;
+        delete  []((uint8_t*)pFun);
+    }
+    m_funs.clear();
 }
 
 void LibScanner::ClearCOFFObject(COFFOBJECT_LIST &objs) const
 {
-        for(COFFOBJECT_LIST::iterator it = objs.begin();it!=objs.end();++it)
-        {
-                COFFOBJECT obj;
-                obj= *it;
-                delete  []obj.lpBuffer;
-        }
-        objs.clear();
+    for(COFFOBJECT_LIST::iterator it = objs.begin();it!=objs.end();++it)
+    {
+        COFFOBJECT obj;
+        obj= *it;
+        delete  []obj.lpBuffer;
+    }
+    objs.clear();
 }
 const char * LibScanner::COFFGetName(const IMAGE_SYMBOL &coff_sym, const char* coff_strtab)
 {
-        static	char	namebuff[9];
-        const char*		nampnt;
+    static	char	namebuff[9];
+    const char*		nampnt;
 
     if (coff_sym.N.Name.Short)
-        {
+    {
         memcpy(namebuff, coff_sym.N.ShortName, 8);
-                namebuff[8] = '\0';
-                nampnt = &namebuff[0];
-        }
-        else
-        {
+        namebuff[8] = '\0';
+        nampnt = &namebuff[0];
+    }
+    else
+    {
         nampnt = coff_strtab + coff_sym.N.Name.Long;
-        }
+    }
 
-        return nampnt;
+    return nampnt;
 }
 
 PIMAGE_SECTION_HEADER LibScanner::FindSection(PCOFFOBJECT pObj,SHORT SectNumber) const
 {
-        PIMAGE_FILE_HEADER pIFH = (PIMAGE_FILE_HEADER)pObj->lpBuffer;
-        PIMAGE_SECTION_HEADER pISH = (PIMAGE_SECTION_HEADER)(pObj->lpBuffer + IMAGE_SIZEOF_FILE_HEADER);
-        for(int j=0;j<pIFH->NumberOfSections;j++)
-        {
-                if(j+1==SectNumber)
-                        return &pISH[j];
-        }
-        return NULL;
+    PIMAGE_FILE_HEADER pIFH = (PIMAGE_FILE_HEADER)pObj->lpBuffer;
+    PIMAGE_SECTION_HEADER pISH = (PIMAGE_SECTION_HEADER)(pObj->lpBuffer + IMAGE_SIZEOF_FILE_HEADER);
+    for(int j=0;j<pIFH->NumberOfSections;j++)
+    {
+        if(j+1==SectNumber)
+            return &pISH[j];
+    }
+    return NULL;
 }
 
 void LibScanner::ScanFunction(FUNCTION_LIST & funs,PCOFFOBJECT pObj)
@@ -160,101 +163,97 @@ void LibScanner::ScanFunction(FUNCTION_LIST & funs,PCOFFOBJECT pObj)
 
 PCOFFSYMBOL LibScanner::FindSymbol(COFFSYMBOL_LIST &syms,int symIndx) const
 {
-        for(COFFSYMBOL_LIST::iterator it = syms.begin();it!=syms.end();++it)
-        {
-                if((*it).SYMB_INX == symIndx)
-                        return &(*it);
-        }
-        return NULL;
+    for(COFFSYMBOL_LIST::iterator it = syms.begin();it!=syms.end();++it)
+    {
+        if((*it).SYMB_INX == symIndx)
+            return &(*it);
+    }
+    return NULL;
 }
 
 
 bool LibScanner::ScanCOFFObject(COFFOBJECT_LIST &objs, uint8_t *lpBuffer, uint32_t Len)
 {
-        if(memcmp(lpBuffer,IMAGE_ARCHIVE_START,IMAGE_ARCHIVE_START_SIZE)!=0)
-                return false;
+    if(memcmp(lpBuffer,IMAGE_ARCHIVE_START,IMAGE_ARCHIVE_START_SIZE)!=0)
+        return false;
 
-        PIMAGE_ARCHIVE_MEMBER_HEADER pSect = (PIMAGE_ARCHIVE_MEMBER_HEADER)(lpBuffer+IMAGE_ARCHIVE_START_SIZE);
+    PIMAGE_ARCHIVE_MEMBER_HEADER pSect = (PIMAGE_ARCHIVE_MEMBER_HEADER)(lpBuffer+IMAGE_ARCHIVE_START_SIZE);
 
-        uint8_t * lpNewPtr = (uint8_t *)pSect;
-        char *lpLongTable = NULL;
-        while(lpNewPtr <lpBuffer + Len)
+    uint8_t * lpNewPtr = (uint8_t *)pSect;
+    char *lpLongTable = NULL;
+    while(lpNewPtr <lpBuffer + Len)
+    {
+        if(memcmp(pSect->Name,IMAGE_ARCHIVE_LINKER_MEMBER,16)==0)
         {
-                if(memcmp(pSect->Name,IMAGE_ARCHIVE_LINKER_MEMBER,16)==0)
-                {
-                        //Nothing
-                }
-                else if(memcmp(pSect->Name,IMAGE_ARCHIVE_LONGNAMES_MEMBER,16)==0)//LONG Name
-                {
-            //uint32_t theSecSize = atol((char *)pSect->Size);
-                        lpLongTable  = ((char *)pSect) + sizeof(IMAGE_ARCHIVE_MEMBER_HEADER);
-                }
-                else //Obj Section
-                {
-                        ptrdiff_t ObjOff = ((uint8_t *)pSect) - lpBuffer;
-                        char * lpEnd = (char *)&pSect->Name[15];
-
-                        while(*lpEnd!='/')
-                        {
-                                lpEnd--;
-                        }
-
-                        char * lpObjName = NULL;
-                        if(lpEnd == (char *)pSect->Name )
-                        {//Long Name
-                                int longNameOff = atol((char *)&pSect->Name[1]);
-                                lpObjName = lpLongTable+longNameOff;
-                        }
-                        else
-                        {
-                                lpEnd++;
-                                *lpEnd = 0;
-                                lpObjName = (char *)pSect->Name;
-                        }
-
-                        COFFOBJECT Obj;
-                        strcpy(Obj.ObjName,lpObjName);
-                        Obj.Len		 = atol((char *)pSect->Size);
-                        Obj.lpBuffer = new uint8_t[Obj.Len];
-                        Obj.StartOff = ObjOff;
-
-                        uint8_t * lpData = ((uint8_t *)pSect) + sizeof(IMAGE_ARCHIVE_MEMBER_HEADER);
-                        memcpy(Obj.lpBuffer,lpData,Obj.Len);
-                        objs.push_back(Obj);
-                }
-                lpNewPtr = (uint8_t *)pSect;
-                lpNewPtr += atol((char *)pSect->Size) + sizeof(IMAGE_ARCHIVE_MEMBER_HEADER);
-                if(*lpNewPtr=='\n')
-                        lpNewPtr++;
-                pSect = (PIMAGE_ARCHIVE_MEMBER_HEADER) lpNewPtr;
+            //Nothing
         }
-        return true;
+        else if(memcmp(pSect->Name,IMAGE_ARCHIVE_LONGNAMES_MEMBER,16)==0)//LONG Name
+        {
+            //uint32_t theSecSize = atol((char *)pSect->Size);
+            lpLongTable  = ((char *)pSect) + sizeof(IMAGE_ARCHIVE_MEMBER_HEADER);
+        }
+        else //Obj Section
+        {
+            ptrdiff_t ObjOff = ((uint8_t *)pSect) - lpBuffer;
+            char * lpEnd = (char *)&pSect->Name[15];
+
+            while(*lpEnd!='/')
+            {
+                lpEnd--;
+            }
+
+            char * lpObjName = NULL;
+            if(lpEnd == (char *)pSect->Name )
+            {//Long Name
+                int longNameOff = atol((char *)&pSect->Name[1]);
+                lpObjName = lpLongTable+longNameOff;
+            }
+            else
+            {
+                lpEnd++;
+                *lpEnd = 0;
+                lpObjName = (char *)pSect->Name;
+            }
+
+            COFFOBJECT Obj;
+            strcpy(Obj.ObjName,lpObjName);
+            Obj.Len		 = atol((char *)pSect->Size);
+            Obj.lpBuffer = new uint8_t[Obj.Len];
+            Obj.StartOff = ObjOff;
+
+            uint8_t * lpData = ((uint8_t *)pSect) + sizeof(IMAGE_ARCHIVE_MEMBER_HEADER);
+            memcpy(Obj.lpBuffer,lpData,Obj.Len);
+            objs.push_back(Obj);
+        }
+        lpNewPtr = (uint8_t *)pSect;
+        lpNewPtr += atol((char *)pSect->Size) + sizeof(IMAGE_ARCHIVE_MEMBER_HEADER);
+        if(*lpNewPtr=='\n')
+            lpNewPtr++;
+        pSect = (PIMAGE_ARCHIVE_MEMBER_HEADER) lpNewPtr;
+    }
+    return true;
 }
 
 
 void log_prtl(const char * fmt,...);
-bool LibScanner::ScanLib(const char * szLib)
+bool LibScanner::ScanLib(const QString &szLib)
 {
-    log_prtl("Loading %s", szLib);
-    FILE * pFile = fopen(szLib,"rb");
-    if(pFile==NULL)
-    {
-        log_prtl("Load error: file not find %s", szLib);
+    QFile pFile(szLib);
+
+    log_prtl("Loading %s", qPrintable(szLib));
+    if(!pFile.exists() || !pFile.open(QFile::ReadOnly)) {
+        log_prtl("Load error: file not found %s", qPrintable(szLib));
         return false;
     }
-    fseek(pFile,0,SEEK_END);
-    long fsize = ftell(pFile);
-    fseek(pFile,0,SEEK_SET);
+
+    long fsize = pFile.size();
 
     uint8_t * fbuf = new uint8_t[fsize];
     if (fbuf == NULL)
-    {
-        fclose(pFile);
         return false;
-    }
-    fread(fbuf,fsize,1,pFile);
 
-    fclose(pFile);
+    pFile.read((char *)fbuf,fsize);
+
     COFFOBJECT_LIST objs;
     if(!ScanCOFFObject(objs,fbuf,fsize))
     {
@@ -272,16 +271,16 @@ bool LibScanner::ScanLib(const char * szLib)
     log_prtl("%d function loaded.", this->m_funs.size());
     return true;
 }
-PFUNCTION_SYMBOL LibScanner::GetFunctionInfo(const char * szFun)
+PFUNCTION_SYMBOL LibScanner::GetFunctionInfo(const char *szFun)
 {
-        for(FUNCTION_LIST::iterator it = m_funs.begin();it!=m_funs.end();++it)
-        {
-                PFUNCTION_SYMBOL pFun= *it;
+    for(FUNCTION_LIST::iterator it = m_funs.begin();it!=m_funs.end();++it)
+    {
+        PFUNCTION_SYMBOL pFun= *it;
 
-                if(strcmp(pFun->FunctionName,szFun)==0)
-                        return pFun;
-        }
-        return NULL;
+        if(strcmp(pFun->FunctionName,szFun)==0)
+            return pFun;
+    }
+    return NULL;
 }
 bool IfReAlloc(PFUNCTION_SYMBOL pFun, int offset)
 {
@@ -307,9 +306,9 @@ bool LibScanner::CheckSubFunc(PFUNCTION_SYMBOL pFun, PCBYTE phead)
     {
         REFSYMBOL* p = &pFun->RefInfo[i];
         nop(p->RefType);
-                PCBYTE p1 = phead + p->RefOffset;
-                nop(p1);
-                if (p->RefType == IMAGE_REL_I386_REL32	//==0x14
+        PCBYTE p1 = phead + p->RefOffset;
+        nop(p1);
+        if (p->RefType == IMAGE_REL_I386_REL32	//==0x14
                 && *(p1-1) == 0xe8) //e8 is a call
         {
             signed int off = *(signed int*)p1;
@@ -318,8 +317,8 @@ bool LibScanner::CheckSubFunc(PFUNCTION_SYMBOL pFun, PCBYTE phead)
             {//There is a is enough
                 return true;
             }
-                        else
-                                return false;
+            else
+                return false;
         }
     }
     return true;

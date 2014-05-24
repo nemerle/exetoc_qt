@@ -9,16 +9,18 @@ IF(CMAKE_CXX_COMPILER MATCHES cl.exe)
     ADD_DEFINITIONS( -D_CRT_SECURE_NO_WARNINGS -D_SCL_SECURE_NO_WARNINGS)
     ADD_DEFINITIONS(-DNOMINMAX -D_CRT_SECURE_NO_WARNINGS -D_CRT_NONSTDC_NO_WARNINGS )
 ELSE()
-    SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11" )
+    SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra -std=c++11" )
 ENDIF()
 
 ##	Boost related
 SET(Boost_USE_STATIC_LIBS   ON)
 SET(Boost_USE_MULTITHREADED ON)
-FIND_PACKAGE(Boost COMPONENTS filesystem system)
+#FIND_PACKAGE(Boost COMPONENTS filesystem system)
+FIND_PACKAGE(Boost REQUIRED)
 #########################################################
 
 find_package(Qt5Widgets REQUIRED)
+
 #########################################################
 ADD_DEFINITIONS(-D__STDC_LIMIT_MACROS=1 -D__STDC_CONSTANT_MACROS)
 

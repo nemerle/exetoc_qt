@@ -3,13 +3,13 @@
 
 #include <cassert>
 #include <algorithm>
+
 #include <boost/lambda/lambda.hpp>
 #include <boost/lambda/construct.hpp>
 #include <boost/lambda/bind.hpp>
 //#include <boost/bind.hpp>
-#include <boost/filesystem/path.hpp>
-#include <boost/filesystem/convenience.hpp>
-#include <boost/filesystem/operations.hpp>
+#include <QtCore/QDir>
+
 #include <cstring>
 
 #include "00000.h"
@@ -23,7 +23,7 @@
 
 using namespace std;
 using namespace boost::lambda;
-using namespace boost::filesystem;
+
 class CHpp
 {
 public:
@@ -38,7 +38,7 @@ public:
 };
 
 static CHpp* g_Hpp = NULL;
-static path g_incpath;
+static QDir g_incpath;
 
 struct define_t
 {
@@ -73,9 +73,15 @@ CHpp::~CHpp()
         m_FuncTypeList = NULL;
     }
 }
-path GetMyExePath()
+QDir getInstallDir()
 {
-    return current_path();
+    // TODO: this is working directory for now, one day it might actually do what it advertises :)
+    return QDir(".");
+}
+QDir getInstallSubdir(QString name) {
+    QDir path(getInstallDir());
+    path.cd(name);
+    return path;
 }
 bool hpp_init()
 {
@@ -83,9 +89,7 @@ bool hpp_init()
     g_Hpp = new CHpp;
 
     g_DefineList = new DefineList;
-    path current_dir=GetMyExePath();
-    current_dir = current_dir/"inc";
-    g_incpath = current_dir.string();
+    g_incpath = getInstallSubdir("inc");
 
     //	if (g_EXEType == enum_PE_sys)
     //		strcat(g_incpath, "\\ntddk\\");
@@ -135,14 +139,12 @@ void CCInfo::LoadFile(FILE *f)
 }
 bool CCInfo::LoadIncFile(const std::string &fname)
 {
-    path file_path;
-    file_path=g_incpath/fname;
-    std::string nativepath=file_path.string();
+    QString nativepath = g_incpath.filePath(fname.c_str());
     //alert_prtf("begin file %s\n",fname);
-    FILE* f = fopen(nativepath.c_str(),"rb");
+    FILE* f = fopen(qPrintable(nativepath),"rb");
     if (f == NULL)
     {
-        alert_prtf("File open error: %s",nativepath.c_str());
+        alert_prtf("File open error: %s",qPrintable(nativepath));
         return false;
     }
 
@@ -936,7 +938,7 @@ void func_define_2(FuncType* pfunc,const char * &p)
         {
             skip_eos(p);
             assert(*p == ')');
-			assert(pars.size()==0);
+            assert(pars.size()==0);
             break;
         }
         parnames.push_back(parname);//[parnum] = parname;

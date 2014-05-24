@@ -9,8 +9,9 @@
 ///////////////////////////////////////////////////////////////
 
 ////#include "stdafx.h"
-#include <QString>
-#include <boost/filesystem/path.hpp>
+#include <QtCore/QString>
+#include <QtCore/QDir>
+
 #include <boost/lambda/lambda.hpp>
 #include <boost/lambda/construct.hpp>
 #include <boost/lambda/bind.hpp>
@@ -135,9 +136,7 @@ void Exe2c::exe2c_main(const std::string & fname)
     ea_t entry_offset;
     m_FileLoader->GetEntrance(entry_buf, entry_offset);
 
-    // 因为文件的调入地址与虚拟地址不同，所以要记住这个差值
-    // 以后主程序只以offset来访问，不管实际buffer
-    //Because the file transferred to a different address and virtual address, so remember this difference
+    //Because the file is relocated to a different address and virtual address, so remember this difference
     // After the main program only offset to access, regardless of the actual buffer
     Disassembler_Init_offset(entry_buf, entry_offset);
 
@@ -195,7 +194,7 @@ Func* Exe2c::GetFunc(ea_t start)
 #include "LibScanner_interface.h"
 
 const char * check_if_jmp_api(PCBYTE phead);
-extern boost::filesystem::path GetMyExePath();
+
 static std::string CheckIf_libfunc(PCBYTE phead)
 {
     const char * apiname = check_if_jmp_api(phead);
@@ -446,9 +445,7 @@ void lib_init()
 {
     //I_LIBSCANNER* pnew = NEW_LIBSCANNER();
     I_LIBSCANNER* pnew = new LibScanner();
-    boost::filesystem::path tolibc=GetMyExePath()/"lib"/"libc.lib";
-    pnew->ScanLib(tolibc.string().c_str());
-
+    pnew->ScanLib(getInstallSubdir("lib").filePath("libc.lib"));
     g_LIBSCANNER = pnew;
 }
 

@@ -11,6 +11,7 @@
 #include <cstdlib>
 #include <string>
 #include <stdint.h>
+#include <QtCore/QString>
 
 typedef struct REFSYMBOL
 {
@@ -46,7 +47,7 @@ class I_LIBSCANNER
 {
 public:
     virtual ~I_LIBSCANNER() {}
-    virtual bool ScanLib(const char * szLib)=0;
+    virtual bool ScanLib(const QString& szLib)=0;
     //virtual PFUNCTION_SYMBOL GetFunctionInfo(const char * szFun)=0;
     virtual std::string CheckIfLibFunc(PCBYTE phead) = 0;
 };

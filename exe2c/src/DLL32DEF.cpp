@@ -1,24 +1,28 @@
 // Copyright(C) 1999-2005 LiuTaoTao，bookaa@rorsoft.com
 //	exe2c project
 
+#include "DLL32DEF.h"
+#include "00000.h"
+#include "strparse.h"
+
 #include <list>
 #include <cstring>
 #include <string>
 #include <cassert>
-#include <boost/filesystem.hpp>
+
+#include <QtCore/QDir>
+
 #include <boost/lambda/lambda.hpp>
 #include <boost/lambda/construct.hpp>
 #include <boost/lambda/bind.hpp>
-#include "00000.h"
-#include "DLL32DEF.h"
-#include "strparse.h"
+
 
 using namespace boost::lambda;
 using namespace std;
 struct ord_st
 {
-        WORD ord;
-        std::string name;
+    WORD ord;
+    std::string name;
 };
 
 typedef std::list<ord_st> ORD_LIST;
@@ -43,21 +47,21 @@ void onExit_DLL32DEF()
 {
     g_FirstDef.clear();
 }
-extern boost::filesystem::path GetMyExePath();
+extern QDir getInstallSubdir(QString name);
 extern	char g_mypath[];
-CCbuf* ReadDefFile(const std::string & fname)
+CCbuf* ReadDefFile(const QString & fname)
 {
-        boost::filesystem::path path=GetMyExePath()/"def"/(fname+".def");
-        FILE* f = fopen(path.string().c_str(),"rb");
-        if (f == NULL)
-        {
-                alert_prtf("Cannot load def file:\n%s",fname.c_str());
-                return NULL;
-        }
-        CCbuf *pInfo = new CCbuf;
-        pInfo->LoadFile(f);
-        fclose(f);
-        return pInfo;
+    QDir path=getInstallSubdir("def");
+    FILE* f = fopen(qPrintable(path.absoluteFilePath(fname+".def")),"rb");
+    if (f == NULL)
+    {
+        alert_prtf("Cannot load def file:\n%s",fname.toStdString().c_str());
+        return NULL;
+    }
+    CCbuf *pInfo = new CCbuf;
+    pInfo->LoadFile(f);
+    fclose(f);
+    return pInfo;
 }
 std::string DLLDEF_Get_ApiName_from_ord(const char * pDLLname, WORD ord)
 {
