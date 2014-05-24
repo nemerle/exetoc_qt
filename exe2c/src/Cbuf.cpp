@@ -28,7 +28,7 @@ void CCbuf::LoadFile(FILE *f)
     char *buf = new char[flen];
     fseek(f,0,SEEK_SET);
     fread(buf,1,flen,f);
-    v=QString::fromAscii(buf,flen);
+	v=QString::fromLatin1(buf,flen);
 	m_p = new char[flen+1];	//thats enough
 	m_len = 0;
 
