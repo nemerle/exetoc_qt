@@ -151,7 +151,7 @@ class Func
     friend class CFuncPrt;
     friend class FuncOptim;
 private:
-    UINT GetVaryParaSize(POSITION pos);
+    uint32_t GetVaryParaSize(POSITION pos);
 
 public:
     void Restart();
@@ -332,7 +332,7 @@ class FuncOptim
     bool Optim_var_flow_NT(VAROPTM_LIST& volist, M_t* pvar);
     std::string Get_var_finger_NT(VAROPTM_LIST& volist, M_t* pvar);
 
-    bool SetParaType(UINT offset, UINT sizepara, enum_CallC conv,
+    bool SetParaType(uint32_t offset, uint32_t sizepara, enum_CallC conv,
                      const std::string & paraname, VarTypeID paraid);
     void SimplifyGetAddr(Instruction *p);
     void SimplifyAddImmed(Instruction *p);

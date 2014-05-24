@@ -59,8 +59,8 @@ typedef struct _IMAGE_FILE_HEADER {
 #define IMAGE_SIZEOF_FILE_HEADER             20
 typedef struct
 {
-        SHORT SYMB_INX;
-        SHORT SECT_NUM;
+        int16_t SYMB_INX;
+        int16_t SECT_NUM;
         uint8_t  STOR_CLS;
         uint32_t VALUE;
         uint16_t  TYPE;
@@ -77,7 +77,7 @@ typedef struct _IMAGE_SYMBOL {
         int32_t   LongName[2];    // PBYTE [2]
     } N;
     int32_t   Value;
-    SHORT   SectionNumber;
+    int16_t   SectionNumber;
     uint16_t    Type;
     uint8_t    StorageClass;
     uint8_t    NumberOfAuxSymbols;
@@ -137,7 +137,7 @@ private:
     void ClearCOFFObject(COFFOBJECT_LIST &objs) const;
     const char *COFFGetName(const IMAGE_SYMBOL &coff_sym, const char* coff_strtab);
     bool ScanCOFFObject(COFFOBJECT_LIST &objs,uint8_t * lpBuffer,uint32_t Len);
-    PIMAGE_SECTION_HEADER FindSection(PCOFFOBJECT pObj,SHORT SectNumber) const;
+    PIMAGE_SECTION_HEADER FindSection(PCOFFOBJECT pObj,int16_t SectNumber) const;
     PCOFFSYMBOL FindSymbol(COFFSYMBOL_LIST &syms,int symIndx) const;
     void ScanFunction(FUNCTION_LIST & funs,PCOFFOBJECT pObj);
     bool CheckThisFunc(PFUNCTION_SYMBOL pFun, PCBYTE phead);

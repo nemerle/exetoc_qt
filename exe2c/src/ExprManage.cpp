@@ -341,7 +341,7 @@ const char * ExprManage::VarName(const VAR* v)
         {
             if (p->m_DataTypeID != 0)
             {
-                UINT typesize = ::GG_VarType_ID2Size(p->m_DataTypeID);
+                uint32_t typesize = ::GG_VarType_ID2Size(p->m_DataTypeID);
                 if (typesize == p->size)
                 {
                     ; //nop
@@ -556,7 +556,7 @@ M_t* ExprManage::AddRef_with_name(en_MTTYPE type, uint32_t off, uint32_t size, c
     return pnew;
 }
 
-signed int varoff2stack(UINT off);
+signed int varoff2stack(uint32_t off);
 void ExprManage::EspReport(signed int esplevel)
 {
     static int static_iThrown = 1;
@@ -660,7 +660,7 @@ uint32_t	stack2varoff(int32_t stackoff)
     off &= 0x7ffff; // Enough, right?
     return off;
 }
-signed int varoff2stack(UINT off)
+signed int varoff2stack(uint32_t off)
 {
     return -(0x7ffff - (signed int)off + 1);
 }
@@ -668,7 +668,7 @@ signed int varoff2stack(UINT off)
 
 int g_newtemno = 737;
 //Add 2 each time you use are so put out even the value of the left
-M_t* ExprManage::CreateNewTemVar(UINT size)
+M_t* ExprManage::CreateNewTemVar(uint32_t size)
 {
     M_t* pnew = new M_t;
     pnew->type = MTT_tem;

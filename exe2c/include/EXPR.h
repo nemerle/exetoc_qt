@@ -74,7 +74,7 @@ struct VAR
 {
     VARType	type;	//can be v_Reg,v_Stack,v_Global,v_Immed
 
-    UINT	opsize;	//0:void,1:BYTE,2:WORD,4:uint32_t,...
+    uint32_t	opsize;	//0:void,1:BYTE,2:WORD,4:uint32_t,...
     struct M_t* thevar;
     int part_flag;  //show var thevar
                     //part_flag-1 potential var thevar offset

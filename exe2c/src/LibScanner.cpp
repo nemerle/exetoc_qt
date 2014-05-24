@@ -5,17 +5,10 @@
 //
 ///////////////////////////////////////////////////////////////
 
-//#include "stdafx.h"
-#include "types.h"
 #include "LibScanner.h"
 
+#include <stdint.h>
 #include <QtCore/QFile>
-
-//#include <io.h>
-
-
-//KS_DECLARE_COMPONENT(LibScanner, LIBSCANNER)
-
 
 bool LibScanner_Init()
 {
@@ -74,7 +67,7 @@ const char * LibScanner::COFFGetName(const IMAGE_SYMBOL &coff_sym, const char* c
     return nampnt;
 }
 
-PIMAGE_SECTION_HEADER LibScanner::FindSection(PCOFFOBJECT pObj,SHORT SectNumber) const
+PIMAGE_SECTION_HEADER LibScanner::FindSection(PCOFFOBJECT pObj, int16_t SectNumber) const
 {
     PIMAGE_FILE_HEADER pIFH = (PIMAGE_FILE_HEADER)pObj->lpBuffer;
     PIMAGE_SECTION_HEADER pISH = (PIMAGE_SECTION_HEADER)(pObj->lpBuffer + IMAGE_SIZEOF_FILE_HEADER);

@@ -16,9 +16,9 @@ enum en_MTTYPE
 };
 struct M_t
 {
-	en_MTTYPE type; //MTT_tem ..
-	uint32_t s_off;	//start offset
-	uint32_t size;
+    en_MTTYPE type; //MTT_tem ..
+    uint32_t s_off;	//start offset
+    uint32_t size;
 
     std::string namestr;
     int tem_useno;  //how many others, counting me, [do not control this variable]
@@ -56,7 +56,7 @@ struct M_t
     {
         return s_off + size;
     }
-    bool IfInclude(UINT off)
+    bool IfInclude(uint32_t off)
     {
         if (this->s_off <= off &&
             this->s_off + this->size >= off)
@@ -81,17 +81,17 @@ public:
     signed int m_VarRange_H;
 
 
-	ExprManage();
-	~ExprManage();
+    ExprManage();
+    ~ExprManage();
 
-	void EspReport(signed int esplevel);
-	void AddRef(VAR* pvar);
-    M_t* CreateNewTemVar(UINT size);
-	M_t* AddRef_with_name(en_MTTYPE type, uint32_t off, uint32_t size, const char * tj_name);
-	M_t* AddRef_tem(uint32_t temno, uint32_t size);
-	M_t* AddRef_immed(uint32_t d, uint32_t size);
+    void EspReport(signed int esplevel);
+    void AddRef(VAR* pvar);
+    M_t* CreateNewTemVar(uint32_t size);
+    M_t* AddRef_with_name(en_MTTYPE type, uint32_t off, uint32_t size, const char * tj_name);
+    M_t* AddRef_tem(uint32_t temno, uint32_t size);
+    M_t* AddRef_immed(uint32_t d, uint32_t size);
 
-	M_t* SearchMT(en_MTTYPE type, uint32_t off);
+    M_t* SearchMT(en_MTTYPE type, uint32_t off);
 
     void 	prt_var(const VAR* var, XmlOutPro* out);
     void 	prt_var_Immed(const VAR* var, XmlOutPro* out);

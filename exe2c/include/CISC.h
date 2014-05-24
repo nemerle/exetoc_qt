@@ -1,7 +1,7 @@
 // Copyright(C) 1999-2005 LiuTaoTao，bookaa@rorsoft.com
 #pragma once
 
-#include "types.h"
+#include    <stdint.h>
 #include    <cassert>
 #include	<cstdio>
 #include	<cstdlib>

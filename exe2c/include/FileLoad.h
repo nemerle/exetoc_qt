@@ -4,7 +4,7 @@
 #ifndef	FileLoad_H
 #define FileLoad_H
 #include <cstdio>
-#include "types.h"
+#include <stdint.h>
 enum enum_EXEType
 {
     enum_PE_exe		= 1,
@@ -171,7 +171,7 @@ struct perelocheader
     uint32_t len;
 };
 
-//bool FAR PASCAL savemessbox(HWND hdwnd,UINT message,WPARAM wParam,LPARAM lParam);
+//bool FAR PASCAL savemessbox(HWND hdwnd,uint32_t message,WPARAM wParam,LPARAM lParam);
 
 //loads file and sets up objects using data.cpp
 class FileLoader

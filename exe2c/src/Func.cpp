@@ -45,7 +45,7 @@ void	Code_GetArgs(VAR* v,uint32_t &maxesp)
     if (v->par_off > maxesp)
         maxesp = v->par_off;
 }
-UINT Func::GetVaryParaSize(POSITION pos)
+uint32_t Func::GetVaryParaSize(POSITION pos)
 {
     for (;pos!=m_instr_list.end();++pos)
     {
@@ -82,7 +82,7 @@ bool	Func::Func_FillCallParas()
                 p->call_addon.p_thecall = pinstr;
                 pinstr->call.p_callpara = p;
                 p->var_r1.type = v_Var;
-                UINT parasize = pfctype->para_total_size();
+                uint32_t parasize = pfctype->para_total_size();
                 if (pfctype->m_varpar)
                 {
                     parasize = GetVaryParaSize(pos);

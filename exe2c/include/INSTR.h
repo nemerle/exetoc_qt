@@ -108,7 +108,7 @@ public:
         struct
         {
             signed int esp_level;
-            UINT howlen;
+            uint32_t howlen;
         } espreport;    // for i_EspReport
     };
     void    setVars(const VAR &v1,const VAR  &v2)
@@ -150,7 +150,7 @@ class InstrList
     bool	Flow_cc(Instruction * pNode, POSITION firstpos, POSITION endpos);
     void	Add_Begin_End(POSITION firstpos, POSITION endpos, Instruction * begin, Instruction * end);
     void	Add_Begin_End_1(POSITION firstpos, POSITION endpos, Instruction * begin, Instruction * end);
-	void	RemoveNops();
+    void	RemoveNops();
     INSTR_LIST &m_list; //To make it private
 public:
     InstrList(INSTR_LIST& p) : m_list (p)

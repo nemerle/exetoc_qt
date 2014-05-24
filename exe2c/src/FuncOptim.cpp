@@ -1174,8 +1174,8 @@ bool FuncOptim::DataType_Check(VAR_ADDON* pva, FuncType* pftype)
 
                         p->var_r1.thevar->m_DataTypeID = id2;
 
-                        UINT size1 = p->var_r1.thevar->size;    //old sie
-                        UINT size2 = GG_VarType_ID2Size(id2);   //new size
+                        uint32_t size1 = p->var_r1.thevar->size;    //old sie
+                        uint32_t size2 = GG_VarType_ID2Size(id2);   //new size
                         if (size1 < size2)
                         {
                             //new size is larger
@@ -1199,14 +1199,14 @@ bool FuncOptim::DataType_Check(VAR_ADDON* pva, FuncType* pftype)
     }
     return false;
 }
-bool FuncOptim::SetParaType(UINT offset, UINT sizepara, enum_CallC conv,const std::string & paraname, VarTypeID paraid)
+bool FuncOptim::SetParaType(uint32_t offset, uint32_t sizepara, enum_CallC conv, const std::string & paraname, VarTypeID paraid)
 {
     if (conv != enum_cdecl && conv != enum_stdcall)
     {
         assert(0);
         return false;
     }
-    UINT par_off = offset + 4;  //right then
+    uint32_t par_off = offset + 4;  //right then
     M_t* pmt = this->m_my_func->m_exprs->SearchMT(MTT_par, par_off);
     if (pmt == NULL)
         return false;
@@ -1237,7 +1237,7 @@ bool FuncOptim::VarDataType_analysis_mydefine()
         return false;
     FuncType* pftype = this->m_my_func->m_functype;
 
-    UINT sizepara = pftype->para_total_size();
+    uint32_t sizepara = pftype->para_total_size();
     int offset = 0;
     for (int i=0; i<pftype->m_args; i++)
     {
