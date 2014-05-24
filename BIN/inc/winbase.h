@@ -83,6 +83,15 @@ UINT __stdcall GetProfileIntW(
     LPCWSTR lpKeyName,
     INT nDefault
     );
+typedef HANDLE              HMODULE;
+typedef int (__stdcall * FARPROC) ();
+FARPROC __stdcall GetProcAddress(HMODULE hModule, LPCSTR lpProcName);
+HMODULE __stdcall GetModuleHandleA(LPCSTR lpModuleName);
+void __stdcall GetStartupInfoA(LPSTARTUPINFOA lpStartupInfo);
 
+void __stdcall ExitProcess(UINT uExitCode);
 
-
+#include "winNT.h"
+typedef RTL_CRITICAL_SECTION CRITICAL_SECTION;
+typedef CRITICAL_SECTION *LPCRITICAL_SECTION;
+void __stdcall LeaveCriticalSection(LPCRITICAL_SECTION lpCriticalSection);

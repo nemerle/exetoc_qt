@@ -34,7 +34,8 @@ bool ApiManage::new_api(ea_t address,int stacksub)
     p->m_stack_purge = stacksub;
 
     sprintf(p->name,"api_%x",address);
-
+    p->m_functype = new FuncType; //TODO: this is just a placeholder, and should actually be left to the user ?
+    p->m_functype->m_retdatatype_id = id_void;
     m_apilist.push_front(p);
     return true;
 }
@@ -65,8 +66,9 @@ void ApiManage::New_ImportAPI(const std::string &pstr, uint32_t apiaddr)
     FuncType* pf = Get_FuncDefine_from_name(pstr);
     qDebug()<<QString("Searching for imported function %1 at %2 - %3 :").arg(pstr.c_str())
               .arg(apiaddr,0,16).arg(pf ? "found":"not found");
-    if (pf == NULL)
+    if (pf == NULL) {
         return;
+    }
     Api *p = new Api;     //new_CApi
     p->m_address = apiaddr;
     assert(pf);

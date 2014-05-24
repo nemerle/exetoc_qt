@@ -312,7 +312,7 @@ bool	FuncLL::stack_stack(AsmCode* p0, AsmCode* p1)
             }
             else
             {	//not find, insert it
-                alert_prtf("error not find api %x", address);
+                    alert_prtf("error not find api %x", address);
                 ApiManage::get()->new_api(address,esp0_next - esp0);
                 return true;
             }

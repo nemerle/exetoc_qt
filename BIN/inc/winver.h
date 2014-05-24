@@ -1,0 +1,1 @@
+BOOL __stdcall GetFileVersionInfoA( LPCSTR filename, DWORD handle, DWORD datasize, LPVOID data );

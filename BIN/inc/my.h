@@ -27,6 +27,8 @@ typedef long LONG;
 #include "windef.h"
 #include "winbase.h"
 #include "winuser.h"
+#include "windows.h"
+#include "GL.h"
 //#include "mfc42.h"
 //#include "winsock2.h"
 #include "winnls.h"	

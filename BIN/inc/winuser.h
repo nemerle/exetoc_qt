@@ -112,12 +112,6 @@ struct _startupinfo
 void __cdecl __getmainargs(int *, char ***, char ***, int, _startupinfo *);
 }
 
-typedef HANDLE HMODULE;
-
-HMODULE __stdcall GetModuleHandleA(LPCSTR lpModuleName);
-
-void __stdcall GetStartupInfoA(LPSTARTUPINFOA lpStartupInfo);
-
 
 int __stdcall LoadStringW(HINSTANCE hInstance, UINT uID, LPWSTR lpBuffer, int nBufferMax);
 

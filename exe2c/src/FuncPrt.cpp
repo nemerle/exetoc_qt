@@ -330,7 +330,7 @@ void	CFunc_Prt::prt_switch_case(CasePrt_List* list, const Instruction* phead, Xm
 {
         out->prtl_ident("// list count = %d",list->size());
         CasePrt_List::iterator pos = list->begin();
-		OneCase* p;
+        OneCase* p;
     for (;pos!=list->end();++pos)
         {
         p = *pos;
@@ -749,9 +749,7 @@ const char * CFunc_Prt::prt_iAddress(const Instruction * p)
     {
         if (n)
             n += sprintf(s+n," + ");
-        n += sprintf(s+n, "%s", prt_DWORD(p->i2));
-        //FIXME: useless statement ?
-        //n;
+        sprintf(s+n, "%s", prt_DWORD(p->i2));
     }
     return s;
 }
@@ -800,7 +798,7 @@ bool CFunc_Prt::prt_instr_callret(POSITION nextpos, XmlOutPro* out)
             continue;
         if (p1->type == i_CallRet)
         {
-			if (p1->var_w.IfTemVar())
+            if (p1->var_w.IfTemVar())
                 return true;
 
             out->ident();
