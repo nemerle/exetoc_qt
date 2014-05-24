@@ -319,13 +319,13 @@ static st_VarOptm* used_list_Find(Instruction * pinstr, VAROPTM_LIST& used_list)
     return NULL;
 }
 
-BYTE GetVarFinger_INSTR(M_t* pvar, Instruction * p)
+uint8_t GetVarFinger_INSTR(M_t* pvar, Instruction * p)
                 //00: nothing with
                 //01: read
                 //02: write
                 //03: read and write
 {
-    BYTE r = 0;
+    uint8_t r = 0;
     if (pvar == p->var_w.thevar)
     {
         r |= 2;
@@ -672,7 +672,7 @@ char HowVarUse_Char(const st_VarOptm* the)
         return 'J';
 
     Instruction * pinstr = the->pInstr;
-    BYTE rw = the->rw;
+    uint8_t rw = the->rw;
     if (pinstr->type == i_Label) return 'L';
     if (pinstr->type == i_Return) return 'E';
     if (pinstr->type == i_Assign)
@@ -1057,7 +1057,7 @@ void FuncOptim::Get_Var_Use_Flow(VAROPTM_LIST& used_list, M_t* pvar)
     for( ;pos!=list.end();++pos)
     {
         Instruction * p = *pos;
-        BYTE c = GetVarFinger_INSTR(pvar, p);
+        uint8_t c = GetVarFinger_INSTR(pvar, p);
         if (c != 0 || p->type == i_Label || p->type == i_Return)
         {//These are my only concern
 

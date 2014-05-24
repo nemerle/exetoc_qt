@@ -28,10 +28,10 @@ FileLoader::FileLoader(void)
 FileLoader::~FileLoader(void)
 {
     delete fbuff;
-	if (efile)
-	{
-		fclose(efile);
-	}
+    if (efile)
+    {
+        fclose(efile);
+    }
 }
 
 bool	FileLoader::if_valid_ea(ea_t ea)
@@ -100,7 +100,7 @@ bool FileLoader::load(const char * fname)
         return false;
     fseek(efile,0,SEEK_END);
     fsize=ftell(efile);
-    fbuff=new BYTE[fsize];
+    fbuff=new uint8_t[fsize];
     fseek(efile,0,SEEK_SET);
     fread(fbuff,1,fsize,efile);
 

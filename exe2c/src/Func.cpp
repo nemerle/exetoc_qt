@@ -20,7 +20,7 @@ Func::Func(ea_t start)
     m_head_off = start;
 
     m_nStep = STEP_Init;
-	m_args = 0;
+    m_args = 0;
 
     m_EBP_base = Not_EBP_based;   //invalid
     m_stack_purge = 0;
@@ -92,7 +92,7 @@ bool	Func::Func_FillCallParas()
 
                 m_instr_list.insert(pos, p); //Appending at i_Call i_CallPara
             }
-			else if (pfctype == NULL && pinstr->call.call_func->m_args != 0)
+            else if (pfctype == NULL && pinstr->call.call_func->m_args != 0)
             {
                 Instruction * p = new Instruction(i_CallPara);   //new_INSTR
                 p->call_addon.p_thecall = pinstr;
@@ -259,8 +259,8 @@ int	VAR::VarCompare(const VAR* v1,const VAR* v2)
     //if (v1->opsize != v2->opsize)
     //	return false;
     uint32_t off1,off2;
-    BYTE siz1 = v1->opsize;
-    BYTE siz2 = v2->opsize;
+    uint8_t siz1 = v1->opsize;
+    uint8_t siz2 = v2->opsize;
 
     switch (v1->type)
     {

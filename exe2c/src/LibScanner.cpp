@@ -37,7 +37,7 @@ void LibScanner::ClearFunction()
         {
                 PFUNCTION_SYMBOL pFun= *it;
                 delete []pFun->FunRawData;
-                delete  []((BYTE*)pFun);
+                delete  []((uint8_t*)pFun);
         }
         m_funs.clear();
 }
@@ -123,16 +123,16 @@ void LibScanner::ScanFunction(FUNCTION_LIST & funs,PCOFFOBJECT pObj)
 
         if(!pISH)
             continue;
-        PFUNCTION_SYMBOL pFun = (PFUNCTION_SYMBOL) new BYTE[sizeof(FUNCTION_SYMBOL)+pISH->NumberOfRelocations*sizeof(REFSYMBOL)];
+        PFUNCTION_SYMBOL pFun = (PFUNCTION_SYMBOL) new uint8_t[sizeof(FUNCTION_SYMBOL)+pISH->NumberOfRelocations*sizeof(REFSYMBOL)];
         assert(lpName==COFFGetName(pIS[i],lpStrTab));
         strcpy(pFun->FunctionName , lpName);
 
         if(pISH->SizeOfRawData > pSymb->Value )
         {
             pFun->dwFuncLen  = pISH->SizeOfRawData - pSymb->Value;
-            pFun->FunRawData = new BYTE[pFun->dwFuncLen];
+            pFun->FunRawData = new uint8_t[pFun->dwFuncLen];
 
-            memcpy(pFun->FunRawData,(BYTE *)(pObj->lpBuffer + pISH->PointerToRawData) + pSymb->Value,pFun->dwFuncLen);
+            memcpy(pFun->FunRawData,(uint8_t *)(pObj->lpBuffer + pISH->PointerToRawData) + pSymb->Value,pFun->dwFuncLen);
 
             PIMAGE_RELOCATION pIR = (PIMAGE_RELOCATION)(pObj->lpBuffer + pISH->PointerToRelocations);
 
@@ -169,14 +169,14 @@ PCOFFSYMBOL LibScanner::FindSymbol(COFFSYMBOL_LIST &syms,int symIndx) const
 }
 
 
-bool LibScanner::ScanCOFFObject(COFFOBJECT_LIST &objs,BYTE * lpBuffer,uint32_t Len)
+bool LibScanner::ScanCOFFObject(COFFOBJECT_LIST &objs, uint8_t *lpBuffer, uint32_t Len)
 {
         if(memcmp(lpBuffer,IMAGE_ARCHIVE_START,IMAGE_ARCHIVE_START_SIZE)!=0)
                 return false;
 
         PIMAGE_ARCHIVE_MEMBER_HEADER pSect = (PIMAGE_ARCHIVE_MEMBER_HEADER)(lpBuffer+IMAGE_ARCHIVE_START_SIZE);
 
-        BYTE * lpNewPtr = (BYTE *)pSect;
+        uint8_t * lpNewPtr = (uint8_t *)pSect;
         char *lpLongTable = NULL;
         while(lpNewPtr <lpBuffer + Len)
         {
@@ -191,7 +191,7 @@ bool LibScanner::ScanCOFFObject(COFFOBJECT_LIST &objs,BYTE * lpBuffer,uint32_t L
                 }
                 else //Obj Section
                 {
-                        ptrdiff_t ObjOff = ((BYTE *)pSect) - lpBuffer;
+                        ptrdiff_t ObjOff = ((uint8_t *)pSect) - lpBuffer;
                         char * lpEnd = (char *)&pSect->Name[15];
 
                         while(*lpEnd!='/')
@@ -215,14 +215,14 @@ bool LibScanner::ScanCOFFObject(COFFOBJECT_LIST &objs,BYTE * lpBuffer,uint32_t L
                         COFFOBJECT Obj;
                         strcpy(Obj.ObjName,lpObjName);
                         Obj.Len		 = atol((char *)pSect->Size);
-                        Obj.lpBuffer = new BYTE[Obj.Len];
+                        Obj.lpBuffer = new uint8_t[Obj.Len];
                         Obj.StartOff = ObjOff;
 
-                        BYTE * lpData = ((BYTE *)pSect) + sizeof(IMAGE_ARCHIVE_MEMBER_HEADER);
+                        uint8_t * lpData = ((uint8_t *)pSect) + sizeof(IMAGE_ARCHIVE_MEMBER_HEADER);
                         memcpy(Obj.lpBuffer,lpData,Obj.Len);
                         objs.push_back(Obj);
                 }
-                lpNewPtr = (BYTE *)pSect;
+                lpNewPtr = (uint8_t *)pSect;
                 lpNewPtr += atol((char *)pSect->Size) + sizeof(IMAGE_ARCHIVE_MEMBER_HEADER);
                 if(*lpNewPtr=='\n')
                         lpNewPtr++;
@@ -246,7 +246,7 @@ bool LibScanner::ScanLib(const char * szLib)
     long fsize = ftell(pFile);
     fseek(pFile,0,SEEK_SET);
 
-    BYTE * fbuf = new BYTE[fsize];
+    uint8_t * fbuf = new uint8_t[fsize];
     if (fbuf == NULL)
     {
         fclose(pFile);

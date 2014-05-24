@@ -52,9 +52,9 @@ void	alert(const char * msg);
 //---------------------------------------------
 // Deasm_Init.cpp
 void	Disassembler_Init_offset(const uint8_t * code_buf, ea_t code_offset);
-BYTE *	ea2ptr(ea_t pos);
+uint8_t *	ea2ptr(ea_t pos);
 ea_t ptr2ea(void* p);
-BYTE	Peek_B(ea_t pos);
+uint8_t	Peek_B(ea_t pos);
 WORD	Peek_W(ea_t pos);
 uint32_t	Peek_D(ea_t pos);
 

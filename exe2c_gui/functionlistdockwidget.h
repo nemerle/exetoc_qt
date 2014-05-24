@@ -17,14 +17,14 @@ class FunctionListModel : public QAbstractTableModel
     };
     std::vector<function_info> m_list;
 public:
-    int rowCount(const QModelIndex &idx) const {return m_list.size();}
-    int columnCount(const QModelIndex &idx) const {return 3;}
+    int rowCount(const QModelIndex &/*idx*/) const {return m_list.size();}
+    int columnCount(const QModelIndex &/*idx*/) const {return 3;}
     QVariant data(const QModelIndex &,int role) const;
     void clear()
     {
-		beginResetModel();
-		m_list.clear();
-		endResetModel();
+        beginResetModel();
+        m_list.clear();
+        endResetModel();
     }
     QVariant headerData(int section, Qt::Orientation orientation,int role) const;
 public slots:
@@ -38,8 +38,8 @@ protected:
         info.m_name=name;
         info.m_decoding_step=step;
         info.m_start_off=start_off;
-		info.m_end_off=end_off;
-		info.m_stack_purge=stack_purge;
+        info.m_end_off=end_off;
+        info.m_stack_purge=stack_purge;
         m_list.push_back(info);
     }
     void rebuildFunctionList();

@@ -10,25 +10,23 @@
 #define	_LIBSCANNER_H_
 #include <cstdlib>
 #include <string>
-typedef unsigned char BYTE;
-typedef signed char CHAR;
-
+#include <stdint.h>
 
 typedef struct REFSYMBOL
 {
         char    RefSymbol[4096];	//Referenced symbol
         WORD	RefType;    //such as IMAGE_REL_I386_REL32
-        unsigned long	RefOffset;				//Offset in the referenced function
+        uint32_t	RefOffset;				//Offset in the referenced function
 } *PREFSYMBOL;
 
 typedef struct tagFUNCTION_SYMBOL
 {
-        unsigned long       dwFuncLen;
-        BYTE*		FunRawData;
-        char		ObjName[4096];
-        char		FunctionName[4096]; // was MAX_PATH
-        unsigned long		RefCount;			//Number of referenced symbols
-        REFSYMBOL	RefInfo[];			//Reference Information
+        uint32_t    dwFuncLen;
+        uint8_t *   FunRawData;
+        char        ObjName[4096];
+        char        FunctionName[4096]; // was MAX_PATH
+        uint32_t    RefCount;			//Number of referenced symbols
+        REFSYMBOL   RefInfo[];			//Reference Information
 }FUNCTION_SYMBOL,* PFUNCTION_SYMBOL;
 #pragma pack(2)
 typedef struct _IMAGE_RELOCATION {
@@ -42,7 +40,7 @@ typedef struct _IMAGE_RELOCATION {
 #pragma pack()
 typedef IMAGE_RELOCATION *PIMAGE_RELOCATION;
 
-typedef const BYTE* PCBYTE;
+typedef const uint8_t * PCBYTE;
 
 class I_LIBSCANNER
 {

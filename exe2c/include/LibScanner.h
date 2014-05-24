@@ -31,21 +31,21 @@
 #define IMAGE_ARCHIVE_LINKER_MEMBER          "/               "
 #define IMAGE_ARCHIVE_LONGNAMES_MEMBER       "//              "
 typedef struct _IMAGE_ARCHIVE_MEMBER_HEADER {
-    BYTE     Name[16];
-    BYTE     Date[12];
-    BYTE     UserID[6];
-    BYTE     GroupID[6];
-    BYTE     Mode[8];
-    BYTE     Size[10];
-    BYTE     EndHeader[2];
+    uint8_t     Name[16];
+    uint8_t     Date[12];
+    uint8_t     UserID[6];
+    uint8_t     GroupID[6];
+    uint8_t     Mode[8];
+    uint8_t     Size[10];
+    uint8_t     EndHeader[2];
 } IMAGE_ARCHIVE_MEMBER_HEADER, *PIMAGE_ARCHIVE_MEMBER_HEADER;
 
 typedef struct
 {
-        char		ObjName[4096];	//名字
-        uint32_t		StartOff;				//起始地址
-        uint32_t		Len;					//终止地址
-        BYTE *		lpBuffer;				//OBJ数据
+        char		ObjName[4096];	//name
+        uint32_t		StartOff;   //start address
+        uint32_t		Len;        //end address
+        uint8_t *		lpBuffer;   //OBJ data
 }COFFOBJECT,*PCOFFOBJECT;
 typedef struct _IMAGE_FILE_HEADER {
   WORD  Machine;
@@ -61,7 +61,7 @@ typedef struct
 {
         SHORT SYMB_INX;
         SHORT SECT_NUM;
-        BYTE  STOR_CLS;
+        uint8_t  STOR_CLS;
         uint32_t VALUE;
         WORD  TYPE;
         char  Name[4096];
@@ -69,7 +69,7 @@ typedef struct
 #pragma pack(2)
 typedef struct _IMAGE_SYMBOL {
     union {
-        BYTE    ShortName[8];
+        uint8_t    ShortName[8];
         struct {
             DWORD   Short;     // if 0, use LongName
             DWORD   Long;      // offset into string table
@@ -79,13 +79,13 @@ typedef struct _IMAGE_SYMBOL {
     DWORD   Value;
     SHORT   SectionNumber;
     WORD    Type;
-    BYTE    StorageClass;
-    BYTE    NumberOfAuxSymbols;
+    uint8_t    StorageClass;
+    uint8_t    NumberOfAuxSymbols;
 } IMAGE_SYMBOL;
 typedef IMAGE_SYMBOL *PIMAGE_SYMBOL;
 #pragma pack(2)
 typedef struct _IMAGE_SECTION_HEADER {
-    BYTE    Name[8];
+    uint8_t    Name[8];
     union {
         DWORD   PhysicalAddress;
         DWORD   VirtualSize;
@@ -136,7 +136,7 @@ private:
     void ClearFunction();
     void ClearCOFFObject(COFFOBJECT_LIST &objs) const;
     const char *COFFGetName(const IMAGE_SYMBOL &coff_sym, const char* coff_strtab);
-    bool ScanCOFFObject(COFFOBJECT_LIST &objs,BYTE * lpBuffer,uint32_t Len);
+    bool ScanCOFFObject(COFFOBJECT_LIST &objs,uint8_t * lpBuffer,uint32_t Len);
     PIMAGE_SECTION_HEADER FindSection(PCOFFOBJECT pObj,SHORT SectNumber) const;
     PCOFFSYMBOL FindSymbol(COFFSYMBOL_LIST &syms,int symIndx) const;
     void ScanFunction(FUNCTION_LIST & funs,PCOFFOBJECT pObj);

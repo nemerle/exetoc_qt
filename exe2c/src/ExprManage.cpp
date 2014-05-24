@@ -47,7 +47,7 @@ uint32_t	regindex_2_regoff(uint32_t regindex,int group)
     case _EDI_:	return enum_EDI;
     }
     }
-	assert(false);
+    assert(false);
     switch (regindex)
     {
     case _AX_:	return enum_AX;
@@ -76,7 +76,7 @@ uint32_t	regindex_2_regoff(uint32_t regindex,int group)
     return regindex;
 }
 
-const char * RegName(uint32_t off, BYTE opsize)
+const char * RegName(uint32_t off, uint8_t opsize)
 {
     static char s[20];
     switch (opsize)
@@ -386,7 +386,7 @@ void 	ExprManage::prt_var(const VAR* v, XmlOutPro* out)
 }
 void ExprManage::prt_var_declares(XmlOutPro* out)
 {
-	bool hasOutputDeclares = false;
+    bool hasOutputDeclares = false;
     MLIST::iterator pos = this->vList.begin();
     for (;pos!=this->vList.end();++pos)
     {
@@ -394,7 +394,7 @@ void ExprManage::prt_var_declares(XmlOutPro* out)
         if (p->type != MTT_reg)
             continue;
 
-		hasOutputDeclares  = true;
+        hasOutputDeclares  = true;
 
         out->prtspace(4);
 
@@ -425,7 +425,7 @@ void ExprManage::prt_var_declares(XmlOutPro* out)
         if (p->bTem)
             continue;
 
-		hasOutputDeclares = true;
+        hasOutputDeclares = true;
 
         out->prtspace(4);
 
@@ -448,11 +448,11 @@ void ExprManage::prt_var_declares(XmlOutPro* out)
 
     }
 
-	if (hasOutputDeclares)
-	{
-		// If no declares where output don't include extra white space
-		out->endline();
-	}
+    if (hasOutputDeclares)
+    {
+        // If no declares where output don't include extra white space
+        out->endline();
+    }
 }
 void ExprManage::prt_parameters(XmlOutPro* out)
 {
@@ -462,8 +462,8 @@ void ExprManage::prt_parameters(XmlOutPro* out)
     MLIST::iterator pos = vList.begin();
     for (;pos!=this->vList.end();++pos)
     {
-		// TODO: Unused parameters do not appear in vList, and this always 
-		// going to be in order? It would be good have reuse the existing FuncType
+        // TODO: Unused parameters do not appear in vList, and this always
+        // going to be in order? It would be good have reuse the existing FuncType
         M_t* p = *pos;
         if (p->type != MTT_par)
             continue;

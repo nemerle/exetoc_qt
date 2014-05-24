@@ -36,7 +36,7 @@ struct st_LINE_SYNTAX
 struct AsmCode
 {
     ea_t		linear;
-    BYTE		opsize;	//length in byte of this opcode
+    uint8_t		opsize;	//length in byte of this opcode
     signed int	esp_level;	//init to ESP_UNKNOWN, usually negative
     signed int	esp_level_next;	//esp level next instr should be
     XCPUCODE	xcpu;
@@ -291,7 +291,7 @@ public:
 struct st_VarOptm
 {
     Instruction * pInstr;
-    BYTE rw;
+    uint8_t rw;
     bool bJxx;
     int varstep_r;	//May read a variable, and then write into another variable
     int varstep_w;

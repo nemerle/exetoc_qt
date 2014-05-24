@@ -82,7 +82,7 @@ void ApiManage::New_ImportAPI(const std::string &pstr, uint32_t apiaddr)
 
     m_apilist.push_front(p);
 }
-const char * check_if_jmp_api(const BYTE* phead)
+const char * check_if_jmp_api(const uint8_t* phead)
 {
     if (*reinterpret_cast<const uint16_t *>(phead) != 0x25ff)
         return NULL;

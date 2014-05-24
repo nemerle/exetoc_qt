@@ -131,7 +131,7 @@ void Exe2c::exe2c_main(const std::string & fname)
     }
 
 
-    BYTE * entry_buf;
+    uint8_t * entry_buf;
     ea_t entry_offset;
     m_FileLoader->GetEntrance(entry_buf, entry_offset);
 

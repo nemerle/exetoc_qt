@@ -12,23 +12,23 @@
 
 typedef union MODRM
 {
-    BYTE	v;
+    uint8_t	v;
     struct
     {
-        BYTE	rm:3;
-        BYTE	reg:3;
-        BYTE	mod:2;
+        uint8_t	rm:3;
+        uint8_t	reg:3;
+        uint8_t	mod:2;
     };
 } *PMODRM;
 
 typedef union SIB
 {
-    BYTE	v;
+    uint8_t	v;
     struct
     {
-        BYTE	base:3;
-        BYTE	index:3;
-        BYTE	ss:2;
+        uint8_t	base:3;
+        uint8_t	index:3;
+        uint8_t	ss:2;
     };
 } *PSIB;
 
@@ -714,7 +714,7 @@ void st_IDA_OUT::output(QString & buf)
         bld.append(QString(',') + (this->Par3Str.c_str()));
     buf += bld.join(",");
 }
-uint32_t   Disasm::Disassembler_X(BYTE * codebuf, uint32_t eip, st_IDA_OUT* idaout)
+uint32_t   Disasm::Disassembler_X(uint8_t * codebuf, uint32_t eip, st_IDA_OUT* idaout)
 {
 //    if (memcmp(codebuf, "\x0F\xAF\xC0", 3) == 0)
 //    {
@@ -762,7 +762,7 @@ int main(int argc,char** argv)
         FILE *fp = fopen(argv[1],"rb");
 
         uint32_t	filelen	= filelength(fileno(fp));
-        BYTE *	codebuf = new BYTE[filelen+1];
+        uint8_t *	codebuf = new uint8_t[filelen+1];
 
         fread(codebuf,filelen,1,fp);
         fclose(fp);
@@ -809,22 +809,22 @@ void	SetName(char * name)
         SetBufPtrTox2();
 }*/
 
-BYTE	PeekB(BYTE * codebuf)
+uint8_t	PeekB(const uint8_t * codebuf)
 {
         return *codebuf;
 }
 
-WORD	PeekW(BYTE * codebuf)
+WORD	PeekW(const uint8_t * codebuf)
 {
         return *(WORD *)codebuf;
 }
 
-uint32_t	PeekD(const BYTE * codebuf)
+uint32_t	PeekD(const uint8_t * codebuf)
 {
         return *(uint32_t *)codebuf;
 }
 
-BYTE	Disasm::GetByte()
+uint8_t Disasm::GetByte()
 {
         return *(UasmCode+CodeCount);
 }
@@ -839,9 +839,9 @@ uint32_t	Disasm::GetDWord()
         return *(uint32_t*)(UasmCode+CodeCount);
 }
 
-BYTE	Disasm::GetByteEx()
+uint8_t Disasm::GetByteEx()
 {
-        BYTE	v = *(UasmCode+CodeCount);
+        uint8_t	v = *(UasmCode+CodeCount);
         CodeCount++;
         return v;
 }
@@ -871,7 +871,7 @@ void	Disasm::SetError(uint32_t errcode)
 // Global Function
 // Set all of the field(s) of OPERITEM except **RWFLAG** and **SEG_INDEX**
 
-BYTE Disasm::Global_GetSize(enum_SizeKind srcsize)
+uint8_t Disasm::Global_GetSize(enum_SizeKind srcsize)
 {
         switch(srcsize)
         {
@@ -904,7 +904,7 @@ BYTE Disasm::Global_GetSize(enum_SizeKind srcsize)
         return 0;
 }
 
-uint32_t Global_SIB(char * outbuf,BYTE * codebuf,OPERITEM *op,uint32_t mod)
+uint32_t Global_SIB(char * outbuf,uint8_t * codebuf,OPERITEM *op,uint32_t mod)
 {
         SIB sib;
 
@@ -980,12 +980,12 @@ uint32_t Global_SIB(char * outbuf,BYTE * codebuf,OPERITEM *op,uint32_t mod)
         }
 }
 
-uint32_t Disasm::Global_MEMORY(char * outbuf,BYTE * codebuf,OPERITEM *op)
+uint32_t Disasm::Global_MEMORY(char * outbuf,uint8_t * codebuf,OPERITEM *op)
 {
         MODRM	modrm;
         uint32_t	len=1;
 
-        //BYTE	by;
+        //uint8_t	by;
         //WORD	wo;
         //uint32_t	dw;
 
@@ -1114,7 +1114,7 @@ uint32_t Disasm::Global_MEMORY(char * outbuf,BYTE * codebuf,OPERITEM *op)
         return len;
 }
 
-uint32_t Disasm::Global_MODRM(char * outbuf,BYTE * codebuf,OPERITEM *op)
+uint32_t Disasm::Global_MODRM(char * outbuf,uint8_t * codebuf,OPERITEM *op)
 {
         MODRM	modrm;
         modrm.v	= PeekB(codebuf);
@@ -1138,7 +1138,7 @@ uint32_t Disasm::Global_MODRM(char * outbuf,BYTE * codebuf,OPERITEM *op)
         return Global_MEMORY(outbuf,codebuf,op);
 }
 
-uint32_t Disasm::Global_OFFSET(char * outbuf,BYTE * codebuf,OPERITEM *op)
+uint32_t Disasm::Global_OFFSET(char * outbuf,uint8_t * codebuf,OPERITEM *op)
 {
         op->mode=OP_Address;
 
@@ -1161,7 +1161,7 @@ uint32_t Disasm::Global_OFFSET(char * outbuf,BYTE * codebuf,OPERITEM *op)
         }
 }
 
-uint32_t Global_REG(char * outbuf,BYTE * codebuf,OPERITEM *op)
+uint32_t Global_REG(char * outbuf,uint8_t * codebuf,OPERITEM *op)
 {
         MODRM	modrm;
 
@@ -1186,7 +1186,7 @@ uint32_t Global_REG(char * outbuf,BYTE * codebuf,OPERITEM *op)
         return 0;
 }
 
-uint32_t Global_SREG(char * outbuf,BYTE * codebuf,OPERITEM *op)
+uint32_t Global_SREG(char * outbuf,uint8_t * codebuf,OPERITEM *op)
 {
         MODRM	modrm;
         modrm.v	= PeekB(codebuf);
@@ -1198,14 +1198,14 @@ uint32_t Global_SREG(char * outbuf,BYTE * codebuf,OPERITEM *op)
         return 0;
 }
 
-uint32_t Global_IMMED(char * outbuf,BYTE * codebuf,OPERITEM *op)
+uint32_t Global_IMMED(char * outbuf,uint8_t * codebuf,OPERITEM *op)
 {
         op->mode = OP_Immed;
 
         if (op->opersize == 1)
         {
         *((llvm::MCOperand *)op) = llvm::MCOperand::CreateImm((uint64_t)(int)(signed char)PeekB(codebuf));
-        sprintf(outbuf,"%02X",(BYTE)op->getImm());
+        sprintf(outbuf,"%02X",(uint8_t)op->getImm());
         }
         else if (op->opersize == 2)
         {
@@ -1221,7 +1221,7 @@ uint32_t Global_IMMED(char * outbuf,BYTE * codebuf,OPERITEM *op)
         return op->opersize;
 }
 
-uint32_t Global_SIGNEDIMMED(char * outbuf,BYTE * codebuf,OPERITEM &op)
+uint32_t Global_SIGNEDIMMED(char * outbuf,uint8_t * codebuf,OPERITEM &op)
 {
         op.mode = OP_Immed;
 
@@ -1235,7 +1235,7 @@ uint32_t Global_SIGNEDIMMED(char * outbuf,BYTE * codebuf,OPERITEM &op)
         return 1;
 }
 
-uint32_t Disasm::Global_NEARPTR(char * outbuf,BYTE * codebuf,OPERITEM *op)
+uint32_t Disasm::Global_NEARPTR(char * outbuf,uint8_t * codebuf,OPERITEM *op)
 {
         op->mode = OP_Near;
     op->nearptr.offset = BaseAddress + CodeCount;
@@ -1254,7 +1254,7 @@ uint32_t Disasm::Global_NEARPTR(char * outbuf,BYTE * codebuf,OPERITEM *op)
         return op->opersize;
 }
 
-uint32_t Disasm::Global_FARPTR(char * outbuf,BYTE * codebuf,OPERITEM *op)
+uint32_t Disasm::Global_FARPTR(char * outbuf,uint8_t * codebuf,OPERITEM *op)
 {
         op->mode = OP_Far;
 
@@ -1443,7 +1443,7 @@ std::string	Disasm::ProcessSegPrefix(OPERITEM *op)
                 defseg = SegPrefix;
         }
 
-        op->addr.seg_index = (BYTE)defseg;
+        op->addr.seg_index = (uint8_t)defseg;
         SegPrefix = _NOSEG_;
     return retn;
 }
@@ -1475,8 +1475,8 @@ void	Disasm::ProcessInstruction(	uint32_t	opcode,
         }
 
         xcpu.opcode		= (OPCODETYPE)opcode;
-        xcpu.lockflag	= (BYTE)LockPrefix;
-        xcpu.repeatflag	= (BYTE)RepPrefix;
+        xcpu.lockflag	= (uint8_t)LockPrefix;
+        xcpu.repeatflag	= (uint8_t)RepPrefix;
 
         // Process DIFFERENTNAME opcode-property
         switch(opcode)
@@ -1614,7 +1614,7 @@ void	Disasm::ProcessGroup(const INSTRUCTION * pG,const INSTRUCTION & inst)
 
 void	Disasm::DisassemblerOne()
 {
-    BYTE by = GetByteEx();
+    uint8_t by = GetByteEx();
 
     switch(instruction[by].Opcode)
     {

@@ -7,9 +7,9 @@
 #include "types.h"
 enum enum_EXEType
 {
-        enum_PE_exe		= 1,
-        enum_PE_dll		= 2,
-        enum_PE_sys		= 3
+    enum_PE_exe		= 1,
+    enum_PE_dll		= 2,
+    enum_PE_sys		= 3
 };
 
 enum enum_EXEFormat
@@ -27,148 +27,148 @@ enum enum_EXEFormat
 
 struct MZHEADER
 {
-        WORD sig;
-        WORD numbytes,numpages;
-        WORD numrelocs,headersize;
-        WORD minpara,maxpara;
-        WORD initialss,initialsp;
-        WORD csum;
-        uint32_t csip;
-        WORD relocoffs;
-        WORD ovlnum;
+    WORD sig;
+    WORD numbytes,numpages;
+    WORD numrelocs,headersize;
+    WORD minpara,maxpara;
+    WORD initialss,initialsp;
+    WORD csum;
+    uint32_t csip;
+    WORD relocoffs;
+    WORD ovlnum;
 };
 
 struct neheader
 {
-        WORD sig;
-        WORD linkerver;
-        WORD entryoffs,entrylen;
-        uint32_t filecrc;
-        WORD contentflags;
-        WORD dsnum;
-        WORD heapsize,stacksize;
-        uint32_t csip,sssp;
-        WORD numsegs,nummodules;
-        WORD nonresnamesize;
-        WORD offs_segments,offs_resources,offs_resnames,offs_module,offs_imports;
-        uint32_t nonresnametable;
-        WORD movableentries;
-        WORD shiftcount;
-        WORD numresources;
-        BYTE targetos,os_info;
-        WORD fastloadoffs,fastloadlen;
-        WORD mincodeswapareasize,winver;
+    WORD sig;
+    WORD linkerver;
+    WORD entryoffs,entrylen;
+    uint32_t filecrc;
+    WORD contentflags;
+    WORD dsnum;
+    WORD heapsize,stacksize;
+    uint32_t csip,sssp;
+    WORD numsegs,nummodules;
+    WORD nonresnamesize;
+    WORD offs_segments,offs_resources,offs_resnames,offs_module,offs_imports;
+    uint32_t nonresnametable;
+    WORD movableentries;
+    WORD shiftcount;
+    WORD numresources;
+    uint8_t targetos,os_info;
+    WORD fastloadoffs,fastloadlen;
+    WORD mincodeswapareasize,winver;
 };
 
 struct nesegtable
 {
-        WORD sectoroffs;
-        WORD seglength;
-        WORD segflags;
-        WORD minalloc;
+    WORD sectoroffs;
+    WORD seglength;
+    WORD segflags;
+    WORD minalloc;
 };
 
 struct nesegtablereloc
 {
-        BYTE reloctype,relocsort;
-        WORD segm_offs;
-        WORD index,indexoffs;
+    uint8_t reloctype,relocsort;
+    WORD segm_offs;
+    WORD index,indexoffs;
 };
 
 struct PEHEADER
 {
-        uint32_t sigbytes;
-        WORD cputype,objects;
-        uint32_t timedatestamp;
-        uint32_t reserveda[2];
-        WORD nt_hdr_size,flags;
-        WORD reserved;
-        BYTE lmajor,lminor;
-        uint32_t reserved1[3];
-        uint32_t entrypoint_rva;
-        uint32_t reserved2[2];
-        uint32_t image_base;
-        uint32_t objectalign;
-        uint32_t filealign;
-        WORD osmajor,osminor;
-        WORD usermajor,userminor;
-        WORD subsysmajor,subsysminor;
-        uint32_t reserved3;
-        uint32_t imagesize;
-        uint32_t headersize;
-        uint32_t filechecksum;
-        WORD subsystem,dllflags;
-        uint32_t stackreserve,stackcommit;
-        uint32_t heapreserve,heapcommit;
-        uint32_t reserved4;
-        uint32_t numintitems;
-        uint32_t exporttable_rva,export_datasize;
-        uint32_t importtable_rva,import_datasize;
-        uint32_t resourcetable_rva,resource_datasize;
-        uint32_t exceptiontable_rva,exception_datasize;
-        uint32_t securitytable_rva,security_datasize;
-        uint32_t fixuptable_rva,fixup_datasize;
-        uint32_t debugtable_rva,debug_directory;
-        uint32_t imagedesc_rva,imagedesc_datasize;
-        uint32_t machspecific_rva,machspecific_datasize;
-        uint32_t tls_rva,tls_datasize;
+    uint32_t sigbytes;
+    WORD cputype,objects;
+    uint32_t timedatestamp;
+    uint32_t reserveda[2];
+    WORD nt_hdr_size,flags;
+    WORD reserved;
+    uint8_t lmajor,lminor;
+    uint32_t reserved1[3];
+    uint32_t entrypoint_rva;
+    uint32_t reserved2[2];
+    uint32_t image_base;
+    uint32_t objectalign;
+    uint32_t filealign;
+    WORD osmajor,osminor;
+    WORD usermajor,userminor;
+    WORD subsysmajor,subsysminor;
+    uint32_t reserved3;
+    uint32_t imagesize;
+    uint32_t headersize;
+    uint32_t filechecksum;
+    WORD subsystem,dllflags;
+    uint32_t stackreserve,stackcommit;
+    uint32_t heapreserve,heapcommit;
+    uint32_t reserved4;
+    uint32_t numintitems;
+    uint32_t exporttable_rva,export_datasize;
+    uint32_t importtable_rva,import_datasize;
+    uint32_t resourcetable_rva,resource_datasize;
+    uint32_t exceptiontable_rva,exception_datasize;
+    uint32_t securitytable_rva,security_datasize;
+    uint32_t fixuptable_rva,fixup_datasize;
+    uint32_t debugtable_rva,debug_directory;
+    uint32_t imagedesc_rva,imagedesc_datasize;
+    uint32_t machspecific_rva,machspecific_datasize;
+    uint32_t tls_rva,tls_datasize;
 };
 
 struct PEObjData
 {
-        char name[8];
-        uint32_t virt_size,rva;
-        uint32_t phys_size,phys_offset;
-        uint32_t reserved[3],obj_flags;
+    char name[8];
+    uint32_t virt_size,rva;
+    uint32_t phys_size,phys_offset;
+    uint32_t reserved[3],obj_flags;
 };
 
 struct peimportdirentry
 {
-        uint32_t originalthunkrva;
-        uint32_t timedatestamp;
-        uint32_t forwarder;
-        uint32_t namerva;
-        uint32_t firstthunkrva;
+    uint32_t originalthunkrva;
+    uint32_t timedatestamp;
+    uint32_t forwarder;
+    uint32_t namerva;
+    uint32_t firstthunkrva;
 };
 
 struct peexportdirentry
 {
-        uint32_t characteristics;
-        uint32_t timedatestamp;
-        WORD majver,minver;
-        uint32_t namerva;
-        uint32_t base;
-        uint32_t numfunctions;
-        uint32_t numnames;
-        uint32_t funcaddrrva,nameaddrrva,ordsaddrrva;
+    uint32_t characteristics;
+    uint32_t timedatestamp;
+    WORD majver,minver;
+    uint32_t namerva;
+    uint32_t base;
+    uint32_t numfunctions;
+    uint32_t numnames;
+    uint32_t funcaddrrva,nameaddrrva,ordsaddrrva;
 };
 
 struct perestable
 {
-        uint32_t flags;
-        uint32_t timedatestamp;
-        WORD majver,minver;
-        WORD numnames,numids;
+    uint32_t flags;
+    uint32_t timedatestamp;
+    WORD majver,minver;
+    WORD numnames,numids;
 };
 
 struct peleafnode
 {
-        uint32_t datarva;
-        uint32_t size;
-        uint32_t codepage;
-        uint32_t reserved;
+    uint32_t datarva;
+    uint32_t size;
+    uint32_t codepage;
+    uint32_t reserved;
 };
 
 struct perestableentry
 {
-        uint32_t id;
-        uint32_t offset;
+    uint32_t id;
+    uint32_t offset;
 };
 
 struct perelocheader
 {
-        uint32_t rva;
-        uint32_t len;
+    uint32_t rva;
+    uint32_t len;
 };
 
 //bool FAR PASCAL savemessbox(HWND hdwnd,UINT message,WPARAM wParam,LPARAM lParam);
@@ -178,47 +178,47 @@ class FileLoader
 {
 private:
     enum_EXEType g_EXEType;
-        enum_EXEFormat exetype;
-        FILE *efile;
-        BYTE *fbuff;
-        BYTE *rawdata;
-        // added build 14 bugfix
-        uint32_t pdatarva;
-    BYTE *	image_buf;
+    enum_EXEFormat exetype;
+    FILE *efile;
+    uint8_t *fbuff;
+    uint8_t *rawdata;
+    // added build 14 bugfix
+    uint32_t pdatarva;
+    uint8_t *	image_buf;
     uint32_t	image_len;
 
 public:
-    BYTE *	entry_buf;
+    uint8_t *	entry_buf;
     ea_t	entry_offset;
-    void GetEntrance(BYTE *& _entry_buf, ea_t& _entry_offset)
+    void GetEntrance(uint8_t *& _entry_buf, ea_t& _entry_offset)
     {
         _entry_buf = entry_buf;
         _entry_offset = entry_offset;
     }
 
-        FileLoader(void);
-        ~FileLoader(void);
-        bool load(const char * fname);
-        int getexetype(void);
-        void setexetype(int etype);
-        void savedb(char *fname,char *exename);
-        bool loaddb(char *fname,char *exename);
+    FileLoader(void);
+    ~FileLoader(void);
+    bool load(const char * fname);
+    int getexetype(void);
+    void setexetype(int etype);
+    void savedb(char *fname,char *exename);
+    bool loaddb(char *fname,char *exename);
 
     bool        if_valid_ea(ea_t ea);
 private:
-        void get_exetype();
-        void	LoadPE(uint32_t offs);
-        void readcomfile(uint32_t fsize);
-        void readsysfile(uint32_t fsize);
-        void readpefile(uint32_t offs);
-        void readmzfile(uint32_t fsize);
-        void readlefile(void);
-        void readnefile(uint32_t offs);
-        void reados2file(void);
-        void readbinfile(uint32_t fsize);
-        void subdirsummary(BYTE *data,char *impname,uint32_t image_base);
-        void leaf2summary(BYTE *data,char *name,uint32_t image_base);
-        void leafnodesummary(BYTE *data,char *resname,uint32_t image_base);
+    void get_exetype();
+    void	LoadPE(uint32_t offs);
+    void readcomfile(uint32_t fsize);
+    void readsysfile(uint32_t fsize);
+    void readpefile(uint32_t offs);
+    void readmzfile(uint32_t fsize);
+    void readlefile(void);
+    void readnefile(uint32_t offs);
+    void reados2file(void);
+    void readbinfile(uint32_t fsize);
+    void subdirsummary(uint8_t *data,char *impname,uint32_t image_base);
+    void leaf2summary(uint8_t *data,char *name,uint32_t image_base);
+    void leafnodesummary(uint8_t *data,char *resname,uint32_t image_base);
 };
 extern	FileLoader* g_FileLoader;
 
@@ -229,25 +229,25 @@ extern	FileLoader* g_FileLoader;
 class lptr				  //Pointer Struct 32-bit.
 {
 public:
-        WORD segm;				 //segment
-        uint32_t offs;				 //offset
+    WORD segm;				 //segment
+    uint32_t offs;				 //offset
 
 public:
-        lptr(){}
-        lptr(WORD seg,uint32_t off);
-        ~lptr(){}
-        void assign(WORD seg,uint32_t off);
-        bool operator==(lptr loc2);
-        bool operator<=(lptr loc2);
-        bool operator>=(lptr loc2);
-        bool operator<(lptr loc2);
-        bool operator>(lptr loc2);
-        bool operator!=(lptr loc2);
-        lptr operator+(uint32_t offs2);
-        lptr operator++(int x);
-        lptr operator+=(uint32_t offs2);
-        lptr operator-(uint32_t offs2);
-        uint32_t operator-(lptr loc2);
+    lptr(){}
+    lptr(WORD seg,uint32_t off);
+    ~lptr(){}
+    void assign(WORD seg,uint32_t off);
+    bool operator==(lptr loc2);
+    bool operator<=(lptr loc2);
+    bool operator>=(lptr loc2);
+    bool operator<(lptr loc2);
+    bool operator>(lptr loc2);
+    bool operator!=(lptr loc2);
+    lptr operator+(uint32_t offs2);
+    lptr operator++(int x);
+    lptr operator+=(uint32_t offs2);
+    lptr operator-(uint32_t offs2);
+    uint32_t operator-(lptr loc2);
 };
 
 // predefined null pointer.

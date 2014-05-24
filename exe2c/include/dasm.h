@@ -72,13 +72,13 @@ enum enum_OperAccess
 };
 enum OP_TYPE
 {
-        OP_Invalid	=	0,
-        OP_Address	=	1,
-        OP_Register	=	2,
-        OP_Segment	=	3,
-        OP_Immed	=	4,
-        OP_Near		=	5,
-        OP_Far		=	6
+    OP_Invalid	=	0,
+    OP_Address	=	1,
+    OP_Register	=	2,
+    OP_Segment	=	3,
+    OP_Immed	=	4,
+    OP_Near		=	5,
+    OP_Far		=	6
 
 };
 // The list of the types of Opcode
@@ -250,45 +250,45 @@ typedef	uint32_t	ea_t;
 
 struct OPERITEM : public llvm::MCOperand
 {
-        OP_TYPE mode;		//OP_Register, ...
-        BYTE    opersize;	//1:BYTE, 2:WORD, 4:uint32_t, 8:double uint32_t
-        union
+    OP_TYPE mode;		//OP_Register, ...
+    uint8_t    opersize;	//1:BYTE, 2:WORD, 4:uint32_t, 8:double uint32_t
+    union
+    {
+        struct
         {
-                struct
-                {
-                        BYTE    seg_index;	//SegReg Index!!!
-                        //BYTE    reg_size;	//2:WORD 4:uint32_t
-                        BYTE    base_reg_index;
-                        BYTE    off_reg_index;
-                        BYTE    off_reg_scale;
-                        uint32_t   off_value;
-                }   addr;		//for OP_Address
+            uint8_t    seg_index;	//SegReg Index!!!
+            //uint8_t    reg_size;	//2:WORD 4:uint32_t
+            uint8_t    base_reg_index;
+            uint8_t    off_reg_index;
+            uint8_t    off_reg_scale;
+            uint32_t   off_value;
+        }   addr;		//for OP_Address
         //reg_index -> _ESP_
-                struct
-                {
-                        uint32_t   sreg_index;
-                }   sreg;		//for OP_Segment
-                struct
-                {
-                        ea_t   offset;
-                }   nearptr;	//for OP_Near
-                struct
-                {
-                        uint32_t   segment;
-                        uint32_t   offset;
-                }   farptr;		//for OP_Far
-        };
-        bool isRegOp(uint32_t reg_idx); //! returns true if this is a Register operand with requested reg_index
-        bool isStaticOffset(); //! return true if this is OP_Address and it does not depend on other regs e.x. [0x11212]
-        static OPERITEM createReg(int reg_idx,int width); //! create an Register operand of given width
+        struct
+        {
+            uint32_t   sreg_index;
+        }   sreg;		//for OP_Segment
+        struct
+        {
+            ea_t   offset;
+        }   nearptr;	//for OP_Near
+        struct
+        {
+            uint32_t   segment;
+            uint32_t   offset;
+        }   farptr;		//for OP_Far
+    };
+    bool isRegOp(uint32_t reg_idx); //! returns true if this is a Register operand with requested reg_index
+    bool isStaticOffset(); //! return true if this is OP_Address and it does not depend on other regs e.x. [0x11212]
+    static OPERITEM createReg(int reg_idx,int width); //! create an Register operand of given width
 };
 
 struct XCPUCODE  : public llvm::MCInst
 {
-        enum OPCODETYPE        opcode;		//	C_MOV...
-        BYTE        lockflag;	// for LOCK prefix
-        BYTE        repeatflag;	// for REPZ/REPNZ prefix
-        OPERITEM    op[3];
+    OPCODETYPE  opcode;		//	C_MOV...
+    uint8_t     lockflag;	// for LOCK prefix
+    uint8_t     repeatflag;	// for REPZ/REPNZ prefix
+    OPERITEM    op[3];
     bool    IsJmpMemIndexed() const;
     bool	IsJxx() const;
     bool	IsJmpNear() const;
@@ -411,32 +411,32 @@ class Disasm
     uint32_t Global_OFFSET(char * outbuf,unsigned char * codebuf,OPERITEM *op);
     uint32_t Global_MEMORY(char * outbuf,unsigned char * codebuf,OPERITEM *op);
     uint32_t Global_MODRM(char * outbuf,unsigned char * codebuf,OPERITEM *op);
-    BYTE	GetByte();
+    uint8_t	GetByte();
     WORD	GetWord();
     uint32_t	GetDWord();
-    BYTE	GetByteEx();
+    uint8_t	GetByteEx();
     WORD	GetWordEx();
     uint32_t	GetDWordEx();
     uint32_t Global_NEARPTR(char * outbuf,unsigned char * codebuf,OPERITEM *op);
     uint32_t Global_FARPTR(char * outbuf,unsigned char * codebuf,OPERITEM *op);
     void	OpSizePrefix();
     void	AdrSizePrefix();
-    BYTE Global_GetSize(enum_SizeKind srcsize);
+    uint8_t Global_GetSize(enum_SizeKind srcsize);
     uint32_t	ProcessOpdata(uint32_t opdata,OPERITEM *op,char * outbuf,uint32_t codepos);
     void	SetError(uint32_t errcode);
     void	DisassemblerOne();
     void	ProcessGroup(const INSTRUCTION *pG,const INSTRUCTION &inst);
     void	ProcessInstruction(	uint32_t	opcode,
-                               const char *	instname,
-                               uint32_t	opdata1,
-                               uint32_t	opdata2,
-                               uint32_t	opdata3);
+                                const char *	instname,
+                                uint32_t	opdata1,
+                                uint32_t	opdata2,
+                                uint32_t	opdata3);
     std::string	ProcessSegPrefix(OPERITEM *op);
 
 public:
-    BYTE	Disasm_OneCode(ea_t pos);
+    uint8_t	Disasm_OneCode(ea_t pos);
     XCPUCODE* get_xcpu();
-    uint32_t   Disassembler_X(unsigned char * codebuf, uint32_t eip, st_IDA_OUT* idaout);
+    uint32_t   Disassembler_X(uint8_t * codebuf, uint32_t eip, st_IDA_OUT* idaout);
 };
 
 #endif //DASM__H
