@@ -20,7 +20,7 @@ struct st_FuncInfo;
 class I_E2COUT
 {
 public:
-	virtual void prt_log(const char * str) = 0;
+    virtual void prt_log(const char * str) = 0;
 };
 
 class I_XmlOut;
@@ -29,8 +29,8 @@ class I_XmlOut;
 class I_EXE2C
 {
 public:
-	//Add interface here
-	virtual bool	test() = 0;	//Test interface
+    //Add interface here
+    virtual bool	test() = 0;	//Test interface
 
     virtual void exe2c_main(const std::string &fname) = 0;
     virtual void  prtout_asm(I_XmlOut* iOut) = 0;

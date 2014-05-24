@@ -346,14 +346,14 @@ std::string XmlPrt::GetLine(int nLine)
     {
         line_end_idx=m_str.indexOf('\n',current_index);
 
-            if (n == nLine)
+        if (n == nLine)
             return m_str.mid(current_index,line_end_idx).toStdString();
 
         if(line_end_idx==-1)
             break;
         current_index=line_end_idx+1;
-            n++;
-        }
+        n++;
+    }
     return "";
 }
 

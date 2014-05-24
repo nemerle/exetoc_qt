@@ -39,12 +39,12 @@ bool	FileLoader::if_valid_ea(ea_t ea)
     //FIXME: this should check the actual image for extents.
     switch (g_EXEType)
     {
-    case enum_PE_sys:
-        return true;
-    case enum_PE_exe:
-        if (ea < 0x400000)
-            return false;
-        return true;
+        case enum_PE_sys:
+            return true;
+        case enum_PE_exe:
+            if (ea < 0x400000)
+                return false;
+            return true;
     }
     return true;
 }
@@ -107,42 +107,42 @@ bool FileLoader::load(const char * fname)
     pe_offset = *(uint32_t *)(fbuff+0x3c);
     switch ( exetype )
     {
-    case BIN_EXE:
-        readbinfile(fsize);
-        break;
-    case PE_EXE:
-        //readpefile(pe_offset);
-        LoadPE(pe_offset);
-        break;
-    case MZ_EXE:
-        readmzfile(fsize);
-        break;
-    case OS2_EXE:
-        reados2file();
-        fclose(efile);
-        efile=0;
-        exetype=UNKNOWN_EXE;
-        return false; // at the moment;
-    case COM_EXE:
-        readcomfile(fsize);
-        break;
-    case SYS_EXE:
-        readsysfile(fsize);
-        break;
-    case LE_EXE:
-        readlefile();
-        fclose(efile);
-        efile=0;
-        exetype=UNKNOWN_EXE;
-        return false; // at the moment;
-    case NE_EXE:
-        readnefile(pe_offset);
-        break;
-    default:
-        fclose(efile);
-        efile=0;
-        exetype=UNKNOWN_EXE;
-        return false;
+        case BIN_EXE:
+            readbinfile(fsize);
+            break;
+        case PE_EXE:
+            //readpefile(pe_offset);
+            LoadPE(pe_offset);
+            break;
+        case MZ_EXE:
+            readmzfile(fsize);
+            break;
+        case OS2_EXE:
+            reados2file();
+            fclose(efile);
+            efile=0;
+            exetype=UNKNOWN_EXE;
+            return false; // at the moment;
+        case COM_EXE:
+            readcomfile(fsize);
+            break;
+        case SYS_EXE:
+            readsysfile(fsize);
+            break;
+        case LE_EXE:
+            readlefile();
+            fclose(efile);
+            efile=0;
+            exetype=UNKNOWN_EXE;
+            return false; // at the moment;
+        case NE_EXE:
+            readnefile(pe_offset);
+            break;
+        default:
+            fclose(efile);
+            efile=0;
+            exetype=UNKNOWN_EXE;
+            return false;
     }
     return true;
 }
@@ -170,7 +170,7 @@ void FileLoader::readbinfile(uint32_t fsize)
 bool	IfInWorkSpace(ea_t off)
 {	//	check if off lie in our work space
     //Do something about it later, for the time being simple check
-        if (off > 0x400000 && off < 0x600000)
-                return true;
-        return false;
+    if (off > 0x400000 && off < 0x600000)
+        return true;
+    return false;
 }

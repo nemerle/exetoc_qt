@@ -59,20 +59,20 @@ QVariant FunctionListModel::data(const QModelIndex &idx,int role) const
     {
         switch(column)
         {
-        case 0: // name
-        {
-            QString name(inf.m_name.c_str());
-            return QVariant(name);
-        }
-        case 1: // step
-            return QVariant(inf.m_decoding_step);
-        case 2: // start offset
-        {
-            QString in_base_16=QString("%1").arg(inf.m_start_off,0,16);
-            return QVariant(in_base_16);
-        }
-        default:
-            return QVariant();
+            case 0: // name
+            {
+                QString name(inf.m_name.c_str());
+                return QVariant(name);
+            }
+            case 1: // step
+                return QVariant(inf.m_decoding_step);
+            case 2: // start offset
+            {
+                QString in_base_16=QString("%1").arg(inf.m_start_off,0,16);
+                return QVariant(in_base_16);
+            }
+            default:
+                return QVariant();
 
         }
     }
@@ -84,14 +84,14 @@ QVariant FunctionListModel::headerData(int section, Qt::Orientation orientation,
     {
         switch(section)
         {
-        case 0: // name
-            return QObject::tr("Function name");
-        case 1: // step
-            return QObject::tr("Decoding step");
-        case 2: // start offset
-            return QObject::tr("Start offset");
-        default:
-            return QVariant();
+            case 0: // name
+                return QObject::tr("Function name");
+            case 1: // step
+                return QObject::tr("Decoding step");
+            case 2: // start offset
+                return QObject::tr("Start offset");
+            default:
+                return QVariant();
 
         }
     }

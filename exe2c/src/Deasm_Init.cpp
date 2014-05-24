@@ -39,7 +39,7 @@ uint32_t	Peek_D(ea_t pos)
 bool XCPUCODE::IsCalculatedJmp() const
 {
     if (opcode != C_JMP)
-            return false;
+        return false;
     if(op[0].mode == OP_Register) // jmp eax / jmp ebx
         return true;
 
@@ -51,7 +51,7 @@ bool XCPUCODE::IsCalculatedJmp() const
 bool XCPUCODE::IsJmpMemIndexed() const
 {
     if (opcode != C_JMP)
-            return false;
+        return false;
     if (op[0].mode != OP_Address)
         return false;
     if (op[0].addr.base_reg_index != _NOREG_)
@@ -68,28 +68,28 @@ bool	XCPUCODE::IsJxx() const
     uint8_t opcode = this->opcode;
     switch (opcode)
     {
-    case	C_JO:
-    case	C_JNO:
-    case	C_JB:
-    case	C_JNB:
-    case	C_JZ:
-    case	C_JNZ:
-    case	C_JNA:
-    case	C_JA:
-    case	C_JS:
-    case	C_JNS:
-    case	C_JP:
-    case	C_JNP:
-    case	C_JL:
-    case	C_JNL:
-    case	C_JLE:
-    case	C_JNLE:
+        case	C_JO:
+        case	C_JNO:
+        case	C_JB:
+        case	C_JNB:
+        case	C_JZ:
+        case	C_JNZ:
+        case	C_JNA:
+        case	C_JA:
+        case	C_JS:
+        case	C_JNS:
+        case	C_JP:
+        case	C_JNP:
+        case	C_JL:
+        case	C_JNL:
+        case	C_JLE:
+        case	C_JNLE:
 
-    case	C_JCASE:
-        return true;
+        case	C_JCASE:
+            return true;
 
-    default:
-        return false;
+        default:
+            return false;
     }
 }
 bool	XCPUCODE::IsJmpNear() const

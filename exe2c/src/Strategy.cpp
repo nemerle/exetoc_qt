@@ -8,9 +8,9 @@ Strategy g_CStrategy;
 bool Strategy::DoIt_Addon(INSTR_LIST& list, ExprManage* expr)
 {
     assert(m_es == ES_Instr_can_Elim_21E);
-//    M_t* v = m_pvar;
-//    Instruction * p1 = this->m_can_elim.p1;
-//    Instruction * p2 = this->m_can_elim.p2;
+    //    M_t* v = m_pvar;
+    //    Instruction * p1 = this->m_can_elim.p1;
+    //    Instruction * p2 = this->m_can_elim.p2;
 
     return false;
 }
@@ -27,14 +27,14 @@ void Strategy::DoIt(INSTR_LIST& list, ExprManage* expr)
 {
     switch (m_es)
     {
-    case ES_Instr_can_Delete:
+        case ES_Instr_can_Delete:
         {
             INSTR_LIST::iterator remove_val= std::find(list.begin(), list.end(), can_delete.pinstr);
             assert(remove_val!=list.end());
             list.erase(remove_val);
         }
-        break;
-    case ES_Instr_can_Elim_21E:
+            break;
+        case ES_Instr_can_Elim_21E:
         {
             if (this->DoIt_Addon(list,expr))
                 break;
@@ -51,8 +51,8 @@ void Strategy::DoIt(INSTR_LIST& list, ExprManage* expr)
             if (p2->var_r2.thevar == v)
                 p2->var_r2.thevar = varnew;
         }
-        break;
-    case ES_Instr_can_Elim_31E:
+            break;
+        case ES_Instr_can_Elim_31E:
         {
             Instruction * p1 = m_can_elim.p1;
             Instruction * p2 = m_can_elim.p2;
@@ -64,8 +64,8 @@ void Strategy::DoIt(INSTR_LIST& list, ExprManage* expr)
             INSTR_LIST::iterator rem_iter=std::find(list.begin(),list.end(),p1);
             list.erase(rem_iter);
         }
-        break;
-    case ES_Instr_can_Elim_25E:
+            break;
+        case ES_Instr_can_Elim_25E:
         {
             Instruction * p1 = this->m_can_elim.p1;
             Instruction * p2 = this->m_can_elim.p2;
@@ -73,8 +73,8 @@ void Strategy::DoIt(INSTR_LIST& list, ExprManage* expr)
             INSTR_LIST::iterator rem_iter=std::find(list.begin(),list.end(),p2);
             list.erase(rem_iter);
         }
-        break;
-    case ES_Instr_can_Elim_63:
+            break;
+        case ES_Instr_can_Elim_63:
         {
             Instruction * p1 = this->m_can_elim.p1;
             Instruction * p2 = this->m_can_elim.p2;
@@ -92,10 +92,10 @@ void Strategy::DoIt(INSTR_LIST& list, ExprManage* expr)
             INSTR_LIST::iterator rem_iter=std::find(list.begin(),list.end(),p1);
             list.erase(rem_iter);
         }
-        break;
-    case ES_Error:
-        assert(false);
-        break;
+            break;
+        case ES_Error:
+            assert(false);
+            break;
     }
 
     this->m_es = ES_Error;
@@ -106,28 +106,28 @@ void Strategy::PrintIt(const INSTR_LIST& list, Func* pFunc)
     log_prtl("---");
     switch (m_es)
     {
-    case ES_Instr_can_Delete:
-    {
-        log_prtl("%s: %s", m_reason.c_str(), this->m_pvar->GetName().c_str());
-        std::string s = this->PrintOne(list, this->can_delete.pinstr, pFunc);
-        s += "  <----";
-    }
-        break;
-    case ES_Instr_can_Elim_63:
-    case ES_Instr_can_Elim_31E:
-    case ES_Instr_can_Elim_25E:
-    case ES_Instr_can_Elim_21E:
-    {
-        log_prtl("%s: %s", m_reason.c_str(), m_pvar->GetName().c_str());
-        std::string s1 = this->PrintOne(list, this->m_can_elim.p1, pFunc);
-        std::string s2 = this->PrintOne(list, this->m_can_elim.p2, pFunc);
-        log_prtl(s1.c_str());
-        log_prtl(s2.c_str());
-    }
-        break;
-    case ES_Error:
-        assert(false);
-        break;
+        case ES_Instr_can_Delete:
+        {
+            log_prtl("%s: %s", m_reason.c_str(), this->m_pvar->GetName().c_str());
+            std::string s = this->PrintOne(list, this->can_delete.pinstr, pFunc);
+            s += "  <----";
+        }
+            break;
+        case ES_Instr_can_Elim_63:
+        case ES_Instr_can_Elim_31E:
+        case ES_Instr_can_Elim_25E:
+        case ES_Instr_can_Elim_21E:
+        {
+            log_prtl("%s: %s", m_reason.c_str(), m_pvar->GetName().c_str());
+            std::string s1 = this->PrintOne(list, this->m_can_elim.p1, pFunc);
+            std::string s2 = this->PrintOne(list, this->m_can_elim.p2, pFunc);
+            log_prtl(s1.c_str());
+            log_prtl(s2.c_str());
+        }
+            break;
+        case ES_Error:
+            assert(false);
+            break;
     }
     log_prtl("---");
 }
@@ -179,18 +179,18 @@ void Strategy::AddOne_CanEliminate_31E(M_t* pvar, Instruction * p1, Instruction 
 void Strategy::AddOne_CanEliminate_21E(M_t* pvar, Instruction * p1, Instruction * p2, const std::string & reason)
 //can be eliminated
 {
-        this->m_es = ES_Instr_can_Elim_21E;
-        m_pvar = pvar;
-        this->m_can_elim.p1 = p1;
-        this->m_can_elim.p2 = p2;
-        m_reason = reason;
+    this->m_es = ES_Instr_can_Elim_21E;
+    m_pvar = pvar;
+    this->m_can_elim.p1 = p1;
+    this->m_can_elim.p2 = p2;
+    m_reason = reason;
 }
 void Strategy::AddOne_CanEliminate_63(M_t* pvar, Instruction * p1, Instruction * p2, const std::string & reason)
 //can be eliminated
 {
-        this->m_es = ES_Instr_can_Elim_63;
-        m_pvar = pvar;
-        this->m_can_elim.p1 = p1;
-        this->m_can_elim.p2 = p2;
-        m_reason = reason;
+    this->m_es = ES_Instr_can_Elim_63;
+    m_pvar = pvar;
+    this->m_can_elim.p1 = p1;
+    this->m_can_elim.p2 = p2;
+    m_reason = reason;
 }

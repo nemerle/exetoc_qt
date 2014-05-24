@@ -276,11 +276,11 @@ bool FuncOptim::DataType_Flow()
     {
         Instruction * p = *pos;
         if (p->type == i_GetAddr
-            && p->var_w.thevar != NULL
-            && VarTypeMng::get()->GetPointTo(p->var_w.thevar->m_DataTypeID) != 0
-            && p->var_r1.thevar != NULL
-            && VarTypeMng::get()->is_simple(p->var_r1.thevar->m_DataTypeID)
-            && GG_VarType_ID2Size(VarTypeMng::get()->GetPointTo(p->var_w.thevar->m_DataTypeID))
+                && p->var_w.thevar != NULL
+                && VarTypeMng::get()->GetPointTo(p->var_w.thevar->m_DataTypeID) != 0
+                && p->var_r1.thevar != NULL
+                && VarTypeMng::get()->is_simple(p->var_r1.thevar->m_DataTypeID)
+                && GG_VarType_ID2Size(VarTypeMng::get()->GetPointTo(p->var_w.thevar->m_DataTypeID))
                 >= GG_VarType_ID2Size(p->var_r1.thevar->m_DataTypeID))
         {
             p->var_r1.thevar->m_DataTypeID = VarTypeMng::get()->GetPointTo(p->var_w.thevar->m_DataTypeID);
@@ -302,7 +302,7 @@ bool FuncOptim::optim_once_new()
     {
         M_t* p = *pos;
         if( (p->type != MTT_var) && (Optim_var_NT(p)) )
-                return true;
+            return true;
     }
     return false;
 }
@@ -320,10 +320,10 @@ static st_VarOptm* used_list_Find(Instruction * pinstr, VAROPTM_LIST& used_list)
 }
 
 uint8_t GetVarFinger_INSTR(M_t* pvar, Instruction * p)
-                //00: nothing with
-                //01: read
-                //02: write
-                //03: read and write
+//00: nothing with
+//01: read
+//02: write
+//03: read and write
 {
     uint8_t r = 0;
     if (pvar == p->var_w.thevar)
@@ -723,7 +723,7 @@ bool FuncOptim::Optim_var_flow_NT(VAROPTM_LIST& volist, M_t* pvar)
             const char* pb = tbl_c + n - 2;
             Instruction ** pi = tbl_pinstr + n - 2;
             if (strcmp(pb, "2E") == 0 || strcmp(pb, "3E") == 0 || strcmp(pb, "6E") == 0
-                || strcmp(pb, "7E") == 0)
+                    || strcmp(pb, "7E") == 0)
             {
                 g_CStrategy.AddOne_CanDelete(pvar, pi[0], "write and end, delete it");
                 return true;
@@ -734,8 +734,8 @@ bool FuncOptim::Optim_var_flow_NT(VAROPTM_LIST& volist, M_t* pvar)
                 return true;
             }
             if (strcmp(pb, "22") == 0 || strcmp(pb, "26") == 0
-                || strcmp(pb, "32") == 0 || strcmp(pb, "36") == 0
-                || strcmp(pb, "62") == 0 || strcmp(pb, "66") == 0)
+                    || strcmp(pb, "32") == 0 || strcmp(pb, "36") == 0
+                    || strcmp(pb, "62") == 0 || strcmp(pb, "66") == 0)
             {
                 g_CStrategy.AddOne_CanDelete(pvar, pi[0], "Write and Write, delete first");
                 return true;
@@ -781,13 +781,13 @@ bool FuncOptim::Optim_var_flow_NT(VAROPTM_LIST& volist, M_t* pvar)
             if (strcmp(fpt, "31E") == 0)
             {
                 if (pi[0]->type == i_Sub || pi[0]->type == i_Add)
-                if (pi[0]->var_w.thevar == pi[0]->var_r1.thevar)
-                if (pi[1]->type == i_Cmp && pi[0]->var_w.thevar == pi[0]->var_r1.thevar)
-                {
-                    //log_prtl("31E find");
-                    g_CStrategy.AddOne_CanEliminate_31E(pvar,pi[0],pi[1],"31E");
-                    return true;
-                }
+                    if (pi[0]->var_w.thevar == pi[0]->var_r1.thevar)
+                        if (pi[1]->type == i_Cmp && pi[0]->var_w.thevar == pi[0]->var_r1.thevar)
+                        {
+                            //log_prtl("31E find");
+                            g_CStrategy.AddOne_CanEliminate_31E(pvar,pi[0],pi[1],"31E");
+                            return true;
+                        }
             }
             if (strcmp(fpt, "21E") == 0)
             {
@@ -812,21 +812,21 @@ bool FuncOptim::Optim_var_flow_NT(VAROPTM_LIST& volist, M_t* pvar)
             if (strcmp(fpt, "311E") == 0)
             {
                 if (pi[0]->type == i_Sub || pi[0]->type == i_Add)
-                if (pi[0]->var_w.thevar == pi[0]->var_r1.thevar)
-                if (pi[1]->type == i_Cmp && pi[0]->var_w.thevar == pi[1]->var_r1.thevar)
-                if (pi[2]->type == i_Cmp && pi[0]->var_w.thevar == pi[2]->var_r1.thevar)
-                {
-                    log_prtl("311E find");
-                    signed int d = pi[0]->var_r2.d;
-                    if (pi[0]->type == i_Add)
-                        d = -d;
-                    pi[1]->var_r2.d += d;
-                    pi[2]->var_r2.d += d;
-                    INSTR_LIST::iterator to_erase=std::find(m_my_func->m_instr_list.begin(),m_my_func->m_instr_list.end(),pi[0]);
-                    assert(to_erase!=m_my_func->m_instr_list.end());
-                    m_my_func->m_instr_list.erase(to_erase);
-                    return true;
-                }
+                    if (pi[0]->var_w.thevar == pi[0]->var_r1.thevar)
+                        if (pi[1]->type == i_Cmp && pi[0]->var_w.thevar == pi[1]->var_r1.thevar)
+                            if (pi[2]->type == i_Cmp && pi[0]->var_w.thevar == pi[2]->var_r1.thevar)
+                            {
+                                log_prtl("311E find");
+                                signed int d = pi[0]->var_r2.d;
+                                if (pi[0]->type == i_Add)
+                                    d = -d;
+                                pi[1]->var_r2.d += d;
+                                pi[2]->var_r2.d += d;
+                                INSTR_LIST::iterator to_erase=std::find(m_my_func->m_instr_list.begin(),m_my_func->m_instr_list.end(),pi[0]);
+                                assert(to_erase!=m_my_func->m_instr_list.end());
+                                m_my_func->m_instr_list.erase(to_erase);
+                                return true;
+                            }
             }
         }
     }
@@ -938,7 +938,7 @@ bool FuncOptim::IfAnyThisStep(int i, VAROPTM_LIST& volist)
 
 bool Get_pair(int& out_i1, int& out_i2)
 {
-//I2 to find that maximum
+    //I2 to find that maximum
     size_t savi=0;
     int max_i2 = 0;
     for (size_t i=0; i<static_n; i+= 2)
@@ -1024,7 +1024,7 @@ bool FuncOptim::TryDistinguishVar(VAROPTM_LIST& volist, M_t* pvar)
     {
         if (IfAnyThisStep(i, volist))
             tblstep[n++] = i;
-        }
+    }
     if (n > 1)
     {
         log_prtl("find var distinguish");

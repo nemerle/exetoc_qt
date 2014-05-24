@@ -25,18 +25,18 @@ void Func::Step4_CreateInstrList()
 {
     // Pseudo-structure initially completed the work substituting Unordered List instr_list
     // However, stack, expr, call, etc. still need to improve
-	assert(m_instr_list.size()==0);
-	//
-	//m_instr_list = new INSTR_LIST;  //new_INSTR_LIST pseudo code table
+    assert(m_instr_list.size()==0);
+    //
+    //m_instr_list = new INSTR_LIST;  //new_INSTR_LIST pseudo code table
 
-	CodeList the(m_instr_list);
-	the.CreateInstrList_raw(this->ll.m_asmlist, this->m_EBP_base);
+    CodeList the(m_instr_list);
+    the.CreateInstrList_raw(this->ll.m_asmlist, this->m_EBP_base);
 
     // A improve, perfect of label for each instruction before the label, no one should remove the reference
 
-	Create_Labels_backend();
+    Create_Labels_backend();
     // Second call improvement
-//	CreateInstrList_welldone_call();   	// find call, and fill its args
+    //	CreateInstrList_welldone_call();   	// find call, and fill its args
 
 }
 Instruction * findlabel(INSTR_LIST& list, ea_t off)
@@ -55,29 +55,29 @@ Instruction * findlabel(INSTR_LIST& list, ea_t off)
 }
 void Func::Create_Labels_backend()	// No|Number backend
 {
-	POSITION pos = m_instr_list.begin();
+    POSITION pos = m_instr_list.begin();
     Instruction * thelabel;
-	while (pos!=m_instr_list.end())
-	{
-		Instruction * p = *pos;
-		++pos;
+    while (pos!=m_instr_list.end())
+    {
+        Instruction * p = *pos;
+        ++pos;
         if (p->type != i_Jump)
             continue;
         thelabel = findlabel(m_instr_list,p->jmp.jmpto_off);
-			if (thelabel->label.ref_instr)
-				p->jmp.next_ref_of_this_label = thelabel->label.ref_instr;	// save old ref list
-			thelabel->label.ref_instr = p;	// tell the label it was referred
-			p->jmp.target_label = thelabel;	// tell the Jxx the label it need
-		}
-	pos = m_instr_list.begin();
-	while (pos!=m_instr_list.end())
+        if (thelabel->label.ref_instr)
+            p->jmp.next_ref_of_this_label = thelabel->label.ref_instr;	// save old ref list
+        thelabel->label.ref_instr = p;	// tell the label it was referred
+        p->jmp.target_label = thelabel;	// tell the Jxx the label it need
+    }
+    pos = m_instr_list.begin();
+    while (pos!=m_instr_list.end())
     {// remove all unreferrenced labels
         const Instruction * p = *pos;
-		if (p->type == i_Label && p->label.ref_instr == 0)
-			pos=m_instr_list.erase(pos);
-		else
-			++pos;
-	}
+        if (p->type == i_Label && p->label.ref_instr == 0)
+            pos=m_instr_list.erase(pos);
+        else
+            ++pos;
+    }
 }
 
 

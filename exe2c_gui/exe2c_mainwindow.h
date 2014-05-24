@@ -1,4 +1,4 @@
-    #ifndef EXE2C_MAINWINDOW_H
+#ifndef EXE2C_MAINWINDOW_H
 #define EXE2C_MAINWINDOW_H
 
 #include <QMainWindow>
@@ -9,7 +9,7 @@
 class FunctionViewWidget;
 class FunctionListDockWidget;
 namespace Ui {
-    class Exe2C_MainWindow;
+class Exe2C_MainWindow;
 }
 
 class Exe2C_MainWindow : public QMainWindow,public I_E2COUT {
@@ -32,7 +32,7 @@ private slots:
 
 private:
     FunctionViewWidget *m_asm_view;
-//  FunctionViewWidget *m_internal_view;
+    //  FunctionViewWidget *m_internal_view;
     FunctionViewWidget *m_c_view;
     FunctionListDockWidget *m_functionlist_widget;
     Ui::Exe2C_MainWindow *ui;

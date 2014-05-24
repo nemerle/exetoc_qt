@@ -1220,7 +1220,7 @@ void CCInfo::do_class(const char * p, const char * &pnext)
             FuncType* pft = NULL;
             int sz = strlen(theclass.m_name);
             if (memcmp(p,theclass.m_name, sz) == 0
-                && if_split_char(p[sz]))	//	是构造函数
+                    && if_split_char(p[sz]))	//	是构造函数
             {
                 pft = do_func_proto_void(p);
             }

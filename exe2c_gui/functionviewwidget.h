@@ -4,7 +4,7 @@
 #include <QWidget>
 #include "XmlPrt.h"
 namespace Ui {
-    class FunctionViewWidget;
+class FunctionViewWidget;
 }
 class FunctionViewWidget : public QWidget,public I_XmlOut
 {

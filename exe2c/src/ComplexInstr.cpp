@@ -163,23 +163,23 @@ QString	InstrList_Finger::prt_partern(const Instruction * phead) const
         collected_entries++;
         switch(p->type)
         {
-        case i_Jump:
-            label_num = search_and_add(buf,intptr_t(p->jmp.target_label),n);
-            if (p->jmp.jmp_type == JMP_jmp)
-                collector+=QString("jmp%1_").arg(label_num);
-            else
-                collector+=QString("jxx%1_").arg(label_num);
-            break;
-        case i_Label:
-            label_num = search_and_add(buf,intptr_t(p),n);
-            collector+=QString("from%1_").arg(label_num);
-            break;
-        case i_Begin:
-            collector+="0_";
-            p = p->begin.m_end; // skipping to end of p's BB
-            break;
-        default:
-            collected_entries--; // no entry was added in this case, also "why here ?"
+            case i_Jump:
+                label_num = search_and_add(buf,intptr_t(p->jmp.target_label),n);
+                if (p->jmp.jmp_type == JMP_jmp)
+                    collector+=QString("jmp%1_").arg(label_num);
+                else
+                    collector+=QString("jxx%1_").arg(label_num);
+                break;
+            case i_Label:
+                label_num = search_and_add(buf,intptr_t(p),n);
+                collector+=QString("from%1_").arg(label_num);
+                break;
+            case i_Begin:
+                collector+="0_";
+                p = p->begin.m_end; // skipping to end of p's BB
+                break;
+            default:
+                collected_entries--; // no entry was added in this case, also "why here ?"
 
         }
         p = instr_next(m_list,p);
@@ -213,8 +213,8 @@ bool	InstrList_Finger::Finger_check_partern_for1(Instruction * p)
         if (ptem->type != i_Label)
             return false;
         p2 = ptem->label.ref_instr;
-	}
-	if (p1 == NULL || p2 == NULL)
+    }
+    if (p1 == NULL || p2 == NULL)
         return false;
 
     if (VAR::IsSame(&p1->var_w, &p2->var_r1) || VAR::IsSame(&p1->var_w, &p2->var_r2))
@@ -400,36 +400,36 @@ bool	InstrList::Flow_cc(Instruction * pNode, POSITION firstpos, POSITION endpos)
     // Flow_c (INSTR_LIST * list, POSITION firstpos, POSITION endpos);
     // Of the found i_Begin, i_End, continue with Flow_a
     // PNode is to check the section belongs begin_end, just to provide m_Break
-	POSITION okpos;
-	POSITION pos1;
-	assert(firstpos!=m_list.end());
+    POSITION okpos;
+    POSITION pos1;
+    assert(firstpos!=m_list.end());
     assert(endpos!=m_list.end());
 
-	if (firstpos == endpos)
-		return false;
-	Instruction * phead = *firstpos;
+    if (firstpos == endpos)
+        return false;
+    Instruction * phead = *firstpos;
 
-	while(phead->type == i_Label || phead->type == i_Begin)
-	{
-		if (firstpos == endpos)
-			return false;
-		phead = *firstpos;
-		if (phead->type == i_Label)
-		{
-			Instruction * p = instr_next(m_list,phead);
-			if (p->type == i_Begin)	//	Because i_label will back out of the dead followed by i_begin cycle
-				phead = p;	//	process the next one
-		}
-		if (phead->type == i_Begin)
-		{
-			if (this->Flow_a(phead))
-				return true;
-			pos1 = std::find(m_list.begin(),m_list.end(),phead->begin.m_end);
-			firstpos=++pos1; //	skip i_End
-		}
-		else
-			break;
-	}
+    while(phead->type == i_Label || phead->type == i_Begin)
+    {
+        if (firstpos == endpos)
+            return false;
+        phead = *firstpos;
+        if (phead->type == i_Label)
+        {
+            Instruction * p = instr_next(m_list,phead);
+            if (p->type == i_Begin)	//	Because i_label will back out of the dead followed by i_begin cycle
+                phead = p;	//	process the next one
+        }
+        if (phead->type == i_Begin)
+        {
+            if (this->Flow_a(phead))
+                return true;
+            pos1 = std::find(m_list.begin(),m_list.end(),phead->begin.m_end);
+            firstpos=++pos1; //	skip i_End
+        }
+        else
+            break;
+    }
 
 
     pos1 = okpos = firstpos;
@@ -455,11 +455,11 @@ bool	InstrList::Flow_cc(Instruction * pNode, POSITION firstpos, POSITION endpos)
         Instruction * end = new Instruction(i_End);
         begin->begin.m_end = end;
         POSITION afterokpos=okpos;
-		++afterokpos;
+        ++afterokpos;
         Add_Begin_End(firstpos, okpos, begin, end);
         okpos=--afterokpos;
 
-		begin->begin.m_break = pNode->begin.m_break;	//	inherit
+        begin->begin.m_break = pNode->begin.m_break;	//	inherit
         begin->begin.m_conti = pNode->begin.m_conti;	//	inherit
 
         this->Flow_a(begin);
@@ -484,8 +484,8 @@ void InstrList::RemoveNops()
 void InstrList::Add_Begin_End(POSITION firstpos, POSITION endpos, Instruction * begin, Instruction * end)
 {
     this->Add_Begin_End_1(firstpos,endpos,begin,end);
-// remove nopped instructions
-	RemoveNops();
+    // remove nopped instructions
+    RemoveNops();
 }
 void InstrList::Add_Begin_End_1(POSITION firstpos, POSITION endpos, Instruction * begin, Instruction * end)
 {
@@ -662,7 +662,7 @@ void	InstrList::Flow_b(const Instruction * pParentNode, POSITION firstpos, POSIT
     Instruction * end = new Instruction(i_CplxEnd);
     begin->begin.m_end = end;
     Add_Begin_End(firstpos, endpos, begin, end);
-	POSITION pos = std::find(m_list.begin(),m_list.end(),end);
+    POSITION pos = std::find(m_list.begin(),m_list.end(),end);
     assert(pos != m_list.end());
     --pos;		//now it points to last instr in body
     Instruction * plast = *pos;
@@ -815,79 +815,79 @@ bool	InstrList::Flow_aa(Instruction * pBlockHeadNode, POSITION firstpos, const P
     assert(0!=p);
     switch(p->type)
     {
-    case i_Begin:
-        qDebug()<<"Trying 'i_Begin'\n";
-        if (this->Flow_a(p))
-            return true;
-        pos1 = std::find(m_list.begin(),m_list.end(),p->begin.m_end);
-        assert(pos1!=m_list.end());
-        return Flow_aa(pBlockHeadNode,pos1,endpos);
-
-    case i_CplxBegin:
-        qDebug()<<"Trying 'i_CplxBegin'\n";
-        pos1 = std::find(m_list.begin(),m_list.end(),p->begin.m_end);
-        assert(pos1!=m_list.end());
-        if (Flow_c(p))
-            return true;
-
-        if (p->begin.type == COMP_unknown)
-        {	//	at this time it should attempt to identify
-            InstrList_Finger the(m_list);
-            if (the.Finger_check_partern(p))
-            {
-                //alert("return true");
+        case i_Begin:
+            qDebug()<<"Trying 'i_Begin'\n";
+            if (this->Flow_a(p))
                 return true;
-            }
-            //alert("return false");
-        }
-        return Flow_aa(pBlockHeadNode, pos1, endpos);
-
-    case i_Jump:
-        qDebug()<<"Trying 'i_Jump'\n";
-        //it must be jump to follow
-        p1 = p->jmp.target_label;	//it jump here
-        pos1 = std::find(m_list.begin(),m_list.end(),p1);
-        assert(pos1!=m_list.end());
-        while (pos1!=m_list.end())
-        {
-            if (pos1 == endpos)
-                break;
-            if (pos1 == m_list.end())
-            {
-                log_prtl("label = %x",p->jmp.jmpto_off);
-            }
-            else if (ifOneStatement(pBlockHeadNode, firstpos,pos1))
-            {	//	Found a compact structure
-                Flow_b(pBlockHeadNode, firstpos,pos1);
-                if (Step_by_Step())
-                    return true;	//	Where you can directly return TRUE
-                assert(pos1!=m_list.end());
-                return Flow_aa(pBlockHeadNode, pos1,endpos);
-            }
-            //assert(pos1);
-            ++pos1;
-        }
-        break;
-    case i_Label:
-        qDebug()<<"Trying 'i_Label'\n";
-        p1 = p->label.ref_instr;
-        pos1 = std::find(m_list.begin(),m_list.end(),p1);
-        while (pos1!=m_list.end() && pos1 != endpos)
-        {
-            ++pos1;
+            pos1 = std::find(m_list.begin(),m_list.end(),p->begin.m_end);
             assert(pos1!=m_list.end());
-            if (ifOneStatement(pBlockHeadNode, firstpos,pos1))
-            {
-                Flow_b(pBlockHeadNode, firstpos,pos1);
-                if (Step_by_Step())
-                    return true;	//	Where you can directly return TRUE
-                assert(pos1!=m_list.end());
-                return Flow_aa(pBlockHeadNode, pos1,endpos);
+            return Flow_aa(pBlockHeadNode,pos1,endpos);
+
+        case i_CplxBegin:
+            qDebug()<<"Trying 'i_CplxBegin'\n";
+            pos1 = std::find(m_list.begin(),m_list.end(),p->begin.m_end);
+            assert(pos1!=m_list.end());
+            if (Flow_c(p))
+                return true;
+
+            if (p->begin.type == COMP_unknown)
+            {	//	at this time it should attempt to identify
+                InstrList_Finger the(m_list);
+                if (the.Finger_check_partern(p))
+                {
+                    //alert("return true");
+                    return true;
+                }
+                //alert("return false");
             }
-            //assert(pos1);
-        }
-    default:
-        qDebug()<<"flow_aa: skipping opcode " << p->type;
+            return Flow_aa(pBlockHeadNode, pos1, endpos);
+
+        case i_Jump:
+            qDebug()<<"Trying 'i_Jump'\n";
+            //it must be jump to follow
+            p1 = p->jmp.target_label;	//it jump here
+            pos1 = std::find(m_list.begin(),m_list.end(),p1);
+            assert(pos1!=m_list.end());
+            while (pos1!=m_list.end())
+            {
+                if (pos1 == endpos)
+                    break;
+                if (pos1 == m_list.end())
+                {
+                    log_prtl("label = %x",p->jmp.jmpto_off);
+                }
+                else if (ifOneStatement(pBlockHeadNode, firstpos,pos1))
+                {	//	Found a compact structure
+                    Flow_b(pBlockHeadNode, firstpos,pos1);
+                    if (Step_by_Step())
+                        return true;	//	Where you can directly return TRUE
+                    assert(pos1!=m_list.end());
+                    return Flow_aa(pBlockHeadNode, pos1,endpos);
+                }
+                //assert(pos1);
+                ++pos1;
+            }
+            break;
+        case i_Label:
+            qDebug()<<"Trying 'i_Label'\n";
+            p1 = p->label.ref_instr;
+            pos1 = std::find(m_list.begin(),m_list.end(),p1);
+            while (pos1!=m_list.end() && pos1 != endpos)
+            {
+                ++pos1;
+                assert(pos1!=m_list.end());
+                if (ifOneStatement(pBlockHeadNode, firstpos,pos1))
+                {
+                    Flow_b(pBlockHeadNode, firstpos,pos1);
+                    if (Step_by_Step())
+                        return true;	//	Where you can directly return TRUE
+                    assert(pos1!=m_list.end());
+                    return Flow_aa(pBlockHeadNode, pos1,endpos);
+                }
+                //assert(pos1);
+            }
+        default:
+            qDebug()<<"flow_aa: skipping opcode " << p->type;
     }
     return false;
 }

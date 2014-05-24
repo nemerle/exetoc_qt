@@ -7,7 +7,7 @@
 
 class FunctionListModel : public QAbstractTableModel
 {
-     Q_OBJECT
+    Q_OBJECT
 
     struct function_info
     {
@@ -47,7 +47,7 @@ protected:
 };
 
 namespace Ui {
-    class FunctionListDockWidget;
+class FunctionListDockWidget;
 }
 
 class FunctionListDockWidget : public QDockWidget

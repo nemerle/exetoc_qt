@@ -35,42 +35,42 @@ uint32_t	regindex_2_regoff(uint32_t regindex,int group)
     // Set the reg also approved an offset, the concept of using struct to deal with al, ax the question
     if(group==0 || group==4)
     {
-    switch (regindex)
-    {
-    case _EAX_:	return enum_EAX;
-    case _ECX_:	return enum_ECX;
-    case _EDX_:	return enum_EDX;
-    case _EBX_:	return enum_EBX;
-    case _ESP_:	return enum_ESP;
-    case _EBP_:	return enum_EBP;
-    case _ESI_:	return enum_ESI;
-    case _EDI_:	return enum_EDI;
-    }
+        switch (regindex)
+        {
+            case _EAX_:	return enum_EAX;
+            case _ECX_:	return enum_ECX;
+            case _EDX_:	return enum_EDX;
+            case _EBX_:	return enum_EBX;
+            case _ESP_:	return enum_ESP;
+            case _EBP_:	return enum_EBP;
+            case _ESI_:	return enum_ESI;
+            case _EDI_:	return enum_EDI;
+        }
     }
     assert(false);
     switch (regindex)
     {
-    case _AX_:	return enum_AX;
-    case _CX_:	return enum_CX;
-    case _DX_:	return enum_DX;
-    case _BX_:	return enum_BX;
-    case _SP_:	return enum_SP;
-    case _BP_:	return enum_BP;
-    case _SI_:	return enum_SI;
-    case _DI_:	return enum_DI;
+        case _AX_:	return enum_AX;
+        case _CX_:	return enum_CX;
+        case _DX_:	return enum_DX;
+        case _BX_:	return enum_BX;
+        case _SP_:	return enum_SP;
+        case _BP_:	return enum_BP;
+        case _SI_:	return enum_SI;
+        case _DI_:	return enum_DI;
     }
 
     switch (regindex)
     {
-    case _AH_:	return enum_AH;
-    case _CH_:	return enum_CH;
-    case _DH_:	return enum_DH;
-    case _BH_:	return enum_BH;
+        case _AH_:	return enum_AH;
+        case _CH_:	return enum_CH;
+        case _DH_:	return enum_DH;
+        case _BH_:	return enum_BH;
 
-    case _AL_:	return enum_AL;
-    case _CL_:	return enum_CL;
-    case _DL_:	return enum_DL;
-    case _BL_:	return enum_BL;
+        case _AL_:	return enum_AL;
+        case _CL_:	return enum_CL;
+        case _DL_:	return enum_DL;
+        case _BL_:	return enum_BL;
     }
 
     return regindex;
@@ -81,46 +81,46 @@ const char * RegName(uint32_t off, uint8_t opsize)
     static char s[20];
     switch (opsize)
     {
-    case 4:
-        switch (off)
-        {
-        case enum_EAX:	return("EAX");
-        case enum_ECX:	return("ECX");
-        case enum_EBX:	return("EBX");
-        case enum_EDX:	return("EDX");
-        case enum_EBP:	return("EBP");
-        case enum_ESP:	return("ESP");
-        case enum_ESI:	return("ESI");
-        case enum_EDI:	return("EDI");
-        }
-        break;
-    case 2:
-        switch (off)
-        {
-        case enum_AX:	return("AX");
-        case enum_CX:	return("CX");
-        case enum_BX:	return("BX");
-        case enum_DX:	return("DX");
-        case enum_BP:	return("BP");
-        case enum_SP:	return("SP");
-        case enum_SI:	return("SI");
-        case enum_DI:	return("DI");
-        }
-        break;
-    case 1:
-        switch (off)
-        {
-        case enum_AH:	return("AH");
-        case enum_CH:	return("CH");
-        case enum_BH:	return("BH");
-        case enum_DH:	return("DH");
+        case 4:
+            switch (off)
+            {
+                case enum_EAX:	return("EAX");
+                case enum_ECX:	return("ECX");
+                case enum_EBX:	return("EBX");
+                case enum_EDX:	return("EDX");
+                case enum_EBP:	return("EBP");
+                case enum_ESP:	return("ESP");
+                case enum_ESI:	return("ESI");
+                case enum_EDI:	return("EDI");
+            }
+            break;
+        case 2:
+            switch (off)
+            {
+                case enum_AX:	return("AX");
+                case enum_CX:	return("CX");
+                case enum_BX:	return("BX");
+                case enum_DX:	return("DX");
+                case enum_BP:	return("BP");
+                case enum_SP:	return("SP");
+                case enum_SI:	return("SI");
+                case enum_DI:	return("DI");
+            }
+            break;
+        case 1:
+            switch (off)
+            {
+                case enum_AH:	return("AH");
+                case enum_CH:	return("CH");
+                case enum_BH:	return("BH");
+                case enum_DH:	return("DH");
 
-        case enum_AL:	return("AL");
-        case enum_CL:	return("CL");
-        case enum_BL:	return("BL");
-        case enum_DL:	return("DL");
-        }
-        break;
+                case enum_AL:	return("AL");
+                case enum_CL:	return("CL");
+                case enum_BL:	return("BL");
+                case enum_DL:	return("DL");
+            }
+            break;
     }
     sprintf(s,"r_%x_%x", opsize, off);
     return s;
@@ -207,17 +207,17 @@ static void Cstr_fmt(char * dst, const char * src)
     {
         switch (c)
         {
-        case '\n':
-            dst[n++] = '\\';
-            dst[n++] = 'n';
-            break;
-        case '\t':
-            dst[n++] = '\\';
-            dst[n++] = 't';
-            break;
-        default:
-            dst[n++] = c;
-            break;
+            case '\n':
+                dst[n++] = '\\';
+                dst[n++] = 'n';
+                break;
+            case '\t':
+                dst[n++] = '\\';
+                dst[n++] = 't';
+                break;
+            default:
+                dst[n++] = c;
+                break;
         }
         if (n > 240)
         {
@@ -328,47 +328,47 @@ const char * ExprManage::VarName(const VAR* v)
     M_t* p;
     switch (v->type)
     {
-    case v_Global:
-    case v_Reg:
-    case v_Var:
-    case v_Par:
-        //p = this->LookUpVar(v);
-        p = v->thevar;
-        if (p == NULL)
-            return "WHAT";
-        assert(p);
-        if (p->size == v->opsize)
-        {
-            if (p->m_DataTypeID != 0)
+        case v_Global:
+        case v_Reg:
+        case v_Var:
+        case v_Par:
+            //p = this->LookUpVar(v);
+            p = v->thevar;
+            if (p == NULL)
+                return "WHAT";
+            assert(p);
+            if (p->size == v->opsize)
             {
-                uint32_t typesize = ::GG_VarType_ID2Size(p->m_DataTypeID);
-                if (typesize == p->size)
+                if (p->m_DataTypeID != 0)
                 {
-                    ; //nop
+                    uint32_t typesize = ::GG_VarType_ID2Size(p->m_DataTypeID);
+                    if (typesize == p->size)
+                    {
+                        ; //nop
+                    }
                 }
+                return p->namestr.c_str();
             }
-            return p->namestr.c_str();
-        }
-        if (v->part_flag != 0 && VarTypeMng::get()->is_class(p->m_DataTypeID) != NULL)
-        {
-            static char buf[180];
-            sprintf(buf, "%s.%s", p->namestr.c_str(),
-                    VarTypeMng::get()->is_class(p->m_DataTypeID)->getclassitemname(v->part_flag - 1));
-            return buf;
-        }
-        else
-        {
-            static char buf[180];
-            sprintf(buf, "%s.part", p->namestr.c_str());
-            return buf;
-        }
-    case v_Immed:
-        return VarName_Immed(v);
-    case v_Volatile:
-        return "FS:[00]";
-    default:
-        sprintf(s,"?%d?",v->type);
-        return s;
+            if (v->part_flag != 0 && VarTypeMng::get()->is_class(p->m_DataTypeID) != NULL)
+            {
+                static char buf[180];
+                sprintf(buf, "%s.%s", p->namestr.c_str(),
+                        VarTypeMng::get()->is_class(p->m_DataTypeID)->getclassitemname(v->part_flag - 1));
+                return buf;
+            }
+            else
+            {
+                static char buf[180];
+                sprintf(buf, "%s.part", p->namestr.c_str());
+                return buf;
+            }
+        case v_Immed:
+            return VarName_Immed(v);
+        case v_Volatile:
+            return "FS:[00]";
+        default:
+            sprintf(s,"?%d?",v->type);
+            return s;
     }
 }
 
@@ -596,60 +596,60 @@ void ExprManage::AddRef(VAR* pvar)
     // Ensure that all var will have a thevar
     switch (pvar->type)
     {
-    case v_Invalid: return;
-    case v_Immed:
-        if (pvar->d == 4)
-            pvar->d = 4;
-        pvar->thevar = this->AddRef_immed(pvar->d, pvar->opsize);
-        return;
-    case v_Global:
-    {
-        char name[20];
-        sprintf(name,"g_%x",pvar->off);
-        pvar->thevar = g_GlobalExpr.AddRef_with_name(MTT_global, pvar->off, pvar->opsize, name);
-        return;
-    }
-    case v_Volatile:
-    case v_Tem:
-    {
-        pvar->thevar = this->AddRef_tem(pvar->temno, pvar->opsize);
-        pvar->thevar->bTem = true;
-        return;
-    }
-    case v_Var:
-    {
-        //m_VarRange_H;
-        //m_VarRange_L;
-        char name[20];
-        if (0x7ffff - (signed int)pvar->var_off + 1 > -this->m_VarRange_L)
+        case v_Invalid: return;
+        case v_Immed:
+            if (pvar->d == 4)
+                pvar->d = 4;
+            pvar->thevar = this->AddRef_immed(pvar->d, pvar->opsize);
+            return;
+        case v_Global:
         {
-            sprintf(name,"tem_%x",0x7ffff - pvar->var_off + 1);	//0x7ffff - p->s_off + 1
-            pvar->thevar = this->AddRef_with_name(MTT_var, pvar->var_off, pvar->opsize, name);
-            //pvar->thevar = this->CreateNewTemVar(pvar->opsize);
+            char name[20];
+            sprintf(name,"g_%x",pvar->off);
+            pvar->thevar = g_GlobalExpr.AddRef_with_name(MTT_global, pvar->off, pvar->opsize, name);
+            return;
+        }
+        case v_Volatile:
+        case v_Tem:
+        {
+            pvar->thevar = this->AddRef_tem(pvar->temno, pvar->opsize);
             pvar->thevar->bTem = true;
+            return;
         }
-        else
+        case v_Var:
         {
-            sprintf(name,"v_%x",0x7ffff - pvar->var_off + 1);	//0x7ffff - p->s_off + 1
-            pvar->thevar = this->AddRef_with_name(MTT_var, pvar->var_off, pvar->opsize, name);
+            //m_VarRange_H;
+            //m_VarRange_L;
+            char name[20];
+            if (0x7ffff - (signed int)pvar->var_off + 1 > -this->m_VarRange_L)
+            {
+                sprintf(name,"tem_%x",0x7ffff - pvar->var_off + 1);	//0x7ffff - p->s_off + 1
+                pvar->thevar = this->AddRef_with_name(MTT_var, pvar->var_off, pvar->opsize, name);
+                //pvar->thevar = this->CreateNewTemVar(pvar->opsize);
+                pvar->thevar->bTem = true;
+            }
+            else
+            {
+                sprintf(name,"v_%x",0x7ffff - pvar->var_off + 1);	//0x7ffff - p->s_off + 1
+                pvar->thevar = this->AddRef_with_name(MTT_var, pvar->var_off, pvar->opsize, name);
+            }
         }
-    }
-        break;
-    case v_Par:
-    {
-        char name[20];
-        sprintf(name,"a_%x",pvar->par_off);
-        pvar->thevar = this->AddRef_with_name(MTT_par, pvar->par_off, pvar->opsize, name);
-    }
-        break;
-    case v_Reg:
-    {
-        const char * pname = RegName(pvar->reg, pvar->opsize);
-        pvar->thevar = this->AddRef_with_name(MTT_reg, pvar->reg, pvar->opsize, pname);
-    }
-        break;
-    default:
-        assert(0);
+            break;
+        case v_Par:
+        {
+            char name[20];
+            sprintf(name,"a_%x",pvar->par_off);
+            pvar->thevar = this->AddRef_with_name(MTT_par, pvar->par_off, pvar->opsize, name);
+        }
+            break;
+        case v_Reg:
+        {
+            const char * pname = RegName(pvar->reg, pvar->opsize);
+            pvar->thevar = this->AddRef_with_name(MTT_reg, pvar->reg, pvar->opsize, pname);
+        }
+            break;
+        default:
+            assert(0);
     }
 }
 uint32_t	stack2varoff(int32_t stackoff)
@@ -694,12 +694,12 @@ void Replace_Var_1(VAR* var, M_t* pvar, M_t* thevar)
     {
         switch (var->type)
         {
-        case v_Var:
-            var->part_flag = 1+var->var_off-thevar->s_off;
-            break;
-        default:
-            var->part_flag = 1;
-            break;
+            case v_Var:
+                var->part_flag = 1+var->var_off-thevar->s_off;
+                break;
+            default:
+                var->part_flag = 1;
+                break;
         }
     }
 }

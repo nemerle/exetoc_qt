@@ -50,11 +50,11 @@ void Exe2C_MainWindow::changeEvent(QEvent *e)
 {
     QMainWindow::changeEvent(e);
     switch (e->type()) {
-    case QEvent::LanguageChange:
-        ui->retranslateUi(this);
-        break;
-    default:
-        break;
+        case QEvent::LanguageChange:
+            ui->retranslateUi(this);
+            break;
+        default:
+            break;
     }
 }
 void Exe2C_MainWindow::onOptim()
@@ -70,11 +70,11 @@ void Exe2C_MainWindow::onOptim10()
 {
     for(int i=0; i<10; i++)
         g_EXE2C->analysis_Once();
-	emit functionListChanged();
-	if(m_last_diplay==g_EXE2C->GetCurFuncHandle())
-	{
-		displayCurrentFunction();
-	}
+    emit functionListChanged();
+    if(m_last_diplay==g_EXE2C->GetCurFuncHandle())
+    {
+        displayCurrentFunction();
+    }
 }
 void Exe2C_MainWindow::onOpenFile_Action()
 {

@@ -39,11 +39,11 @@ const char * CallConvToName(enum_CallC ec)
 {
     switch (ec)
     {
-    case enum_stdcall: return "__stdcall";
-    case enum_cdecl:   return "__cdecl";
-    case enum_pascal:  return "PASCAL";
-    case enum_fastcall:return "__fastcall";
-    default:
-        return "__unknown";
+        case enum_stdcall: return "__stdcall";
+        case enum_cdecl:   return "__cdecl";
+        case enum_pascal:  return "PASCAL";
+        case enum_fastcall:return "__fastcall";
+        default:
+            return "__unknown";
     }
 }

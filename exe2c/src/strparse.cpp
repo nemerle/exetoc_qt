@@ -11,15 +11,15 @@
 
 void skip_space(const char * &p)
 {
-        while (*p == ' ')
-                p++;
+    while (*p == ' ')
+        p++;
 }
 void skip_eos(const char * &p)
 {
-        if (*p == ' ')
-                p++;
-        if (*p == '\0')
-                p++;
+    if (*p == ' ')
+        p++;
+    if (*p == '\0')
+        p++;
 }
 void get_1part(char * buf,const char * &p)
 {	// P referred to, is not part of the storage space buf
@@ -44,8 +44,8 @@ void get_1part(char * buf,const char * &p)
 
 bool if_split_char(char c)
 {
-        switch( c )
-        {
+    switch( c )
+    {
         case ' ':
         case '\t':
         case ',':
@@ -61,9 +61,9 @@ bool if_split_char(char c)
         case '+':
         case '\x0a':
         case '\x0d':
-                return true;
-        }
-        return false;
+            return true;
+    }
+    return false;
 }
 uint32_t Str2Num(const char * p)
 {

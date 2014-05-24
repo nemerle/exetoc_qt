@@ -312,7 +312,7 @@ bool	FuncLL::stack_stack(AsmCode* p0, AsmCode* p1)
             }
             else
             {	//not find, insert it
-                    alert_prtf("error not find api %x", address);
+                alert_prtf("error not find api %x", address);
                 ApiManage::get()->new_api(address,esp0_next - esp0);
                 return true;
             }
@@ -743,9 +743,9 @@ void	FuncLL::prtout_asm_1(VarLL* pvarll, XmlOutPro* out)
             {
                 OPERITEM* op = &pxcpu->op[0];
                 if (op->addr.base_reg_index == _ESP_
-                    || (op->addr.base_reg_index == _NOREG_
-                        && op->addr.off_reg_index == _ESP_
-                        && op->addr.off_reg_scale == 1))
+                        || (op->addr.base_reg_index == _NOREG_
+                            && op->addr.off_reg_index == _ESP_
+                            && op->addr.off_reg_scale == 1))
                 {
                     signed int level = pasm->esp_level + op->addr.off_value;
                     st_VarLL* p = pvarll->LookUp_VarLL(level- pvarll->m_VarRange_L);
@@ -759,9 +759,9 @@ void	FuncLL::prtout_asm_1(VarLL* pvarll, XmlOutPro* out)
             {
                 OPERITEM* op = &pxcpu->op[1];
                 if (op->addr.base_reg_index == _ESP_
-                    || (op->addr.base_reg_index == _NOREG_
-                        && op->addr.off_reg_index == _ESP_
-                        && op->addr.off_reg_scale == 1))
+                        || (op->addr.base_reg_index == _NOREG_
+                            && op->addr.off_reg_index == _ESP_
+                            && op->addr.off_reg_scale == 1))
                 {
                     signed int level = pasm->esp_level + op->addr.off_value;
                     st_VarLL* p = pvarll->LookUp_VarLL(level- pvarll->m_VarRange_L);

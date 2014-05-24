@@ -27,7 +27,7 @@ ClassManage* ClassManage::get()
     if(0==s_ClassManage)
         s_ClassManage=new ClassManage;
     return s_ClassManage;
-    }
+}
 VarTypeID ClassManage::if_StrucName(const char * &pstr)
 {
     CLASS_LIST::iterator pos = this->m_classlist.begin();
@@ -41,8 +41,8 @@ VarTypeID ClassManage::if_StrucName(const char * &pstr)
         {
             pstr += n;
             return VarTypeMng::get()->Class2VarID(p);
+        }
     }
-}
     return 0;
 }
 //	----------------------------------

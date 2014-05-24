@@ -30,7 +30,7 @@ bool VAR::IfSameTemVar(const VAR* v2) const
 
 const char * CFunc_Prt::BareVarName(const VAR* v)
 {
-        return m_my_func->m_exprs->BareVarName(v);
+    return m_my_func->m_exprs->BareVarName(v);
 }
 
 void	CFunc_Prt::prt_case(const Instruction * phead, const Instruction * plabel, XmlOutPro* out)
@@ -174,31 +174,31 @@ void 	CFunc_Prt::prt_va_1(const st_InstrAddOn* pa, const VAR* pv, XmlOutPro* out
     }
     switch (pa->type)
     {
-    case IA_Nothing:
-        prt_var(pv, out);
-        break;
-    case IA_ReadPointTo:
+        case IA_Nothing:
+            prt_var(pv, out);
+            break;
+        case IA_ReadPointTo:
         {
             out->prtt("*");
             prt_va_1(pa->pChild,pv, out);
             break;
         }
-    case IA_AddImmed:
-        out->prtt("(");
-        prt_va_1(pa->pChild,pv, out);
-        out->prtf(" + %d)", pa->addimmed.iAddon);
-        break;
-    case IA_MulImmed:
-        prt_va_1(pa->pChild,pv, out);
-        out->prtf(" * %d", pa->addimmed.iAddon);
-        break;
-    case IA_GetAddress:
-        out->prtt("&");
-        prt_va_1(pa->pChild,pv, out);
-        break;
-    default:
-        out->prtt("Error_PrtAddon_before");
-        break;
+        case IA_AddImmed:
+            out->prtt("(");
+            prt_va_1(pa->pChild,pv, out);
+            out->prtf(" + %d)", pa->addimmed.iAddon);
+            break;
+        case IA_MulImmed:
+            prt_va_1(pa->pChild,pv, out);
+            out->prtf(" * %d", pa->addimmed.iAddon);
+            break;
+        case IA_GetAddress:
+            out->prtt("&");
+            prt_va_1(pa->pChild,pv, out);
+            break;
+        default:
+            out->prtt("Error_PrtAddon_before");
+            break;
     }
 }
 void 	CFunc_Prt::prt_va(const VAR_ADDON& va, XmlOutPro* out)
@@ -250,49 +250,49 @@ void	CFunc_Prt::prt_jxx_compare_false(Instruction * &pjxx, XmlOutPro* out)
 {
     //	after this, pjxx really point to the JXX
     CFunc_InstrList instrl(m_my_func->m_instr_list);
-        Instruction * p1 = pjxx;
-        if (p1->type == i_Begin)
-        {	// There may be short, such as if ((x = getx ())! = 0)
-                prt_compare(p1, out);
-                p1 = p1->begin.m_end;
-                pjxx = instrl.instr_next_in_func(p1);
-        }
+    Instruction * p1 = pjxx;
+    if (p1->type == i_Begin)
+    {	// There may be short, such as if ((x = getx ())! = 0)
+        prt_compare(p1, out);
+        p1 = p1->begin.m_end;
+        pjxx = instrl.instr_next_in_func(p1);
+    }
 
-        if (pjxx->type != i_Jump)
-        {
-                alert_prtf("pjxx->type = %x",pjxx->type);
-        }
-        assert(pjxx->type == i_Jump);
+    if (pjxx->type != i_Jump)
+    {
+        alert_prtf("pjxx->type = %x",pjxx->type);
+    }
+    assert(pjxx->type == i_Jump);
 
-        if (pjxx->var_r1.type)
-        {
+    if (pjxx->var_r1.type)
+    {
         this->prt_va(pjxx->va_r1, out);
 
-                //cpp_prtf(" >< ");
-                const char * str = " >< ";
-                switch (pjxx->jmp.jmp_type)
-                {
-                case JMP_jnz:	str = " == ";	break;
-                case JMP_jz:	str = " != ";	break;
+        //cpp_prtf(" >< ");
+        const char * str = " >< ";
+        switch (pjxx->jmp.jmp_type)
+        {
+            case JMP_jnz:	str = " == ";	break;
+            case JMP_jz:	str = " != ";	break;
 
-                case JMP_ja:	str = " <= ";	break;	//unsigned
-                case JMP_jb:	str = " >= ";	break;	//unsigned
-                case JMP_jna:	str = " > ";	break;	//unsigned
-                case JMP_jnb:	str = " < ";	break;	//unsigned
+            case JMP_ja:	str = " <= ";	break;	//unsigned
+            case JMP_jb:	str = " >= ";	break;	//unsigned
+            case JMP_jna:	str = " > ";	break;	//unsigned
+            case JMP_jnb:	str = " < ";	break;	//unsigned
 
-                case JMP_jg:	str = " <= ";	break;	//signed
-                case JMP_jl:	str = " >= ";	break;	//signed
-                case JMP_jng:	str = " > ";	break;	//signed
-                case JMP_jnl:	str = " < ";	break;	//signed
-        default:
-            assert( !"Not a Jxx jump.");
-            break;
-                }
-                out->prtt(str);
-        this->prt_va(pjxx->va_r2, out);
+            case JMP_jg:	str = " <= ";	break;	//signed
+            case JMP_jl:	str = " >= ";	break;	//signed
+            case JMP_jng:	str = " > ";	break;	//signed
+            case JMP_jnl:	str = " < ";	break;	//signed
+            default:
+                assert( !"Not a Jxx jump.");
+                break;
         }
-        else
-                out->prtt(" ?? >< ?? ");
+        out->prtt(str);
+        this->prt_va(pjxx->va_r2, out);
+    }
+    else
+        out->prtt(" ?? >< ?? ");
 }
 
 void	CFunc_Prt::prt_one_statement(const Instruction *phead, XmlOutPro* out)
@@ -328,21 +328,21 @@ void	CFunc_Prt::prt_one_statement(const Instruction *phead, XmlOutPro* out)
 
 void	CFunc_Prt::prt_switch_case(CasePrt_List* list, const Instruction* phead, XmlOutPro* out)
 {
-        out->prtl_ident("// list count = %d",list->size());
-        CasePrt_List::iterator pos = list->begin();
-        OneCase* p;
+    out->prtl_ident("// list count = %d",list->size());
+    CasePrt_List::iterator pos = list->begin();
+    OneCase* p;
     for (;pos!=list->end();++pos)
-        {
+    {
         p = *pos;
-                out->prtl_ident("case %d:", p->case_n);
+        out->prtl_ident("case %d:", p->case_n);
 
-                CasePrt_List::iterator savpos = pos;
+        CasePrt_List::iterator savpos = pos;
         OneCase* pnext = *(++savpos);
-                if (p->thelabel->label.label_off == pnext->thelabel->label.label_off)
-                {	//	Would not have printed the same
-                        continue;
-                }
-                prt_case(phead, p->thelabel, out);
+        if (p->thelabel->label.label_off == pnext->thelabel->label.label_off)
+        {	//	Would not have printed the same
+            continue;
+        }
+        prt_case(phead, p->thelabel, out);
     }
     // default case
     p = *pos;
@@ -413,21 +413,21 @@ void	CFunc_Prt::prt_jxx_compare_true(Instruction * &pjxx, XmlOutPro* out)
         const char * str = " >< ";
         switch (pjxx->jmp.jmp_type)
         {
-        case JMP_jz:	str = " == ";	break;
-        case JMP_jnz:	str = " != ";	break;
+            case JMP_jz:	str = " == ";	break;
+            case JMP_jnz:	str = " != ";	break;
 
-        case JMP_jna:	str = " <= ";	break;	//unsigned
-        case JMP_jnb:	str = " >= ";	break;	//unsigned
-        case JMP_ja:	str = " > ";	break;	//unsigned
-        case JMP_jb:	str = " < ";	break;	//unsigned
+            case JMP_jna:	str = " <= ";	break;	//unsigned
+            case JMP_jnb:	str = " >= ";	break;	//unsigned
+            case JMP_ja:	str = " > ";	break;	//unsigned
+            case JMP_jb:	str = " < ";	break;	//unsigned
 
-        case JMP_jng:	str = " <= ";	break;	//signed
-        case JMP_jnl:	str = " >= ";	break;	//signed
-        case JMP_jg:	str = " > ";	break;	//signed
-        case JMP_jl:	str = " < ";	break;	//signed
-        default:
-            assert(!"Not a Jxx.");
-            break;
+            case JMP_jng:	str = " <= ";	break;	//signed
+            case JMP_jnl:	str = " >= ";	break;	//signed
+            case JMP_jg:	str = " > ";	break;	//signed
+            case JMP_jl:	str = " < ";	break;	//signed
+            default:
+                assert(!"Not a Jxx.");
+                break;
         }
         out->prtt(str);
         this->prt_va(pjxx->va_r2, out);
@@ -440,8 +440,8 @@ void	CFunc_Prt::prt_compare(const Instruction * phead, XmlOutPro* out)
 // print while () brackets things.
 // features: no line breaks, the last big number
 {
-        // This being the first
-        prt_one_statement(phead, out);
+    // This being the first
+    prt_one_statement(phead, out);
 }
 
 
@@ -490,110 +490,110 @@ void	CFunc_Prt::prt_the_instr_1(const Instruction *p, XmlOutPro* out)
 {
     switch (p->type)
     {
-    case i_Cmp:
-        out->prtt("cmp ");
-        this->prt_va(p->va_r1, out);
-        out->prtt(" , ");
-        this->prt_va(p->va_r2, out);
-        break;
+        case i_Cmp:
+            out->prtt("cmp ");
+            this->prt_va(p->va_r1, out);
+            out->prtt(" , ");
+            this->prt_va(p->va_r2, out);
+            break;
 
-    case i_Unknown:
-        out->prtt("unknown");
-        break;
-    case i_Return:
-        out->XMLbegin(XT_Keyword, NULL);
-        out->prtt("return");
-        out->XMLend(XT_Keyword);
-        break;
-    case i_Imul:	prt_add(p, "*" , out); return;
-    case i_Add:	prt_add(p, "+" , out); return;
-    case i_Sub:	prt_sub(p, "-" , out); return;
-    case i_And:	prt_add(p, "&" , out); return;
-    case i_Sar:	prt_sub(p, ">>", out); return;
-    case i_Shl:	prt_sub(p, "<<", out); return;
-    case i_Shr:	prt_sub(p, ">>", out); return;
-    case i_Xor:
-        if (VAR::IsSame(&p->var_r1, &p->var_r2))
+        case i_Unknown:
+            out->prtt("unknown");
+            break;
+        case i_Return:
+            out->XMLbegin(XT_Keyword, NULL);
+            out->prtt("return");
+            out->XMLend(XT_Keyword);
+            break;
+        case i_Imul:	prt_add(p, "*" , out); return;
+        case i_Add:	prt_add(p, "+" , out); return;
+        case i_Sub:	prt_sub(p, "-" , out); return;
+        case i_And:	prt_add(p, "&" , out); return;
+        case i_Sar:	prt_sub(p, ">>", out); return;
+        case i_Shl:	prt_sub(p, "<<", out); return;
+        case i_Shr:	prt_sub(p, ">>", out); return;
+        case i_Xor:
+            if (VAR::IsSame(&p->var_r1, &p->var_r2))
+            {
+                this->prt_var(&p->var_w, out);
+                out->prtt(" = 0");	// xor eax,eax means eax = 0
+                return;
+            }
+            prt_add(p,"^",out);
+            return;
+        case i_SignExpand:
+        case i_NosignExpand:
+        case i_Assign:
         {
-            this->prt_var(&p->var_w, out);
-            out->prtt(" = 0");	// xor eax,eax means eax = 0
+            if (!p->var_w.IfTemVar())
+            {
+                out->XMLbegin(XT_Symbol, p->var_w.thevar);
+                out->prtt(BareVarName(&p->var_w));
+                out->XMLend(XT_Symbol);
+                out->prtt("= ");
+            }
+            this->prt_va(p->va_r1, out);
+
             return;
         }
-        prt_add(p,"^",out);
-        return;
-    case i_SignExpand:
-    case i_NosignExpand:
-    case i_Assign:
-    {
-        if (!p->var_w.IfTemVar())
+        case i_Readpointto:
         {
-            out->XMLbegin(XT_Symbol, p->var_w.thevar);
-            out->prtt(BareVarName(&p->var_w));
-            out->XMLend(XT_Symbol);
-            out->prtt("= ");
-        }
-        this->prt_va(p->va_r1, out);
+            if (!p->var_w.IfTemVar())
+            {
+                out->XMLbegin(XT_Symbol, p->var_w.thevar);
+                out->prtt(BareVarName(&p->var_w));
+                out->XMLend(XT_Symbol);
+                out->prtt("= ");
+            }
+            out->prtt("*");
+            this->prt_va(p->va_r1, out);
 
-        return;
-    }
-    case i_Readpointto:
-    {
-        if (!p->var_w.IfTemVar())
-        {
-            out->XMLbegin(XT_Symbol, p->var_w.thevar);
-            out->prtt(BareVarName(&p->var_w));
-            out->XMLend(XT_Symbol);
-            out->prtt("= ");
+            return;
         }
-        out->prtt("*");
-        this->prt_va(p->va_r1, out);
-
-        return;
-    }
-    case i_Address:
-    {
-        if (!p->var_w.IfTemVar())
+        case i_Address:
         {
-            this->prt_var(&p->var_w, out);
+            if (!p->var_w.IfTemVar())
+            {
+                this->prt_var(&p->var_w, out);
+                out->prtt(" = ");
+                this->prt_iAddress_out(p, out);
+            }
+            else
+            {
+                out->prtt("(");
+                this->prt_iAddress_out(p, out);
+                out->prtt(")");
+            }
+
+            return;
+        }
+        case i_GetAddr:
+        {
+            if (!p->var_w.IfTemVar())
+            {
+                out->XMLbegin(XT_Symbol, p->var_w.thevar);
+                out->prtt(BareVarName(&p->var_w));
+                out->XMLend(XT_Symbol);
+                out->prtt("= ");
+            }
+            out->prtt("&");
+            this->prt_va(p->va_r1, out);
+            return;
+        }
+        case i_Writepointto:
+            this->out_PointTo(p->va_r1.pao, &p->var_r1, out);
+            //out->prtt("*");
+            //this->prt_va(p->va_r1);
             out->prtt(" = ");
-            this->prt_iAddress_out(p, out);
-        }
-        else
+            this->prt_va(p->va_r2, out);
+            break;
+        case i_EspReport:   //nothing
+            break;
+        default:
         {
-            out->prtt("(");
-            this->prt_iAddress_out(p, out);
-            out->prtt(")");
+            out->prtf("--XX-- %x", p->type);
+            return;
         }
-
-        return;
-    }
-    case i_GetAddr:
-    {
-        if (!p->var_w.IfTemVar())
-        {
-            out->XMLbegin(XT_Symbol, p->var_w.thevar);
-            out->prtt(BareVarName(&p->var_w));
-            out->XMLend(XT_Symbol);
-            out->prtt("= ");
-        }
-        out->prtt("&");
-        this->prt_va(p->va_r1, out);
-        return;
-    }
-    case i_Writepointto:
-        this->out_PointTo(p->va_r1.pao, &p->var_r1, out);
-        //out->prtt("*");
-        //this->prt_va(p->va_r1);
-        out->prtt(" = ");
-        this->prt_va(p->va_r2, out);
-        break;
-    case i_EspReport:   //nothing
-        break;
-    default:
-    {
-        out->prtf("--XX-- %x", p->type);
-        return;
-    }
     }
 }
 void	CFunc_Prt::prt_sub(const Instruction *p, const char * s, XmlOutPro* out)
@@ -885,373 +885,373 @@ void	CFunc_Prt::prt_instr(const Instruction * p, POSITION &nextpos, XmlOutPro* o
     }
     switch (p->type)
     {
-    case i_CplxBegin:
-    {
-        //char buf[140];
-        //prt_partern(this->m_instr_list,p,buf);
-        //prtl_ident("// complex partern = %s",buf);
-        switch (p->begin.type)
+        case i_CplxBegin:
         {
-        case COMP_if:
-            out->ident();
-            out->XMLbegin(XT_Keyword, NULL);
-            out->prtt("if");
-            out->XMLend(XT_Keyword);
-            out->prtt("(");
-            p1 = instrl.instr_next_in_func(p);
-            prt_jxx_compare_false(p1, out);
-            out->prtl(")");
-            p1 = instrl.instr_next_in_func(p1);
-            prt_one_statement(p1, out);
-        break;
-        case COMP_long_if:
-            out->ident();
-            out->XMLbegin(XT_Keyword, NULL);
-            out->prtt("if");
-            out->XMLend(XT_Keyword);
-            out->prtt("(");
-            p1 = instrl.instr_next_in_func(p);
-            prt_jxx_compare_true(p1, out);
-            out->prtl(")");
-            p1 = instrl.instr_next_in_func(p1);	//	skip the jxx
-            p1 = instrl.instr_next_in_func(p1);	//	skip the jmp
-            p1 = instrl.instr_next_in_func(p1);	//	skip the label
-            prt_one_statement(p1, out);
-        break;
-        case COMP_if_else: // = "0_jxx1_0_jmp2_from1_0_from2_";
-            out->ident();
-            out->XMLbegin(XT_Keyword, NULL);
-            out->prtt("if");
-            out->XMLend(XT_Keyword);
-            out->prtt("(");
-            p1 = instrl.instr_next_in_func(p);
-            prt_jxx_compare_false(p1, out);
-            out->prtl(")");
-
-            p1 = instrl.instr_next_in_func(p1);
-            prt_one_statement(p1, out);
-
-            out->ident();
-            out->XMLbegin(XT_Keyword, NULL);
-            out->prtt("else");
-            out->XMLend(XT_Keyword);
-            out->endline();
-
-            p1 = instrl.instr_next_in_func(p1->begin.m_end);	//jmp2
-            p1 = instrl.instr_next_in_func(p1);				//from1
-            p1 = instrl.instr_next_in_func(p1);				//the statement
-
-            prt_one_statement(p1, out);
-        break;
-        case COMP_while:
-            out->ident();
-            out->XMLbegin(XT_Keyword, NULL);
-            out->prtt("while");
-            out->XMLend(XT_Keyword);
-            out->prtt("(");
-
-            p1 = instrl.instr_next_in_func(p);
-            p1 = instrl.instr_next_in_func(p1);	//	skip the first, its label
-            prt_jxx_compare_false(p1, out);
-            out->prtl(")");
-            //prtl_ident("//while begin");
-            p1 = instrl.instr_next_in_func(p1);
-            prt_one_statement(p1, out);
-            //prtl_ident("//while end");
-        break;
-        case COMP_do_while:
-            out->ident();
-            out->XMLbegin(XT_Keyword, NULL);
-            out->prtt("do");
-            out->XMLend(XT_Keyword);
-            out->endline();
-
-            p1 = instrl.instr_next_in_func(p);
-            p1 = instrl.instr_next_in_func(p1);	//	skip the first, its label
-            prt_one_statement(p1, out);
-
-            out->ident();
-            out->XMLbegin(XT_Keyword, NULL);
-            out->prtt("while");
-            out->XMLend(XT_Keyword);
-            out->prtt("(");
-
-            p1 = instrl.instr_next_in_func(p1->begin.m_end);
-            prt_jxx_compare_true(p1, out);
-            out->prtt(")");
-            out->EOL();
-        break;
-        case COMP_for1:
-        {
-            out->ident();
-            out->XMLbegin(XT_Keyword, NULL);
-            out->prtt("for");
-            out->XMLend(XT_Keyword);
-            out->prtt("(");
-
-            p1 = instrl.instr_next_in_func(p);
-
-            prt_statement_in_1_line(p1, out);
-            assert(p1->type == i_Label);
-            Instruction * p2 = instrl.instr_next_in_func(p1);
-            p1 = p1->label.ref_instr;
-            prt_jxx_compare_true(p1, out);
-            out->prtt("; ");
+            //char buf[140];
+            //prt_partern(this->m_instr_list,p,buf);
+            //prtl_ident("// complex partern = %s",buf);
+            switch (p->begin.type)
             {
-                Instruction * p3 = instrl.skip_compl(p2);
-                prt_statement_in_1_line(p3, out);
-                out->prtl(")");
+                case COMP_if:
+                    out->ident();
+                    out->XMLbegin(XT_Keyword, NULL);
+                    out->prtt("if");
+                    out->XMLend(XT_Keyword);
+                    out->prtt("(");
+                    p1 = instrl.instr_next_in_func(p);
+                    prt_jxx_compare_false(p1, out);
+                    out->prtl(")");
+                    p1 = instrl.instr_next_in_func(p1);
+                    prt_one_statement(p1, out);
+                    break;
+                case COMP_long_if:
+                    out->ident();
+                    out->XMLbegin(XT_Keyword, NULL);
+                    out->prtt("if");
+                    out->XMLend(XT_Keyword);
+                    out->prtt("(");
+                    p1 = instrl.instr_next_in_func(p);
+                    prt_jxx_compare_true(p1, out);
+                    out->prtl(")");
+                    p1 = instrl.instr_next_in_func(p1);	//	skip the jxx
+                    p1 = instrl.instr_next_in_func(p1);	//	skip the jmp
+                    p1 = instrl.instr_next_in_func(p1);	//	skip the label
+                    prt_one_statement(p1, out);
+                    break;
+                case COMP_if_else: // = "0_jxx1_0_jmp2_from1_0_from2_";
+                    out->ident();
+                    out->XMLbegin(XT_Keyword, NULL);
+                    out->prtt("if");
+                    out->XMLend(XT_Keyword);
+                    out->prtt("(");
+                    p1 = instrl.instr_next_in_func(p);
+                    prt_jxx_compare_false(p1, out);
+                    out->prtl(")");
+
+                    p1 = instrl.instr_next_in_func(p1);
+                    prt_one_statement(p1, out);
+
+                    out->ident();
+                    out->XMLbegin(XT_Keyword, NULL);
+                    out->prtt("else");
+                    out->XMLend(XT_Keyword);
+                    out->endline();
+
+                    p1 = instrl.instr_next_in_func(p1->begin.m_end);	//jmp2
+                    p1 = instrl.instr_next_in_func(p1);				//from1
+                    p1 = instrl.instr_next_in_func(p1);				//the statement
+
+                    prt_one_statement(p1, out);
+                    break;
+                case COMP_while:
+                    out->ident();
+                    out->XMLbegin(XT_Keyword, NULL);
+                    out->prtt("while");
+                    out->XMLend(XT_Keyword);
+                    out->prtt("(");
+
+                    p1 = instrl.instr_next_in_func(p);
+                    p1 = instrl.instr_next_in_func(p1);	//	skip the first, its label
+                    prt_jxx_compare_false(p1, out);
+                    out->prtl(")");
+                    //prtl_ident("//while begin");
+                    p1 = instrl.instr_next_in_func(p1);
+                    prt_one_statement(p1, out);
+                    //prtl_ident("//while end");
+                    break;
+                case COMP_do_while:
+                    out->ident();
+                    out->XMLbegin(XT_Keyword, NULL);
+                    out->prtt("do");
+                    out->XMLend(XT_Keyword);
+                    out->endline();
+
+                    p1 = instrl.instr_next_in_func(p);
+                    p1 = instrl.instr_next_in_func(p1);	//	skip the first, its label
+                    prt_one_statement(p1, out);
+
+                    out->ident();
+                    out->XMLbegin(XT_Keyword, NULL);
+                    out->prtt("while");
+                    out->XMLend(XT_Keyword);
+                    out->prtt("(");
+
+                    p1 = instrl.instr_next_in_func(p1->begin.m_end);
+                    prt_jxx_compare_true(p1, out);
+                    out->prtt(")");
+                    out->EOL();
+                    break;
+                case COMP_for1:
+                {
+                    out->ident();
+                    out->XMLbegin(XT_Keyword, NULL);
+                    out->prtt("for");
+                    out->XMLend(XT_Keyword);
+                    out->prtt("(");
+
+                    p1 = instrl.instr_next_in_func(p);
+
+                    prt_statement_in_1_line(p1, out);
+                    assert(p1->type == i_Label);
+                    Instruction * p2 = instrl.instr_next_in_func(p1);
+                    p1 = p1->label.ref_instr;
+                    prt_jxx_compare_true(p1, out);
+                    out->prtt("; ");
+                    {
+                        Instruction * p3 = instrl.skip_compl(p2);
+                        prt_statement_in_1_line(p3, out);
+                        out->prtl(")");
+                    }
+                    prt_one_statement(p2, out);			//	the main body
+                    break;
+                }
+                case COMP_for:
+                    //cpp_prtl("//for find");
+                    //break;
+                {	//	finger_for[] = "0_jmp1_from2_0_from1_0_jxx3_0_jmp2_from3_";
+                    out->ident();
+                    out->XMLbegin(XT_Keyword, NULL);
+                    out->prtt("for");
+                    out->XMLend(XT_Keyword);
+                    out->prtt("(");
+
+                    p1 = instrl.instr_next_in_func(p);
+
+                    prt_statement_in_1_line(p1, out);
+                    if (p1->type != i_Jump)
+                    {
+                        alert_prtf("type is %s",hlcode_name(p1->type));
+                    }
+                    assert(p1->type == i_Jump);
+                    out->prtt("; ");
+
+                    Instruction * p2 = instrl.instr_next_in_func(p1);
+                    p2 = instrl.instr_next_in_func(p2);	//	skip the label
+
+                    assert(p1->type == i_Jump);
+                    p1 = p1->jmp.target_label;
+                    p1 = instrl.instr_next_in_func(p1);	//	skip the label
+                    prt_jxx_compare_false(p1, out);
+                    out->prtt("; ");
+
+                    prt_statement_in_1_line(p2, out);
+                    out->prtl(")");
+
+
+                    assert(p1->type == i_Jump);
+                    p1 = instrl.instr_next_in_func(p1);	//	skip this jxx
+                    prt_one_statement(p1, out);			//	the main body
+                }
+                    break;
+                case COMP_switch_case:
+                {	//	Careful, swith_case very difficult to display
+                    out->prtf_ident("switch (");
+                    p1 = instrl.instr_next_in_func(p);
+                    assert(p1->type == i_Jump);		//	Conditions must be a jump start
+                    //while (p1->type != i_JmpAddr)
+                    //{
+                    //	p1 = instrl.instr_next_in_func(p1);
+                    //}
+                    this->prt_va(p1->va_r1, out);
+                    out->prtl(")");
+                    out->prtl_ident("{");
+                    CasePrt_List lstt;
+                    while (p1->type != i_Jump || p1->jmp.jmp_type != JMP_case)
+                    {
+                        p1 = instrl.instr_next_in_func(p1);
+                    }
+                    int n = 0;
+                    while (p1->type == i_Jump && p1->jmp.jmp_type == JMP_case)
+                    {
+                        //prtl_ident("case %d:",n++);
+                        //prt_case(p,p1->jmp.the_label);
+                        Add_case_entry(&lstt, n++, p1->jmp.target_label);
+                        p1 = instrl.instr_next_in_func(p1);
+                    }
+                    p1 = instrl.instr_next_in_func(p);
+                    //prtl_ident("default:");
+                    //prt_case(p,p1->jmp.the_label);
+                    add_default_entry(&lstt, p1->jmp.target_label);
+                    prt_switch_case(&lstt,p,out);
+                    out->prtl_ident("}");
+                }
+                    break;
+                case COMP_switch_case_multcomp:
+                {	//	小心了，swith_case的显示很困难的
+                    out->prtf_ident("switch (");
+                    p1 = instrl.instr_next_in_func(p);
+                    assert(p1->type == i_Jump);		//	开头肯定是个条件跳
+                    //while (p1->type != i_JmpAddr)
+                    //{
+                    //	p1 = instrl.instr_next_in_func(p1);
+                    //}
+                    this->prt_va(p1->va_r1, out);
+                    out->prtl(")");
+                    out->prtl_ident("{");
+                    //	这里还有一点小麻烦，不能按case的次序打印，而要按实际处理地址的次序打印
+                    //	才能解决case延续和default问题
+                    CasePrt_List lstt;
+                    while (p1->type == i_Jump && p1->jmp.jmp_type == JMP_jz)
+                    {
+                        assert(p1->var_r2.type == v_Immed);
+                        Add_case_entry(&lstt, p1->var_r2.d, p1->jmp.target_label);
+                        //prtl_ident("case %d:", p1->var_r2.d);
+                        //prt_case(p,p1->jmp.the_label);
+                        p1 = instrl.instr_next_in_func(p1);
+                    }
+                    if (p1->type == i_Jump && p1->jmp.jmp_type == JMP_jmp)
+                    {
+                        //prtl_ident("default:");
+                        //prt_case(p,p1->jmp.the_label);
+                        add_default_entry(&lstt, p1->jmp.target_label);
+                    }
+                    else
+                    {
+                        add_default_entry(&lstt, p1);
+                        //error("default error");
+                    }
+                    prt_switch_case(&lstt,p,out);
+                    out->prtl_ident("}");
+                }
+                    break;
+                default:
+                    out->prtl("//unknow cmplx statement");
+                    break;
             }
-            prt_one_statement(p2, out);			//	the main body
-            break;
-        }
-        case COMP_for:
-            //cpp_prtl("//for find");
-            //break;
-        {	//	finger_for[] = "0_jmp1_from2_0_from1_0_jxx3_0_jmp2_from3_";
-            out->ident();
-            out->XMLbegin(XT_Keyword, NULL);
-            out->prtt("for");
-            out->XMLend(XT_Keyword);
-            out->prtt("(");
-
-            p1 = instrl.instr_next_in_func(p);
-
-            prt_statement_in_1_line(p1, out);
-            if (p1->type != i_Jump)
+            //if (p->begin.type != COMP_unknown && p->begin.type != COMP_for)
+            //if (p->begin.type != COMP_unknown && p->begin.type != COMP_switch_case)
+            if (p->begin.type != COMP_unknown)
             {
-                alert_prtf("type is %s",hlcode_name(p1->type));
-            }
-            assert(p1->type == i_Jump);
-            out->prtt("; ");
-
-            Instruction * p2 = instrl.instr_next_in_func(p1);
-            p2 = instrl.instr_next_in_func(p2);	//	skip the label
-
-            assert(p1->type == i_Jump);
-            p1 = p1->jmp.target_label;
-            p1 = instrl.instr_next_in_func(p1);	//	skip the label
-            prt_jxx_compare_false(p1, out);
-            out->prtt("; ");
-
-            prt_statement_in_1_line(p2, out);
-            out->prtl(")");
-
-
-            assert(p1->type == i_Jump);
-            p1 = instrl.instr_next_in_func(p1);	//	skip this jxx
-            prt_one_statement(p1, out);			//	the main body
-        }
-        break;
-        case COMP_switch_case:
-        {	//	Careful, swith_case very difficult to display
-            out->prtf_ident("switch (");
-            p1 = instrl.instr_next_in_func(p);
-            assert(p1->type == i_Jump);		//	Conditions must be a jump start
-            //while (p1->type != i_JmpAddr)
-            //{
-            //	p1 = instrl.instr_next_in_func(p1);
-            //}
-            this->prt_va(p1->va_r1, out);
-            out->prtl(")");
-            out->prtl_ident("{");
-            CasePrt_List lstt;
-            while (p1->type != i_Jump || p1->jmp.jmp_type != JMP_case)
-            {
-                p1 = instrl.instr_next_in_func(p1);
-            }
-            int n = 0;
-            while (p1->type == i_Jump && p1->jmp.jmp_type == JMP_case)
-            {
-                //prtl_ident("case %d:",n++);
-                //prt_case(p,p1->jmp.the_label);
-                Add_case_entry(&lstt, n++, p1->jmp.target_label);
-                p1 = instrl.instr_next_in_func(p1);
-            }
-            p1 = instrl.instr_next_in_func(p);
-            //prtl_ident("default:");
-            //prt_case(p,p1->jmp.the_label);
-            add_default_entry(&lstt, p1->jmp.target_label);
-            prt_switch_case(&lstt,p,out);
-            out->prtl_ident("}");
-        }
-        break;
-        case COMP_switch_case_multcomp:
-        {	//	小心了，swith_case的显示很困难的
-            out->prtf_ident("switch (");
-            p1 = instrl.instr_next_in_func(p);
-            assert(p1->type == i_Jump);		//	开头肯定是个条件跳
-            //while (p1->type != i_JmpAddr)
-            //{
-            //	p1 = instrl.instr_next_in_func(p1);
-            //}
-            this->prt_va(p1->va_r1, out);
-            out->prtl(")");
-            out->prtl_ident("{");
-            //	这里还有一点小麻烦，不能按case的次序打印，而要按实际处理地址的次序打印
-            //	才能解决case延续和default问题
-            CasePrt_List lstt;
-            while (p1->type == i_Jump && p1->jmp.jmp_type == JMP_jz)
-            {
-                assert(p1->var_r2.type == v_Immed);
-                Add_case_entry(&lstt, p1->var_r2.d, p1->jmp.target_label);
-                //prtl_ident("case %d:", p1->var_r2.d);
-                //prt_case(p,p1->jmp.the_label);
-                p1 = instrl.instr_next_in_func(p1);
-            }
-            if (p1->type == i_Jump && p1->jmp.jmp_type == JMP_jmp)
-            {
-                //prtl_ident("default:");
-                //prt_case(p,p1->jmp.the_label);
-                add_default_entry(&lstt, p1->jmp.target_label);
+                nextpos = std::find(m_my_func->m_instr_list.begin(),m_my_func->m_instr_list.end(),p->begin.m_end);
+                ++nextpos;
             }
             else
             {
-                add_default_entry(&lstt, p1);
-                //error("default error");
+                out->prtl_ident("{");
+                out->ident_add1();
             }
-            prt_switch_case(&lstt,p,out);
-            out->prtl_ident("}");
         }
-        break;
-        default:
-            out->prtl("//unknow cmplx statement");
             break;
-        }
-        //if (p->begin.type != COMP_unknown && p->begin.type != COMP_for)
-        //if (p->begin.type != COMP_unknown && p->begin.type != COMP_switch_case)
-        if (p->begin.type != COMP_unknown)
-        {
-            nextpos = std::find(m_my_func->m_instr_list.begin(),m_my_func->m_instr_list.end(),p->begin.m_end);
-            ++nextpos;
-        }
-        else
-        {
+
+        case i_Begin:
             out->prtl_ident("{");
             out->ident_add1();
-        }
-    }
-    break;
-
-    case i_Begin:
-        out->prtl_ident("{");
-        out->ident_add1();
-        break;
-    case i_CplxEnd:
-    case i_End:
-        out->ident_sub1();
-        out->prtl_ident("}");
-        break;
-    case i_Label:
-        out->XMLbegin(XT_AsmLabel, (void*)p->label.label_off);
-        out->prtf("L_%08x", p->label.label_off);
-        out->XMLend(XT_AsmLabel);
-        out->prtl(":");
-        break;
-    case i_Jump:
-        if (p->jmp.jmp_type == JMP_jmp)
-        {
-            const Instruction *p1 = p;
-            while (p1->type != i_Begin && p1->type != i_CplxBegin)
+            break;
+        case i_CplxEnd:
+        case i_End:
+            out->ident_sub1();
+            out->prtl_ident("}");
+            break;
+        case i_Label:
+            out->XMLbegin(XT_AsmLabel, (void*)p->label.label_off);
+            out->prtf("L_%08x", p->label.label_off);
+            out->XMLend(XT_AsmLabel);
+            out->prtl(":");
+            break;
+        case i_Jump:
+            if (p->jmp.jmp_type == JMP_jmp)
             {
-                p1 = instrl.instr_prev_in_func(p1);
-            }
-            if (p->jmp.target_label == p1->begin.m_break)
-            {
-                out->prtf_ident("break");
-                out->EOL();
-            }
-            else if (p->jmp.target_label == p1->begin.m_conti
-                     && p != p1->begin.m_not_conti)
-            {
-                out->prtf_ident("continue");
-                out->EOL();
+                const Instruction *p1 = p;
+                while (p1->type != i_Begin && p1->type != i_CplxBegin)
+                {
+                    p1 = instrl.instr_prev_in_func(p1);
+                }
+                if (p->jmp.target_label == p1->begin.m_break)
+                {
+                    out->prtf_ident("break");
+                    out->EOL();
+                }
+                else if (p->jmp.target_label == p1->begin.m_conti
+                         && p != p1->begin.m_not_conti)
+                {
+                    out->prtf_ident("continue");
+                    out->EOL();
+                }
+                else
+                {
+                    out->prtf_ident("JMP ");
+                    out->XMLbegin(XT_AsmLabel, (void*)p->jmp.jmpto_off);
+                    out->prtf("L_%08x", p->jmp.jmpto_off);
+                    out->XMLend(XT_AsmLabel);
+                    out->EOL();
+                }
             }
             else
             {
-                out->prtf_ident("JMP ");
+                out->prtf_ident("Jxx ");
                 out->XMLbegin(XT_AsmLabel, (void*)p->jmp.jmpto_off);
                 out->prtf("L_%08x", p->jmp.jmpto_off);
                 out->XMLend(XT_AsmLabel);
+                if (p->var_r1.thevar != NULL)
+                {
+                    out->prtt("(");
+                    this->prt_va(p->va_r1, out);
+                    out->prtt(" ");
+                    this->prt_va(p->va_r2, out);
+                    out->prtt(")");
+                }
                 out->EOL();
             }
-        }
-        else
+            break;
+
+        case i_CallApi:
+        case i_Call:
+            if (prt_instr_callret(nextpos, out))
+                break;  //This is because a tem i_CallRet
+            prt_instr_callthis(nextpos, out);
+            prt_instr_call(p, out);
+            out->EOL();
+
+            break;
+        case i_CallPara:
+        case i_CallThis:
+        case i_CallRet:
+            break;
+        case i_RetPar:
         {
-            out->prtf_ident("Jxx ");
-            out->XMLbegin(XT_AsmLabel, (void*)p->jmp.jmpto_off);
-            out->prtf("L_%08x", p->jmp.jmpto_off);
-            out->XMLend(XT_AsmLabel);
-            if (p->var_r1.thevar != NULL)
+            out->ident();
+            out->XMLbegin(XT_Keyword, NULL);
+            out->prtt("return");
+            out->XMLend(XT_Keyword);
+            this->prt_va(p->va_r1, out);
+            POSITION pos = nextpos;
+            bool ffirst = true;
+            for (;;)
             {
-                out->prtt("(");
-                this->prt_va(p->va_r1, out);
-                out->prtt(" ");
-                this->prt_va(p->va_r2, out);
-                out->prtt(")");
+                Instruction * p1 = *pos;
+                ++pos;
+                if (p1->type == i_RetPar)
+                {
+                    //alert("prt here");
+                    nextpos = pos;
+                    if (! ffirst)
+                    {
+                        out->nospace();
+                        out->prtt(",");
+                    }
+                    this->prt_va(p1->va_r1, out);
+                    ffirst = false;
+                }
+                else if (p1->type == i_Return)
+                {
+                    nextpos = pos;
+                    break;
+                }
+                else
+                    break;
             }
             out->EOL();
         }
-        break;
+            break;
+        case i_EspReport:   //nothing
+            break;
+        default:
 
-    case i_CallApi:
-    case i_Call:
-        if (prt_instr_callret(nextpos, out))
-            break;  //This is because a tem i_CallRet
-        prt_instr_callthis(nextpos, out);
-        prt_instr_call(p, out);
-        out->EOL();
-
-        break;
-    case i_CallPara:
-    case i_CallThis:
-    case i_CallRet:
-        break;
-    case i_RetPar:
-    {
-        out->ident();
-        out->XMLbegin(XT_Keyword, NULL);
-        out->prtt("return");
-        out->XMLend(XT_Keyword);
-        this->prt_va(p->va_r1, out);
-        POSITION pos = nextpos;
-        bool ffirst = true;
-        for (;;)
-        {
-            Instruction * p1 = *pos;
-            ++pos;
-            if (p1->type == i_RetPar)
+            if (!p->var_w.IfTemVar())
             {
-                //alert("prt here");
-                nextpos = pos;
-                if (! ffirst)
-                {
-                    out->nospace();
-                    out->prtt(",");
-                }
-                this->prt_va(p1->va_r1, out);
-                ffirst = false;
+                out->ident(); prt_the_instr_1(p, out); out->EOL();
             }
-            else if (p1->type == i_Return)
-            {
-                nextpos = pos;
-                break;
-            }
-            else
-                break;
-        }
-        out->EOL();
-    }
-    break;
-    case i_EspReport:   //nothing
-        break;
-    default:
-
-        if (!p->var_w.IfTemVar())
-        {
-            out->ident(); prt_the_instr_1(p, out); out->EOL();
-        }
-        break;
+            break;
     }
 }
 //---------------------

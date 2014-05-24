@@ -264,36 +264,36 @@ int	VAR::VarCompare(const VAR* v1,const VAR* v2)
 
     switch (v1->type)
     {
-    case v_Volatile:
-        return 1;   //same
-    case v_Reg:
-        off1 = v1->reg;
-        off2 = v2->reg;
-        break;
-    case v_Immed:
-        off1 = v1->d;
-        off2 = v2->d;
-        break;
-    case v_Global:
-        off1 = v1->off;
-        off2 = v2->off;
-        break;
-    case v_Par:
-        off1 = v1->par_off;
-        off2 = v2->par_off;
-        break;
-    case v_Var:
-        off1 = v1->var_off;
-        off2 = v2->var_off;
-        break;
-    case v_Tem:
-        if (v1->temno != v2->temno)
+        case v_Volatile:
+            return 1;   //same
+        case v_Reg:
+            off1 = v1->reg;
+            off2 = v2->reg;
+            break;
+        case v_Immed:
+            off1 = v1->d;
+            off2 = v2->d;
+            break;
+        case v_Global:
+            off1 = v1->off;
+            off2 = v2->off;
+            break;
+        case v_Par:
+            off1 = v1->par_off;
+            off2 = v2->par_off;
+            break;
+        case v_Var:
+            off1 = v1->var_off;
+            off2 = v2->var_off;
+            break;
+        case v_Tem:
+            if (v1->temno != v2->temno)
+                return false;
+            if (siz1 != siz2)
+                return false;
+            return true;
+        default:
             return false;
-        if (siz1 != siz2)
-            return false;
-        return true;
-    default:
-        return false;
     }
 
     if (off1 > off2)
@@ -374,46 +374,46 @@ const char *	hlcode_name(HLType t)
 {
     switch (t)
     {
-    case i_Jump:		return("i_Jump        ");
-    case i_Label:		return("i_Label       ");
-    case i_Begin:       return("i_Begin       ");
-    case i_End:         return("i_End         ");
-    case i_Assign:      return("i_Assign      ");
-    case i_Var:         return("i_Var         ");
-    case i_Unknown:     return("i_Unknown     ");
-    case i_RetPar:      return("i_RetPar      ");
-    case i_Return:      return("i_Return      ");
-    case i_Add:         return("i_Add         ");
-    case i_Sub:         return("i_Sub         ");
-    case i_Xor:         return("i_Xor         ");
-    case i_Sar:         return("i_Sar         ");
-    case i_And:         return("i_And         ");
-    case i_Imul:        return("i_Imul        ");
-    case i_Readpointto: return("i_Readpointto ");
-    case i_Writepointto:return("i_Writepointto");
-    case i_Cmp:         return("i_Cmp         ");
-    case i_Test:        return("i_Test        ");
-    case i_Lea:         return("i_Lea         ");
-    case i_Address:     return("i_Address     ");
-    case i_Call:        return("i_Call        ");
-    case i_CallApi:     return("i_CallApi     ");
-    case i_CallPara:    return("i_CallPara    ");
-    case i_CallThis:    return("i_CallThis    ");
-    case i_CallRet:     return("i_CallRet     ");
-    case i_CplxBegin:   return("i_CplxBegin   ");
-    case i_CplxEnd:     return("i_CplxEnd     ");
-    case i_Nop:         return("i_Nop         ");
-    case i_JmpAddr:		return("i_JmpAddr     ");
-    case i_SignExpand:	return("i_SignExpand  ");
-    case i_NosignExpand:return("i_NosignExpand");
-    case i_GetAddr:     return("i_GetAddr     ");
-    case i_EspReport:   return("i_EspReport   ");
-    default:
-    {
-        static char buf[80];
-        sprintf(buf, "unknown %x", t);
-        return(buf);
-    }
+        case i_Jump:		return("i_Jump        ");
+        case i_Label:		return("i_Label       ");
+        case i_Begin:       return("i_Begin       ");
+        case i_End:         return("i_End         ");
+        case i_Assign:      return("i_Assign      ");
+        case i_Var:         return("i_Var         ");
+        case i_Unknown:     return("i_Unknown     ");
+        case i_RetPar:      return("i_RetPar      ");
+        case i_Return:      return("i_Return      ");
+        case i_Add:         return("i_Add         ");
+        case i_Sub:         return("i_Sub         ");
+        case i_Xor:         return("i_Xor         ");
+        case i_Sar:         return("i_Sar         ");
+        case i_And:         return("i_And         ");
+        case i_Imul:        return("i_Imul        ");
+        case i_Readpointto: return("i_Readpointto ");
+        case i_Writepointto:return("i_Writepointto");
+        case i_Cmp:         return("i_Cmp         ");
+        case i_Test:        return("i_Test        ");
+        case i_Lea:         return("i_Lea         ");
+        case i_Address:     return("i_Address     ");
+        case i_Call:        return("i_Call        ");
+        case i_CallApi:     return("i_CallApi     ");
+        case i_CallPara:    return("i_CallPara    ");
+        case i_CallThis:    return("i_CallThis    ");
+        case i_CallRet:     return("i_CallRet     ");
+        case i_CplxBegin:   return("i_CplxBegin   ");
+        case i_CplxEnd:     return("i_CplxEnd     ");
+        case i_Nop:         return("i_Nop         ");
+        case i_JmpAddr:		return("i_JmpAddr     ");
+        case i_SignExpand:	return("i_SignExpand  ");
+        case i_NosignExpand:return("i_NosignExpand");
+        case i_GetAddr:     return("i_GetAddr     ");
+        case i_EspReport:   return("i_EspReport   ");
+        default:
+        {
+            static char buf[80];
+            sprintf(buf, "unknown %x", t);
+            return(buf);
+        }
     }
     //return NULL;	//never here
 }
@@ -438,16 +438,16 @@ QString PrtAddOn_internal(const char * varname, Pst_InstrAddOn pAddOn)
         return varname;
     switch (pAddOn->type)
     {
-    case IA_Nothing:
-        return varname;
-    case IA_ReadPointTo:
-        return QString("*%1").arg(PrtAddOn_internal(varname,pAddOn->pChild));
-    case IA_AddImmed:
-        return QString("(%1+%2)").arg(PrtAddOn_internal(varname,pAddOn->pChild)).arg(pAddOn->addimmed.iAddon);
-    case IA_MulImmed:
-        return QString("%1 * %2").arg(PrtAddOn_internal(varname,pAddOn->pChild)).arg(pAddOn->addimmed.iAddon);
-    case IA_GetAddress:
-        return QString("&%1").arg(PrtAddOn_internal(varname,pAddOn->pChild));
+        case IA_Nothing:
+            return varname;
+        case IA_ReadPointTo:
+            return QString("*%1").arg(PrtAddOn_internal(varname,pAddOn->pChild));
+        case IA_AddImmed:
+            return QString("(%1+%2)").arg(PrtAddOn_internal(varname,pAddOn->pChild)).arg(pAddOn->addimmed.iAddon);
+        case IA_MulImmed:
+            return QString("%1 * %2").arg(PrtAddOn_internal(varname,pAddOn->pChild)).arg(pAddOn->addimmed.iAddon);
+        case IA_GetAddress:
+            return QString("&%1").arg(PrtAddOn_internal(varname,pAddOn->pChild));
     }
     return "Error_PrtAddOn";
 }

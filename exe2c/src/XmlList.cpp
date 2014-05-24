@@ -18,51 +18,51 @@ XmlList* XmlList::new_CXmlList(XMLTYPE xmltype, void * p, size_t posfrom)
 }
 XmlList::~XmlList()
 {
-                delete m_sub;
-                delete m_next;
-        this->m_sub = NULL;
-        this->m_next = NULL;
+    delete m_sub;
+    delete m_next;
+    this->m_sub = NULL;
+    this->m_next = NULL;
 }
 
 XmlList* XmlList::GetLast_willbegin()
 {
-        XmlList* p = this;
-        while (p)
+    XmlList* p = this;
+    while (p)
+    {
+        if (p->m_posto == (size_t)-1)
         {
-                if (p->m_posto == (size_t)-1)
-                {
-                        if (p->m_sub == NULL)
-                                return p;
-                        return p->m_sub->GetLast_willbegin();
-                }
-                if (p->m_next == NULL)
-                        return p;
-                p = p->m_next;
+            if (p->m_sub == NULL)
+                return p;
+            return p->m_sub->GetLast_willbegin();
         }
-        assert(0);
-        return NULL;
+        if (p->m_next == NULL)
+            return p;
+        p = p->m_next;
+    }
+    assert(0);
+    return NULL;
 }
 XmlList* XmlList::GetLast_willend()
 {
-        XmlList* p = this;
-        while (p)
+    XmlList* p = this;
+    while (p)
+    {
+        if (p->m_posto == (size_t)-1)
         {
-                if (p->m_posto == (size_t)-1)
-                {
-                        if (p->m_sub == NULL)
-                                return p;
-                        XmlList* p1 = p->m_sub->GetLast_willend();
-                        if (p1 != NULL)
-                                return p1;
-                        return p;
-                }
-                p = p->m_next;
+            if (p->m_sub == NULL)
+                return p;
+            XmlList* p1 = p->m_sub->GetLast_willend();
+            if (p1 != NULL)
+                return p1;
+            return p;
         }
-        return NULL;
+        p = p->m_next;
+    }
+    return NULL;
 }
 void XmlList::XMLbegin(XMLTYPE xmltype, void * p0, size_t pos)
 {
-        XmlList* p = this->GetLast_willbegin();
+    XmlList* p = this->GetLast_willbegin();
     if (p->m_xmltype == XT_invalid)
     {
         p->m_xmltype = xmltype;
@@ -71,90 +71,90 @@ void XmlList::XMLbegin(XMLTYPE xmltype, void * p0, size_t pos)
         return;
     }
 
-        XmlList* pnew = new_CXmlList(xmltype, p0, pos);
+    XmlList* pnew = new_CXmlList(xmltype, p0, pos);
 
-        if (p->m_posto == (size_t)-1)
-        {
-                assert(p->m_sub == NULL);
-                p->m_sub = pnew;
-                return;
-        }
+    if (p->m_posto == (size_t)-1)
+    {
+        assert(p->m_sub == NULL);
+        p->m_sub = pnew;
+        return;
+    }
 
-        assert(p->m_next == NULL);
-        p->m_next = pnew;
+    assert(p->m_next == NULL);
+    p->m_next = pnew;
 }
 XMLTYPE XmlList::XMLend(XMLTYPE xmltype, size_t pos)
 {
-        XmlList* p = this->GetLast_willend();
-        assert(p);
-        assert(p->m_xmltype == xmltype);
-        assert(p->m_posto == (size_t)-1);
+    XmlList* p = this->GetLast_willend();
+    assert(p);
+    assert(p->m_xmltype == xmltype);
+    assert(p->m_posto == (size_t)-1);
 
-        p->m_posto = pos;
+    p->m_posto = pos;
 
-        p = this->GetLast_willend();
-        if (p)
-                return p->m_xmltype;
-        return XT_invalid;
+    p = this->GetLast_willend();
+    if (p)
+        return p->m_xmltype;
+    return XT_invalid;
 }
 
 void XmlList::Clicked(long x1, long x2)
 {
-        long u1,u2;
-        XmlList* p = this->GetCurWord(x1,u1,u2);
-        if (p == NULL)
-                return;
-        if (u1 != x1 || u2 != x2)
-                return;
-        XML_Clicked(p->m_xmltype, p->m_p);
+    long u1,u2;
+    XmlList* p = this->GetCurWord(x1,u1,u2);
+    if (p == NULL)
+        return;
+    if (u1 != x1 || u2 != x2)
+        return;
+    XML_Clicked(p->m_xmltype, p->m_p);
 
 }
 XmlList* XmlList::GetCurWord(size_t curpos, long &posfrom, long &posto)
 {
-        XmlList* p = this;
-        while (p)
-        {
-                if (curpos < p->m_posfrom)
-                        return NULL;
+    XmlList* p = this;
+    while (p)
+    {
+        if (curpos < p->m_posfrom)
+            return NULL;
 
-                if (p->m_sub)
-                {
-                        XmlList* p1 = p->m_sub->GetCurWord(curpos,posfrom,posto);
-                        if (p1)
-                                return p1;
-                }
-        else if (curpos >= p->m_posfrom && curpos < p->m_posto && p->m_posto != -1)
-                {
-                        posfrom = p->m_posfrom;
-                        posto = p->m_posto;
-                        return p;
-                }
-                p = p->m_next;
+        if (p->m_sub)
+        {
+            XmlList* p1 = p->m_sub->GetCurWord(curpos,posfrom,posto);
+            if (p1)
+                return p1;
         }
-        return NULL;
+        else if (curpos >= p->m_posfrom && curpos < p->m_posto && p->m_posto != -1)
+        {
+            posfrom = p->m_posfrom;
+            posto = p->m_posto;
+            return p;
+        }
+        p = p->m_next;
+    }
+    return NULL;
 }
 bool XmlList::GetLeftWord(long curpos, long &posfrom, long &posto)
 {
-        for (int i=0;i<2;i++)
-        {
-                if (NULL != this->GetCurWord(curpos,posfrom,posto))
-                        return true;
-                if (curpos == 0)
-                        return false;
-                curpos--;
-        }
-        return false;
+    for (int i=0;i<2;i++)
+    {
+        if (NULL != this->GetCurWord(curpos,posfrom,posto))
+            return true;
+        if (curpos == 0)
+            return false;
+        curpos--;
+    }
+    return false;
 }
 
 bool XmlList::GetRightWord(long curpos, long &posfrom, long &posto)
 {
-        for (int i=0;i<2;i++)
-        {
-                if (NULL != this->GetCurWord(curpos,posfrom,posto))
-                    return true;
-                curpos++;
-        }
-        return false;
+    for (int i=0;i<2;i++)
+    {
+        if (NULL != this->GetCurWord(curpos,posfrom,posto))
+            return true;
+        curpos++;
+    }
+    return false;
 }
 
 #include "XmlPrt.h"

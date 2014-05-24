@@ -56,14 +56,14 @@ struct _var_deleter
     {
         switch (p->type)
         {
-        case vtt_funcpoint:
-            //???? if (p->m_funcpoint.pFuncType != (FuncType*)1)	//	1 means unknown func:
-            //	delete p->m_funcpoint.pFuncType;
-            break;
-        case vtt_simple:
-            break;
-        default:
-            assert(false);
+            case vtt_funcpoint:
+                //???? if (p->m_funcpoint.pFuncType != (FuncType*)1)	//	1 means unknown func:
+                //	delete p->m_funcpoint.pFuncType;
+                break;
+            case vtt_simple:
+                break;
+            default:
+                assert(false);
 
         }
         delete p;
@@ -234,39 +234,39 @@ void VarTypeMng::VarType_ID2Name(VarTypeID id, char * namebuf)
     SVarType* p = id2_VarType(id);
     switch (p->type)
     {
-    case vtt_base:
-    case vtt_signed:
-    case vtt_typedef:
-        strcpy(namebuf,p->name.c_str());
-        return;
-    case vtt_simple:
-        sprintf(namebuf,"bit%d",p->m_simple.opsize * 8);
-        return;
-    case vtt_point:
-        VarType_ID2Name(p->m_point.id_pointto,namebuf);
-        strcat(namebuf,"*");
-        return;
-    case vtt_array:
-        VarType_ID2Name(p->m_array.id_arrayitem, namebuf);
-        return;
-    case vtt_class:
-        if (p->m_class.pClass == NULL)
+        case vtt_base:
+        case vtt_signed:
+        case vtt_typedef:
             strcpy(namebuf,p->name.c_str());
-        else
-            strcpy(namebuf,p->m_class.pClass->m_name);
-        return;
-    case vtt_enum:
-        if (p->m_enum.m_penum == NULL)
-            strcpy(namebuf,p->name.c_str());
-        else
-            strcpy(namebuf,p->m_enum.m_penum->m_name);
-        return;
-    case vtt_const:
-        strcpy(namebuf,"const ");
-        VarType_ID2Name(p->m_const.id_base, namebuf+6);
-        return;
-    default:
-        assert(0);
+            return;
+        case vtt_simple:
+            sprintf(namebuf,"bit%d",p->m_simple.opsize * 8);
+            return;
+        case vtt_point:
+            VarType_ID2Name(p->m_point.id_pointto,namebuf);
+            strcat(namebuf,"*");
+            return;
+        case vtt_array:
+            VarType_ID2Name(p->m_array.id_arrayitem, namebuf);
+            return;
+        case vtt_class:
+            if (p->m_class.pClass == NULL)
+                strcpy(namebuf,p->name.c_str());
+            else
+                strcpy(namebuf,p->m_class.pClass->m_name);
+            return;
+        case vtt_enum:
+            if (p->m_enum.m_penum == NULL)
+                strcpy(namebuf,p->name.c_str());
+            else
+                strcpy(namebuf,p->m_enum.m_penum->m_name);
+            return;
+        case vtt_const:
+            strcpy(namebuf,"const ");
+            VarType_ID2Name(p->m_const.id_base, namebuf+6);
+            return;
+        default:
+            assert(0);
     }
 }
 
@@ -286,23 +286,23 @@ VarTypeID VarTypeMng::GetPointTo(VarTypeID id)
     assert(p);
     switch (p->type)
     {
-    case vtt_point:
-        return NoConst(p->m_point.id_pointto);
-        //As const char * refers to char, not const char
-    case vtt_const:
-        return GetPointTo(p->m_const.id_base);
-    case vtt_funcpoint:
-    case vtt_signed:
-    case vtt_base:
-    case vtt_simple:
-    case vtt_class:
-    case vtt_array:
-    case vtt_enum:
-        return 0;
-    case vtt_typedef:
-        return GetPointTo(p->m_typedef.id_base);
-    default:
-        assert(0);
+        case vtt_point:
+            return NoConst(p->m_point.id_pointto);
+            //As const char * refers to char, not const char
+        case vtt_const:
+            return GetPointTo(p->m_const.id_base);
+        case vtt_funcpoint:
+        case vtt_signed:
+        case vtt_base:
+        case vtt_simple:
+        case vtt_class:
+        case vtt_array:
+        case vtt_enum:
+            return 0;
+        case vtt_typedef:
+            return GetPointTo(p->m_typedef.id_base);
+        default:
+            assert(0);
     }
 
     return 0;
@@ -331,14 +331,14 @@ FuncType* VarTypeMng::get_funcptr(VarTypeID id)
     assert(p);
     switch (p->type)
     {
-    case vtt_const:
-        return get_funcptr(p->m_const.id_base);
-    case vtt_typedef:
-        return get_funcptr(p->m_typedef.id_base);
-    case vtt_funcpoint:
-        return p->m_funcpoint.pFuncType;
-    default:
-        return NULL;
+        case vtt_const:
+            return get_funcptr(p->m_const.id_base);
+        case vtt_typedef:
+            return get_funcptr(p->m_typedef.id_base);
+        case vtt_funcpoint:
+            return p->m_funcpoint.pFuncType;
+        default:
+            return NULL;
     }
 }
 
@@ -361,14 +361,14 @@ Class_st*	VarTypeMng::is_classpoint(VarTypeID id)
     assert(p);
     switch (p->type)
     {
-    case vtt_const:
-        return is_classpoint(p->m_const.id_base);
-    case vtt_typedef:
-        return is_classpoint(p->m_typedef.id_base);
-    case vtt_point:
-        return id2_Class(p->m_point.id_pointto);
-    default:
-        return NULL;
+        case vtt_const:
+            return is_classpoint(p->m_const.id_base);
+        case vtt_typedef:
+            return is_classpoint(p->m_typedef.id_base);
+        case vtt_point:
+            return id2_Class(p->m_point.id_pointto);
+        default:
+            return NULL;
     }
 }
 enum_st*	VarTypeMng::id2_enum(VarTypeID id)
@@ -378,14 +378,14 @@ enum_st*	VarTypeMng::id2_enum(VarTypeID id)
     assert(p);
     switch (p->type)
     {
-    case vtt_const:
-        return id2_enum(p->m_const.id_base);
-    case vtt_typedef:
-        return id2_enum(p->m_typedef.id_base);
-    case vtt_enum:
-        return p->m_enum.m_penum;
-    default:
-        return NULL;
+        case vtt_const:
+            return id2_enum(p->m_const.id_base);
+        case vtt_typedef:
+            return id2_enum(p->m_typedef.id_base);
+        case vtt_enum:
+            return p->m_enum.m_penum;
+        default:
+            return NULL;
     }
 }
 Class_st*	VarTypeMng::is_class(VarTypeID id)
@@ -402,14 +402,14 @@ Class_st*	VarTypeMng::id2_Class(VarTypeID id)
     assert(p);
     switch (p->type)
     {
-    case vtt_const:
-        return id2_Class(p->m_const.id_base);
-    case vtt_typedef:
-        return id2_Class(p->m_typedef.id_base);
-    case vtt_class:
-        return p->m_class.pClass;
-    default:
-        return NULL;
+        case vtt_const:
+            return id2_Class(p->m_const.id_base);
+        case vtt_typedef:
+            return id2_Class(p->m_typedef.id_base);
+        case vtt_class:
+            return p->m_class.pClass;
+        default:
+            return NULL;
     }
 }
 bool	VarTypeMng::is_funcptr(VarTypeID id)
@@ -420,14 +420,14 @@ bool	VarTypeMng::is_funcptr(VarTypeID id)
     assert(p);
     switch (p->type)
     {
-    case vtt_const:
-        return is_funcptr(p->m_const.id_base);
-    case vtt_typedef:
-        return is_funcptr(p->m_typedef.id_base);
-    case vtt_funcpoint:
-        return true;
-    default:
-        return false;
+        case vtt_const:
+            return is_funcptr(p->m_const.id_base);
+        case vtt_typedef:
+            return is_funcptr(p->m_typedef.id_base);
+        case vtt_funcpoint:
+            return true;
+        default:
+            return false;
     }
 }
 SIZEOF VarTypeMng::VarType_ID2Size(VarTypeID id)
@@ -437,29 +437,29 @@ SIZEOF VarTypeMng::VarType_ID2Size(VarTypeID id)
     assert(p);
     switch (p->type)
     {
-    case vtt_base:
-        return p->m_base.opsize;
-    case vtt_simple:
-        return p->m_simple.opsize;
-    case vtt_point:
-    case vtt_funcpoint:
-        return BIT32_is_4;
-    case vtt_typedef:
-        return VarType_ID2Size(p->m_typedef.id_base);
-    case vtt_array:
-        return VarType_ID2Size(p->m_array.id_arrayitem) * p->m_array.arraynum;
-    case vtt_class:
-        if (p->m_class.pClass == NULL)
-            alert_prtf("need struc size: %s",p->name.c_str());
-        return p->m_class.pClass->m_size;
-    case vtt_signed:
-        return VarType_ID2Size(p->m_signed.id_base);
-    case vtt_enum:
-        return BIT32_is_4;
-    case vtt_const:
-        return VarType_ID2Size(p->m_const.id_base);
-    default:
-        assert(0);
+        case vtt_base:
+            return p->m_base.opsize;
+        case vtt_simple:
+            return p->m_simple.opsize;
+        case vtt_point:
+        case vtt_funcpoint:
+            return BIT32_is_4;
+        case vtt_typedef:
+            return VarType_ID2Size(p->m_typedef.id_base);
+        case vtt_array:
+            return VarType_ID2Size(p->m_array.id_arrayitem) * p->m_array.arraynum;
+        case vtt_class:
+            if (p->m_class.pClass == NULL)
+                alert_prtf("need struc size: %s",p->name.c_str());
+            return p->m_class.pClass->m_size;
+        case vtt_signed:
+            return VarType_ID2Size(p->m_signed.id_base);
+        case vtt_enum:
+            return BIT32_is_4;
+        case vtt_const:
+            return VarType_ID2Size(p->m_const.id_base);
+        default:
+            assert(0);
     }
     return 0;
 }
@@ -716,12 +716,12 @@ bool	VarTypeMng::If_Based_on_idid(VarTypeID id, VarTypeID id0)
     assert(p);
     switch (p->type)
     {
-    case vtt_const:
-        return If_Based_on_idid(p->m_const.id_base, id0);
-    case vtt_typedef:
-        return If_Based_on_idid(p->m_typedef.id_base, id0);
-    default:
-        return false;
+        case vtt_const:
+            return If_Based_on_idid(p->m_const.id_base, id0);
+        case vtt_typedef:
+            return If_Based_on_idid(p->m_typedef.id_base, id0);
+        default:
+            return false;
     }
 }
 bool	VarTypeMng::If_Based_on(VarTypeID id, char * basename)
@@ -738,12 +738,12 @@ VarTypeID VarTypeMng::Get_unsigned_id(VarTypeID id)
     assert(p);
     switch (p->type)
     {
-    case vtt_base:
-        return id;
-    case vtt_signed:
-        return p->m_signed.id_base;
-    default:
-        assert(0);
+        case vtt_base:
+            return id;
+        case vtt_signed:
+            return p->m_signed.id_base;
+        default:
+            assert(0);
     }
     return 0;
 }

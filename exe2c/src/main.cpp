@@ -28,7 +28,7 @@ FUNC_LIST::iterator Exe2c::GetCurFuncHandle()
 
 void Exe2c::SetCurFunc_by_Name(const char * funcname)
 {
-        Func *p = this->FindFuncByName(funcname);
+    Func *p = this->FindFuncByName(funcname);
     if (p == NULL)
         return;
     m_Cur_Func = p;
