@@ -55,7 +55,7 @@ void	Disassembler_Init_offset(const uint8_t * code_buf, ea_t code_offset);
 uint8_t *	ea2ptr(ea_t pos);
 ea_t ptr2ea(void* p);
 uint8_t	Peek_B(ea_t pos);
-WORD	Peek_W(ea_t pos);
+uint16_t	Peek_W(ea_t pos);
 uint32_t	Peek_D(ea_t pos);
 
 

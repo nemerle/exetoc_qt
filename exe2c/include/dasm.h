@@ -411,12 +411,12 @@ class Disasm
     uint32_t Global_OFFSET(char * outbuf,unsigned char * codebuf,OPERITEM *op);
     uint32_t Global_MEMORY(char * outbuf,unsigned char * codebuf,OPERITEM *op);
     uint32_t Global_MODRM(char * outbuf,unsigned char * codebuf,OPERITEM *op);
-    uint8_t	GetByte();
-    WORD	GetWord();
-    uint32_t	GetDWord();
-    uint8_t	GetByteEx();
-    WORD	GetWordEx();
-    uint32_t	GetDWordEx();
+    uint8_t	 GetByte();
+    uint16_t GetWord();
+    uint32_t GetDWord();
+    uint8_t	 GetByteEx();
+    uint16_t GetWordEx();
+    uint32_t GetDWordEx();
     uint32_t Global_NEARPTR(char * outbuf,unsigned char * codebuf,OPERITEM *op);
     uint32_t Global_FARPTR(char * outbuf,unsigned char * codebuf,OPERITEM *op);
     void	OpSizePrefix();

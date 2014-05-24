@@ -15,9 +15,9 @@
 
 typedef struct REFSYMBOL
 {
-        char    RefSymbol[4096];	//Referenced symbol
-        WORD	RefType;    //such as IMAGE_REL_I386_REL32
-        uint32_t	RefOffset;				//Offset in the referenced function
+        char        RefSymbol[4096];	//Referenced symbol
+        uint16_t    RefType;    //such as IMAGE_REL_I386_REL32
+        uint32_t    RefOffset;				//Offset in the referenced function
 } *PREFSYMBOL;
 
 typedef struct tagFUNCTION_SYMBOL
@@ -36,7 +36,7 @@ typedef struct _IMAGE_RELOCATION {
         int32_t   RelocCount;             // Set to the real count when IMAGE_SCN_LNK_NRELOC_OVFL is set
     };
     int32_t   SymbolTableIndex;
-    WORD    Type;
+    uint16_t    Type;
 } IMAGE_RELOCATION;
 #pragma pack()
 typedef IMAGE_RELOCATION *PIMAGE_RELOCATION;

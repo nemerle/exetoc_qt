@@ -15,11 +15,11 @@
 #include "ApiManage.h"
 
 void	Disassembler_Init_offset(const uint8_t * code_buf, ea_t code_offset);
-extern std::string DLLDEF_Get_ApiName_from_ord(const char *pDLLname, WORD ord);
+extern std::string DLLDEF_Get_ApiName_from_ord(const char *pDLLname, uint16_t ord);
 uint8_t *	ea2ptr(ea_t pos);
 ea_t ptr2ea(void* p);
 uint8_t	Peek_B(ea_t pos);
-WORD	Peek_W(ea_t pos);
+uint16_t	Peek_W(ea_t pos);
 uint32_t	Peek_D(ea_t pos);
 
 //#include "Deasm_Init.h"
@@ -136,11 +136,11 @@ int	RelocImportTable(PEHEADER* peh)
 
             if ((d & 0xffff0000) == 0x80000000)
             {	//Input by ord
-                apiname = DLLDEF_Get_ApiName_from_ord(pDLLname,(WORD)d);
+                apiname = DLLDEF_Get_ApiName_from_ord(pDLLname,(uint16_t)d);
                 if (apiname.size() == 0)
                 {
                     QString bufname;
-                    bufname = QString("ord_%1_%2").arg((WORD)d,16).arg(pDLLname);
+                    bufname = QString("ord_%1_%2").arg((uint16_t)d,16).arg(pDLLname);
                     bufname.replace(".","_");
                     apiname = bufname.toStdString();
                 }
@@ -169,7 +169,7 @@ int	RelocImportTable(PEHEADER* peh)
 typedef struct _KSPE_IMAGE_BASE_RELOCATION {
     uint32_t   VirtualAddress;
     uint32_t   SizeOfBlock;
-    WORD    TypeOffset[1];
+    uint16_t   TypeOffset[1];
 } KSPE_IMAGE_BASE_RELOCATION, *PKSPE_IMAGE_BASE_RELOCATION;
 
 #define KSPE_IMAGE_REL_BASED_ABSOLUTE              0
@@ -319,7 +319,7 @@ void OneItem_Init(ea_t ea)
 
     if (p[5] != 0xe8)
         return;
-    if (*(WORD*)(p+10) != 0x06c7)
+    if (*(uint16_t*)(p+10) != 0x06c7)
         return;
 
     ea_t vftbl = *(uint32_t *)(p+12);

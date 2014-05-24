@@ -26,10 +26,10 @@ uint8_t Peek_B(ea_t pos)
     uint8_t * p = ea2ptr(pos);
     return *p;
 }
-WORD	Peek_W(ea_t pos)
+uint16_t Peek_W(ea_t pos)
 {
     uint8_t * p = ea2ptr(pos);
-    return *(WORD *)p;
+    return *(uint16_t *)p;
 }
 uint32_t	Peek_D(ea_t pos)
 {

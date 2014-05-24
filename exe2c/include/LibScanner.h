@@ -48,13 +48,13 @@ typedef struct
         uint8_t *		lpBuffer;   //OBJ data
 }COFFOBJECT,*PCOFFOBJECT;
 typedef struct _IMAGE_FILE_HEADER {
-  WORD  Machine;
-  WORD  NumberOfSections;
+  uint16_t  Machine;
+  uint16_t  NumberOfSections;
   int32_t TimeDateStamp;
   int32_t PointerToSymbolTable;
   int32_t NumberOfSymbols;
-  WORD  SizeOfOptionalHeader;
-  WORD  Characteristics;
+  uint16_t  SizeOfOptionalHeader;
+  uint16_t  Characteristics;
 } IMAGE_FILE_HEADER, *PIMAGE_FILE_HEADER;
 #define IMAGE_SIZEOF_FILE_HEADER             20
 typedef struct
@@ -63,7 +63,7 @@ typedef struct
         SHORT SECT_NUM;
         uint8_t  STOR_CLS;
         uint32_t VALUE;
-        WORD  TYPE;
+        uint16_t  TYPE;
         char  Name[4096];
 }COFFSYMBOL,*PCOFFSYMBOL;
 #pragma pack(2)
@@ -78,7 +78,7 @@ typedef struct _IMAGE_SYMBOL {
     } N;
     int32_t   Value;
     SHORT   SectionNumber;
-    WORD    Type;
+    uint16_t    Type;
     uint8_t    StorageClass;
     uint8_t    NumberOfAuxSymbols;
 } IMAGE_SYMBOL;
@@ -95,8 +95,8 @@ typedef struct _IMAGE_SECTION_HEADER {
     int32_t   PointerToRawData;
     int32_t   PointerToRelocations;
     int32_t   PointerToLinenumbers;
-    WORD    NumberOfRelocations;
-    WORD    NumberOfLinenumbers;
+    uint16_t  NumberOfRelocations;
+    uint16_t  NumberOfLinenumbers;
     int32_t   Characteristics;
 } IMAGE_SECTION_HEADER, *PIMAGE_SECTION_HEADER;
 #pragma pack()

@@ -58,8 +58,8 @@ bool Exe2c::BaseInit()
     m_E2COut = NULL;
     //this->m_api_name_manager = new CNameMng;    //new_CNameMng
     // Make some global initializations
-        m_FileLoader = NULL;
-        return true;
+    m_FileLoader = NULL;
+    return true;
 }
 struct remover
 {
@@ -73,7 +73,7 @@ Exe2c::~Exe2c()
 {
     //KICK_MFC();
     s_Cexe2c = NULL;
-//    for_each(m_func_list.begin(),m_func_list.end(),remover);
+    //    for_each(m_func_list.begin(),m_func_list.end(),remover);
     m_func_list.clear();
 
     delete m_FileLoader;
@@ -83,8 +83,8 @@ Exe2c::~Exe2c()
 
 bool Exe2c::test()
 {
-        //KICK_MFC();
-        return true;
+    //KICK_MFC();
+    return true;
 }
 
 
@@ -118,7 +118,7 @@ void	Exe2c::Recurse_Optim()
 }
 void Exe2c::exe2c_main(const std::string & fname)
 {
-        lib_init();
+    lib_init();
 
     if (m_FileLoader != NULL)
         delete m_FileLoader;
@@ -162,19 +162,19 @@ Func*	Exe2c::FindFuncByName(const char * pname)
     return NULL;
 }
 
-    //start Analysis
+//start Analysis
 void	Exe2c::do_exe2c(ea_t start)
 {
-        ea_t pmain = Find_Main(start);
+    ea_t pmain = Find_Main(start);
 
-        //The first step, according to start, create an empty CFunc
-        Func* pfunc = this->func_new(pmain);
+    //The first step, according to start, create an empty CFunc
+    Func* pfunc = this->func_new(pmain);
 
-        if (pmain == start)
-                pfunc->m_funcname="start";
-        else
-                pfunc->m_funcname="main";
-        //Set the current CFunc
+    if (pmain == start)
+        pfunc->m_funcname="start";
+    else
+        pfunc->m_funcname="main";
+    //Set the current CFunc
     m_Cur_Func = pfunc;
     m_Cur_Func->PrepareFunc();
 }
@@ -184,7 +184,7 @@ void	Exe2c::do_exe2c(ea_t start)
 Func* Exe2c::GetFunc(ea_t start)
 {
     FUNC_LIST::iterator iter=std::find_if(m_func_list.begin(),m_func_list.end(),
-        boost::lambda::bind<ea_t>(&Func::m_head_off,_1)==start);
+                                          boost::lambda::bind<ea_t>(&Func::m_head_off,_1)==start);
     if(iter==m_func_list.end())
         return NULL;
     return *iter;
@@ -210,36 +210,27 @@ static std::string CheckIf_libfunc(PCBYTE phead)
     }
     return "";
 }
-//	根据 start，创建一个空的 CFunc
-//	并加入 m_func_list
-//	如果该地址的 CFunc 已经存在，则直接返回它
-// According to start, create an empty CFunc
-// And join the m_func_list
-// If the address CFunc already exists, then return it directly
+/**
+ * @brief create an empty CFunc, beggining at address \a start
+ * @param start function entry point
+ * @return function object for given \a start address
+ */
 Func* Exe2c::func_new(ea_t start)
 {
-    {
-        // 检查本func是否已经在func链中了
-    //Check whether this func chain of the func
-        Func* p = GetFunc(start);
-        if (p != NULL)
-            return p;
-    }
+    //TODO: investigate handling of calls which pass 'start' that is inside boundries of another function, but does not share entry point
+    Func* p = GetFunc(start);
+    //If this function exists, return it
+    if (p != NULL)
+        return p;
 
-        // not find
-        log_prtl("New func %x",start);
-        if (start == 0x128b1e1)
-        {
-                start = 0x128b1e1;
-        }
+    // not found -> creating a new function
+    log_prtl("New func %x",start);
 
-        Func* p = new Func(start);    //new_CFunc
+    p = new Func(start);
 
-        //	填入 CFunc 的一些其它信息
-        //Fill in some of the other information CFunc
-        fill_func_info(start, p);
+    fill_func_info(start, p); //extract additional function information
 
-        std::string pname = CheckIf_libfunc(ea2ptr(p->m_head_off));
+    std::string pname = CheckIf_libfunc(ea2ptr(p->m_head_off));
 
     if (pname.length()!=0)
     {
@@ -282,7 +273,7 @@ const char * my_itoa(int i);
 void Exe2c::DoCommandLine(const char * cmd)
 {
     //if (m_Cur_Func == NULL)
-        //return;
+    //return;
     if (memcmp(cmd, "var ", 4) == 0)
     {
         const char * varname = cmd + 4;

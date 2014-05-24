@@ -814,9 +814,9 @@ uint8_t	PeekB(const uint8_t * codebuf)
         return *codebuf;
 }
 
-WORD	PeekW(const uint8_t * codebuf)
+uint16_t	PeekW(const uint8_t * codebuf)
 {
-        return *(WORD *)codebuf;
+        return *(uint16_t *)codebuf;
 }
 
 uint32_t	PeekD(const uint8_t * codebuf)
@@ -829,9 +829,9 @@ uint8_t Disasm::GetByte()
         return *(UasmCode+CodeCount);
 }
 
-WORD	Disasm::GetWord()
+uint16_t Disasm::GetWord()
 {
-        return *(WORD*)(UasmCode+CodeCount);
+        return *(uint16_t*)(UasmCode+CodeCount);
 }
 
 uint32_t	Disasm::GetDWord()
@@ -846,9 +846,9 @@ uint8_t Disasm::GetByteEx()
         return v;
 }
 
-WORD	Disasm::GetWordEx()
+uint16_t Disasm::GetWordEx()
 {
-        WORD	v = *(WORD*)(UasmCode+CodeCount);
+        uint16_t	v = *(uint16_t*)(UasmCode+CodeCount);
         CodeCount+=2;
         return v;
 }
@@ -986,7 +986,7 @@ uint32_t Disasm::Global_MEMORY(char * outbuf,uint8_t * codebuf,OPERITEM *op)
         uint32_t	len=1;
 
         //uint8_t	by;
-        //WORD	wo;
+        //uint16_t	wo;
         //uint32_t	dw;
 
         modrm.v	= PeekB(codebuf);
@@ -1036,7 +1036,7 @@ uint32_t Disasm::Global_MEMORY(char * outbuf,uint8_t * codebuf,OPERITEM *op)
         else
         {
                 op->mode		= OP_Address;
-                //op->addr.reg_size=sizeof(WORD);
+                //op->addr.reg_size=sizeof(uint16_t);
                 op->addr.base_reg_index=_NOREG_;
                 op->addr.off_reg_index=_NOREG_;
                 op->addr.off_reg_scale=1;
@@ -1151,7 +1151,7 @@ uint32_t Disasm::Global_OFFSET(char * outbuf,uint8_t * codebuf,OPERITEM *op)
         {
                 op->addr.off_value	= PeekW(codebuf);
                 sprintf(outbuf,"[%04lX]",op->addr.off_value);
-                return sizeof(WORD);
+                return sizeof(uint16_t);
         }
         else
         {

@@ -27,77 +27,77 @@ enum enum_EXEFormat
 
 struct MZHEADER
 {
-    WORD sig;
-    WORD numbytes,numpages;
-    WORD numrelocs,headersize;
-    WORD minpara,maxpara;
-    WORD initialss,initialsp;
-    WORD csum;
+    uint16_t sig;
+    uint16_t numbytes,numpages;
+    uint16_t numrelocs,headersize;
+    uint16_t minpara,maxpara;
+    uint16_t initialss,initialsp;
+    uint16_t csum;
     uint32_t csip;
-    WORD relocoffs;
-    WORD ovlnum;
+    uint16_t relocoffs;
+    uint16_t ovlnum;
 };
 
 struct neheader
 {
-    WORD sig;
-    WORD linkerver;
-    WORD entryoffs,entrylen;
+    uint16_t sig;
+    uint16_t linkerver;
+    uint16_t entryoffs,entrylen;
     uint32_t filecrc;
-    WORD contentflags;
-    WORD dsnum;
-    WORD heapsize,stacksize;
+    uint16_t contentflags;
+    uint16_t dsnum;
+    uint16_t heapsize,stacksize;
     uint32_t csip,sssp;
-    WORD numsegs,nummodules;
-    WORD nonresnamesize;
-    WORD offs_segments,offs_resources,offs_resnames,offs_module,offs_imports;
+    uint16_t numsegs,nummodules;
+    uint16_t nonresnamesize;
+    uint16_t offs_segments,offs_resources,offs_resnames,offs_module,offs_imports;
     uint32_t nonresnametable;
-    WORD movableentries;
-    WORD shiftcount;
-    WORD numresources;
+    uint16_t movableentries;
+    uint16_t shiftcount;
+    uint16_t numresources;
     uint8_t targetos,os_info;
-    WORD fastloadoffs,fastloadlen;
-    WORD mincodeswapareasize,winver;
+    uint16_t fastloadoffs,fastloadlen;
+    uint16_t mincodeswapareasize,winver;
 };
 
 struct nesegtable
 {
-    WORD sectoroffs;
-    WORD seglength;
-    WORD segflags;
-    WORD minalloc;
+    uint16_t sectoroffs;
+    uint16_t seglength;
+    uint16_t segflags;
+    uint16_t minalloc;
 };
 
 struct nesegtablereloc
 {
     uint8_t reloctype,relocsort;
-    WORD segm_offs;
-    WORD index,indexoffs;
+    uint16_t segm_offs;
+    uint16_t index,indexoffs;
 };
 
 struct PEHEADER
 {
     uint32_t sigbytes;
-    WORD cputype,objects;
+    uint16_t cputype,objects;
     uint32_t timedatestamp;
     uint32_t reserveda[2];
-    WORD nt_hdr_size,flags;
-    WORD reserved;
-    uint8_t lmajor,lminor;
+    uint16_t nt_hdr_size,flags;
+    uint16_t reserved;
+    uint8_t  lmajor,lminor;
     uint32_t reserved1[3];
     uint32_t entrypoint_rva;
     uint32_t reserved2[2];
     uint32_t image_base;
     uint32_t objectalign;
     uint32_t filealign;
-    WORD osmajor,osminor;
-    WORD usermajor,userminor;
-    WORD subsysmajor,subsysminor;
+    uint16_t osmajor,osminor;
+    uint16_t usermajor,userminor;
+    uint16_t subsysmajor,subsysminor;
     uint32_t reserved3;
     uint32_t imagesize;
     uint32_t headersize;
     uint32_t filechecksum;
-    WORD subsystem,dllflags;
+    uint16_t subsystem,dllflags;
     uint32_t stackreserve,stackcommit;
     uint32_t heapreserve,heapcommit;
     uint32_t reserved4;
@@ -135,7 +135,7 @@ struct peexportdirentry
 {
     uint32_t characteristics;
     uint32_t timedatestamp;
-    WORD majver,minver;
+    uint16_t majver,minver;
     uint32_t namerva;
     uint32_t base;
     uint32_t numfunctions;
@@ -147,8 +147,8 @@ struct perestable
 {
     uint32_t flags;
     uint32_t timedatestamp;
-    WORD majver,minver;
-    WORD numnames,numids;
+    uint16_t majver,minver;
+    uint16_t numnames,numids;
 };
 
 struct peleafnode
@@ -229,14 +229,14 @@ extern	FileLoader* g_FileLoader;
 class lptr				  //Pointer Struct 32-bit.
 {
 public:
-    WORD segm;				 //segment
+    uint16_t segm;				 //segment
     uint32_t offs;				 //offset
 
 public:
     lptr(){}
-    lptr(WORD seg,uint32_t off);
+    lptr(uint16_t seg,uint32_t off);
     ~lptr(){}
-    void assign(WORD seg,uint32_t off);
+    void assign(uint16_t seg,uint32_t off);
     bool operator==(lptr loc2);
     bool operator<=(lptr loc2);
     bool operator>=(lptr loc2);

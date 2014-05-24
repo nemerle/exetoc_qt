@@ -21,7 +21,7 @@ using namespace boost::lambda;
 using namespace std;
 struct ord_st
 {
-    WORD ord;
+    uint16_t ord;
     std::string name;
 };
 
@@ -63,7 +63,7 @@ CCbuf* ReadDefFile(const QString & fname)
     fclose(f);
     return pInfo;
 }
-std::string DLLDEF_Get_ApiName_from_ord(const char * pDLLname, WORD ord)
+std::string DLLDEF_Get_ApiName_from_ord(const char * pDLLname, uint16_t ord)
 {
     if (strcmp(pDLLname,"MFC42.DLL") == 0)
     {
@@ -169,7 +169,7 @@ void Def_BuildList(ORD_LIST & list, char * pbuf, SIZEOF len)
         sscanf(p,"%d",&d);
 
         ord_st pnew;
-        pnew.ord = (WORD)d;
+        pnew.ord = (uint16_t)d;
         if (d == 0x9d0)
             ; //TODO: nop();
         pnew.name = name;

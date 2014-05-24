@@ -86,7 +86,7 @@ struct VAR
         uint32_t	var_off;	//  for v_Var
         ea_t	off;	//for v_Global
         uint8_t	b;
-        WORD	w;
+        uint16_t	w;
         uint32_t	d;		//for v_Immed
         uint32_t	temno;	//for v_Tem
     };

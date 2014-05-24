@@ -8,6 +8,6 @@
 #include "types.h"
 CCbuf* ReadDefFile(const QString &fname);
 void onExit_DLL32DEF();
-std::string DLLDEF_Get_ApiName_from_ord(const char * pDLLname, WORD ord);
+std::string DLLDEF_Get_ApiName_from_ord(const char * pDLLname, uint16_t ord);
 
 #endif	//DLL32DEF_H
