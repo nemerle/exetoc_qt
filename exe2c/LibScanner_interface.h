@@ -4,7 +4,7 @@
 // Copyright(C) 1999-2005 LiuTaoTao，bookaa@rorsoft.com
 //
 ///////////////////////////////////////////////////////////////
-//#include "..\..\LibScanner\LibScanner.H"
+
 
 #ifndef	_LIBSCANNER_H_
 #define	_LIBSCANNER_H_
@@ -12,7 +12,7 @@
 #include <string>
 typedef unsigned char BYTE;
 typedef signed char CHAR;
-//#include "..\I_KSUNKNOWN\KsFrame.h"
+
 
 typedef struct REFSYMBOL
 {
@@ -44,11 +44,12 @@ typedef IMAGE_RELOCATION *PIMAGE_RELOCATION;
 
 typedef const BYTE* PCBYTE;
 
-class I_LIBSCANNER //: public I_KSUNKNOWN
+class I_LIBSCANNER
 {
 public:
-        virtual bool ScanLib(const char * szLib)=0;
-        //virtual PFUNCTION_SYMBOL GetFunctionInfo(const char * szFun)=0;
+    virtual ~I_LIBSCANNER() {}
+    virtual bool ScanLib(const char * szLib)=0;
+    //virtual PFUNCTION_SYMBOL GetFunctionInfo(const char * szFun)=0;
     virtual std::string CheckIfLibFunc(PCBYTE phead) = 0;
 };
 

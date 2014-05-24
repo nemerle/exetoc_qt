@@ -587,10 +587,6 @@ bool FuncOptim::Optim_Var_Flow_5(VAROPTM_LIST& used_list)
 }
 bool FuncOptim::Optim_Var_Flow_4(VAROPTM_LIST& used_list)
 {
-    //空的下跳，要
-    //空的上跳，要
-    //没人用的Label，要
-
     VAROPTM_LIST::iterator last_pos;
     Instruction * last_jmp = NULL;
     Instruction * last_label[256]={0};
@@ -1211,31 +1207,29 @@ bool FuncOptim::SetParaType(UINT offset, UINT sizepara, enum_CallC conv,const st
         return false;
     }
     UINT par_off = offset + 4;  //right then
-        M_t* pmt = this->m_my_func->m_exprs->SearchMT(MTT_par, par_off);
-        if (pmt == NULL)
-            return false;
+    M_t* pmt = this->m_my_func->m_exprs->SearchMT(MTT_par, par_off);
+    if (pmt == NULL)
+        return false;
     if (pmt->m_DataTypeID != 0 && !VarTypeMng::get()->is_simple(pmt->m_DataTypeID))
         return false;   //Already have the type, no reason to do it again
-        pmt->namestr = paraname;
-        //Now, make pmt-> m_DataType for the paratype
-        if (pmt->size == GG_VarType_ID2Size(paraid))
-        {
-            pmt->m_DataTypeID = paraid;
-        }
-        else
-        {
-            M_t* pnew = new M_t;    //new_M_t
-            *pnew = *pmt;
-            pnew->m_DataTypeID = paraid;
-
-        m_my_func->m_exprs->vList.push_back(pnew);
-
-        m_my_func->m_exprs->Enlarge_Var(pnew, m_my_func->m_instr_list);
-
-            assert(pnew->size == GG_VarType_ID2Size(paraid));
-        }
-        return true;
+    pmt->namestr = paraname;
+    //TODO: use sizepara to initialize pmt->size ?
+    //Now, make pmt-> m_DataType for the paratype
+    if (pmt->size == GG_VarType_ID2Size(paraid))
+    {
+        pmt->m_DataTypeID = paraid;
     }
+    else
+    {
+        M_t* pnew = new M_t;    //new_M_t
+        *pnew = *pmt;
+        pnew->m_DataTypeID = paraid;
+        m_my_func->m_exprs->vList.push_back(pnew);
+        m_my_func->m_exprs->Enlarge_Var(pnew, m_my_func->m_instr_list);
+        assert(pnew->size == GG_VarType_ID2Size(paraid));
+    }
+    return true;
+}
 bool FuncOptim::VarDataType_analysis_mydefine()
 {
     //I already have a function definition, parameter names and types from which to take
